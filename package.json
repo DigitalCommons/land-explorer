@@ -1,0 +1,35 @@
+{
+  "name": "land-explorer",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Land Explorer monorepo: front-end, back-end and property-boundaries-service as npm workspaces.",
+  "license": "MIT",
+  "workspaces": [
+    "apps/*"
+  ],
+  "scripts": {
+    "build": "npm run build -w apps/back-end --if-present && npm run build -w apps/property-boundaries-service --if-present",
+    "test": "npm run test --workspaces --if-present",
+    "typecheck": "npm run typecheck -w apps/front-end --if-present",
+    "back-end:": "npm run -w apps/back-end",
+    "front-end:": "npm run -w apps/front-end",
+    "pbs:": "npm run -w apps/property-boundaries-service",
+    "prettier:check": "prettier -cu --no-color .",
+    "prettier:format": "prettier -wu --no-color ."
+  },
+  "devDependencies": {
+    "prettier": "3.1.1",
+    "rimraf": "^6.0.1"
+  },
+  "comments": {
+    "build": "front-end is excluded from the root build: its git-pinned @mapbox/mapbox-gl-draw only installs correctly under yarn. Build it with `yarn build` in apps/front-end (as CI does) until the yarn->npm cutover.",
+    "overrides": "Pin transitive/dev versions to what the source repos' own lockfiles used, so workspace hoisting reproduces each app's original build. Revisit at cutover."
+  },
+  "overrides": {
+    "@types/jsonwebtoken": "9.0.1",
+    "@types/node": "^20.19.0",
+    "axios-cookiejar-support": {
+      "axios": "1.10.0"
+    }
+  }
+}
