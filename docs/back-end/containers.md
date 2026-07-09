@@ -41,10 +41,9 @@ The host ports are deliberately uncommon so they don't clash with other things y
 | 23306 | MySQL (lx-mysql) | 3306 |
 | 27700 | Meilisearch (lx-meilisearch) | 7700 |
 
-If you change the front-end or back-end host port, update the matching value:
-
-- the back-end's `CORS_ORIGINS` (the front-end's browser origin)
-- the front-end's `VITE_ROOT_URL` build arg (where the SPA calls the API).
+The SPA calls the API same-origin (the front-end's Caddy proxies /api to the
+back-end), so the host ports aren't coupled; 24000 is only for hitting the
+back-end directly.
 
 The credentials inlined in compose.all.yml are dev throwaways. Real secrets - map keys, SendGrid, analytics, PBS pipeline keys - are in docker.env (from Bitwarden). The live secrets are injected by Coolify.
 
@@ -62,7 +61,7 @@ docker compose --env-file docker.env -f compose.all.yml up --build
 To rebuild, for example, just the back end, run:
 
 ```
-docker compose --env-file docker.env -f compose.all.yml up --build lx-be
+docker compose --env-file docker.env -f compose.all.yml up --build back-end
 ```
 
 You can add `-d` to run in the background as well and use `docker logs` to inspect the logs.
@@ -85,7 +84,7 @@ At some point we should add a small set of test data or the ability to copy from
 To populate the data needed for these features run this optional one-shot docker service - it happens in lx-pbs and you can watch the logs to see progress:
 
 ```
-docker compose --env-file docker.env -f compose.all.yml --profile seed up lx-pbs-seed
+docker compose --env-file docker.env -f compose.all.yml --profile seed up pbs-seed
 ```
 
 You can also trigger it manually:
@@ -114,7 +113,6 @@ Each repo has a Dockerfile. They are multi stage (Node then runtime stage) and t
 docker build \
 --build-arg NODE_VERSION=24 \
 --build-arg CADDY_HOSTNAME=app.landexplorer.coop \
---build-arg VITE_ROOT_URL=https://api.landexplorer.coop \
 --build-arg VITE_OS_KEY=... \
 --build-arg VITE_MAPBOX_TOKEN=... \
 --build-arg VITE_GEOCODER_TOKEN=... \
@@ -126,4 +124,4 @@ Unlike the front end the BE and PBS read config from runtime env variables. The 
 
 ### Database migrations
 
-The images run the app, not migrations. Two one-shot services, lx-be-migrate and lx-pbs-migrate, run `npx sequelize-cli db:migrate` (against the lx-be and lx-pbs runtime images) before the back end and pbs start. This is the same migrate path Coolify uses via its pre-deploy command.
+The images run the app, not migrations. Two one-shot services, be-migrate and pbs-migrate, run `npx sequelize-cli db:migrate` (against the back-end and pbs runtime images) before the back end and pbs start. This is the same migrate path Coolify uses via its pre-deploy command.
