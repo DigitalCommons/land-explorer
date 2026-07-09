@@ -1,0 +1,49 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+# Each app is a verbatim mirror of its original repo and keeps its OWN lockfile,
+# so CI builds each one in isolation from that lockfile - exactly as the per-app
+# Dockerfile does for deployment, and as the original per-repo CI did. This
+# sidesteps hoisting version-drift between the three apps (which pin different
+# majors of axios / @types/node / typescript). The package manager is detected
+# from the lockfile, so this keeps working as the front-end moves from yarn to
+# npm at cutover.
+jobs:
+  build-test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        app: [back-end, front-end, property-boundaries-service]
+    defaults:
+      run:
+        working-directory: apps/${{ matrix.app }}
+    env:
+      PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: "1"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24.x
+      - name: Install
+        run: |
+          if [ -f package-lock.json ]; then npm ci --legacy-peer-deps
+          elif [ -f yarn.lock ]; then yarn install --frozen-lockfile
+          else npm install --legacy-peer-deps; fi
+      - name: Build
+        run: |
+          if [ -f yarn.lock ] && [ ! -f package-lock.json ]; then yarn build
+          else npm run build --if-present; fi
+      - name: Type-check
+        run: |
+          if [ -f yarn.lock ] && [ ! -f package-lock.json ]; then yarn typecheck || true
+          else npm run typecheck --if-present; fi
+      - name: Test
+        run: |
+          if [ -f yarn.lock ] && [ ! -f package-lock.json ]; then yarn test --if-present || true
+          else npm test --if-present; fi

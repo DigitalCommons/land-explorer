@@ -1,0 +1,10 @@
+# Prettier runs from the monorepo root. Keep generated / vendored files out.
+node_modules/
+apps/*/node_modules/
+apps/*/lib/
+apps/*/dist/
+apps/*/build/
+apps/*/package-lock.json
+apps/front-end/yarn.lock
+package-lock.json
+site/
