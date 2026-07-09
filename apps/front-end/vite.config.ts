@@ -11,11 +11,6 @@ export default defineConfig({
         find: "@",
         replacement: fileURLToPath(new URL("./src", import.meta.url)),
       },
-      // We use a specific git commit of mapbox-gl-draw that doesn't have a proper build, so we need to point to the source file directly
-      {
-        find: /^@mapbox\/mapbox-gl-draw$/,
-        replacement: "@mapbox/mapbox-gl-draw/index.js",
-      },
       // Force CJS build to avoid ESM import mutation issues
       {
         find: /^react-mapbox-gl$/,
