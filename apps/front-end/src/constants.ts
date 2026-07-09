@@ -48,7 +48,7 @@ type Constants = {
 const constants: Constants = {
   DEV_MODE: import.meta.env.DEV,
   STATIC_SITE_URL: "https://landexplorer.coop",
-  ROOT_URL: import.meta.env.VITE_ROOT_URL,
+  ROOT_URL: import.meta.env.VITE_ROOT_URL ?? "",
   PAYMENTS_URL: import.meta.env.VITE_PAYMENTS_URL,
   OS_KEY: import.meta.env.VITE_OS_KEY,
   OS_PLACES_KEY: import.meta.env.VITE_OS_PLACES_KEY,

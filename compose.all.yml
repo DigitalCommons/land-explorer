@@ -1,0 +1,210 @@
+# Local development stack for the WHOLE Land Explorer system:
+#   front-end + back-end + property-boundaries-service + MySQL + Meilisearch.
+#
+# One command to bring the whole stack up from the monorepo root. This is a local
+# development aid, NOT the production artefact (see docker-compose.yml for Coolify).
+# Each service builds from its own apps/<name>/ context using that app's mirrored
+# Dockerfile - the apps have no cross-workspace build deps, so no root context is needed.
+#
+# Usage (from the monorepo root) - REQUIRES the secrets file `docker.env` at the
+# root (download from Bitwarden; gitignored; see apps/back-end/docker.env.example):
+#   docker compose --env-file docker.env -f compose.all.yml up --build
+# then open the front-end at http://localhost:28080
+#
+# Host ports are deliberately uncommon (28080/24000/24001/23306/27700). The SPA
+# calls the API same-origin (the front-end's Caddy proxies /api), so the ports
+# aren't coupled; 24000 is only for hitting the back-end directly.
+
+name: land-explorer-dev
+
+services:
+  mysql:
+    image: mysql:8
+    container_name: lx-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: devroot
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./apps/back-end/docker/mysql-init:/docker-entrypoint-initdb.d:ro
+    ports:
+      - "23306:3306"
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "--protocol=TCP", "-uroot", "-pdevroot", "--silent"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+      start_period: 40s
+    networks:
+      - lx
+
+  meilisearch:
+    image: getmeili/meilisearch:v1.41.0
+    container_name: lx-meilisearch
+    environment:
+      MEILI_MASTER_KEY: devmasterkey
+      MEILI_ENV: development
+    volumes:
+      - meilisearch_data:/meili_data
+    ports:
+      - "27700:7700"
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "http://127.0.0.1:7700/health"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+      start_period: 10s
+    networks:
+      - lx
+
+  be-migrate:
+    build:
+      context: ./apps/back-end
+      args:
+        NODE_VERSION: ${NODE_VERSION:-24}
+    container_name: lx-be-migrate
+    command: ["sh", "-c", "npx sequelize-cli db:create || true; npx sequelize-cli db:migrate; if [ \"$$SEED_DEMO_DATA\" = true ]; then npx sequelize-cli db:seed:all; fi"]
+    environment:
+      NODE_ENV: development
+      SEED_DEMO_DATA: "true" # idempotent - tracked like migrations
+      DATABASE_HOST: mysql
+      DATABASE_PORT: "3306"
+      DATABASE_USER: root
+      DATABASE_PASSWORD: devroot
+      DATABASE_NAME: land_explorer
+    depends_on:
+      mysql:
+        condition: service_healthy
+    restart: "no"
+    networks:
+      - lx
+
+  back-end:
+    build:
+      context: ./apps/back-end
+      args:
+        NODE_VERSION: ${NODE_VERSION:-24}
+    container_name: lx-be
+    env_file:
+      - path: ./docker.env
+        required: true
+    environment:
+      NODE_ENV: development
+      PORT: "4000"
+      CORS_ORIGINS: http://localhost:28080
+      DATABASE_HOST: mysql
+      DATABASE_PORT: "3306"
+      DATABASE_USER: root
+      DATABASE_PASSWORD: devroot
+      DATABASE_NAME: land_explorer
+      TOKEN_KEY: dev-token-key-not-for-production
+      TOKEN_EXPIRY_DAYS: "365"
+      BOUNDARY_SERVICE_URL: http://pbs:4000
+      BOUNDARY_SERVICE_SECRET: devsecret
+      MEILISEARCH_ENABLED: "true"
+    ports:
+      - "24000:4000"
+    depends_on:
+      mysql:
+        condition: service_healthy
+      be-migrate:
+        condition: service_completed_successfully
+    networks:
+      - lx
+
+  pbs-migrate:
+    build:
+      context: ./apps/property-boundaries-service
+      args:
+        NODE_VERSION: ${NODE_VERSION:-24}
+    container_name: lx-pbs-migrate
+    command: ["sh", "-c", "npx sequelize-cli db:create || true; npx sequelize-cli db:migrate"]
+    environment:
+      NODE_ENV: development
+      DB_HOST: mysql
+      DB_USER: root
+      DB_PASSWORD: devroot
+      DB_NAME: property_boundaries
+    depends_on:
+      mysql:
+        condition: service_healthy
+    restart: "no"
+    networks:
+      - lx
+
+  pbs:
+    build:
+      context: ./apps/property-boundaries-service
+      args:
+        NODE_VERSION: ${NODE_VERSION:-24}
+    container_name: lx-pbs
+    env_file:
+      - path: ./docker.env
+        required: true
+    environment:
+      NODE_ENV: development
+      PORT: "4000"
+      DB_HOST: mysql
+      DB_USER: root
+      DB_PASSWORD: devroot
+      DB_NAME: property_boundaries
+      SECRET: devsecret
+      MEILISEARCH_ENABLED: "true"
+      MEILI_HOST: http://meilisearch:7700
+      MEILI_MASTER_KEY: devmasterkey
+    ports:
+      - "24001:4000"
+    depends_on:
+      mysql:
+        condition: service_healthy
+      meilisearch:
+        condition: service_healthy
+      pbs-migrate:
+        condition: service_completed_successfully
+    networks:
+      - lx
+
+  # Optional one-shot seed of proprietor data + Meilisearch index. Needs real
+  # GOV_API_ keys and takes a long time; run explicitly with --profile seed.
+  pbs-seed:
+    image: curlimages/curl:8.11.1
+    container_name: lx-pbs-seed
+    profiles: ["seed"]
+    command:
+      - "--retry"
+      - "30"
+      - "--retry-connrefused"
+      - "--retry-delay"
+      - "5"
+      - "http://pbs:4000/run-pipeline?secret=devsecret&startAtTask=ownerships&stopBeforeTask=downloadInspire"
+    depends_on:
+      - pbs
+    restart: "no"
+    networks:
+      - lx
+
+  front-end:
+    build:
+      context: ./apps/front-end
+      args:
+        NODE_VERSION: ${NODE_VERSION:-24}
+        CADDY_HOSTNAME: localhost
+        VITE_OS_KEY: ${VITE_OS_KEY:?missing - download docker.env from Bitwarden and run with --env-file docker.env}
+        VITE_GEOCODER_TOKEN: ${VITE_GEOCODER_TOKEN:?missing - download docker.env from Bitwarden and run with --env-file docker.env}
+        VITE_MAPBOX_TOKEN: ${VITE_MAPBOX_TOKEN:?missing - download docker.env from Bitwarden and run with --env-file docker.env}
+        VITE_USER_GUIDE_URL: ${VITE_USER_GUIDE_URL:-}
+        VITE_MIXPANEL_TOKEN: ${VITE_MIXPANEL_TOKEN:-}
+        VITE_MIXPANEL_PEPPER: ${VITE_MIXPANEL_PEPPER:-}
+    container_name: lx-fe
+    ports:
+      - "28080:80"
+    depends_on:
+      - back-end
+    networks:
+      - lx
+
+volumes:
+  mysql_data:
+  meilisearch_data:
+
+networks:
+  lx:

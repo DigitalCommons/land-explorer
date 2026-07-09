@@ -20,7 +20,8 @@ const LinkShare = () => {
                 },
                 { headers: { ...getAuthHeader().headers, "x-session-id": sessionId } });
 
-            const link = constants.ROOT_URL + result.data;
+            // ROOT_URL is empty in same-origin deployments; the link must stay absolute
+            const link = (constants.ROOT_URL || window.location.origin) + result.data;
             setLinkText(link);
             setStage("copy");
         }
