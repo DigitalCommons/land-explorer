@@ -1,4 +1,4 @@
-import axios from "axios/index";
+import axios from "axios";
 import { Fragment, useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import SelectLib from "react-select";
