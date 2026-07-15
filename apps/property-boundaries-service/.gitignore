@@ -1,0 +1,14 @@
+node_modules
+dist
+downloads
+geojson
+analysis
+logs/*
+.env
+.DS_Store
+temp.sqlite*
+england_and_wales.geojson
+last_completed_england_and_wales_poly.txt
+
+# mkdocs
+site
