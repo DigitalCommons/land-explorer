@@ -44,7 +44,7 @@ Data on top:
 
 ## PBS pipeline (staging only)
 
-Staging runs the monthly INSPIRE/ownerships pipeline on top of the full copy, dev does not. A Coolify Scheduled Task on the pbs service runs monthly on the 8th at 3a, after INSPIRE publishes on the first Sunday.
+Staging runs the monthly INSPIRE/ownerships pipeline on top of the full copy, dev does not. A Coolify Scheduled Task on the pbs service runs monthly on the 8th at 3am, after INSPIRE publishes on the first Sunday.
 
 ## Notes
 
