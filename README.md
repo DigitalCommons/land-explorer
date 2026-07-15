@@ -29,10 +29,12 @@ npm test
 npm run front-end: dev # run one app (also back-end: / pbs:)
 ```
 
+First download the secrets file docker.env from Bitwarden (named Land Explorer docker.env) and put it in this repo's root - or if you don't have Bitwarden access (only DCC employees do) edit the docker.env.example and rename it to docker.env
+
 Run the whole stack locally with Docker:
 
 ```
-docker compose --env-file docker.env -f compose.all.yml up --build
+docker compose --env-file docker.env -f docker-compose.local.yml up --build
 ```
 
 Now up at http://localhost:28080

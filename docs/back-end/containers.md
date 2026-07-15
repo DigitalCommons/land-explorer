@@ -15,14 +15,14 @@ This documentation is about building and running through docker, see technology-
 
 ## Quick start - whole stack on your local dev machine
 
-compose.all.yml at the root of this repo bring up everything with one command, all three repos and throwaway mysql and meilisearch. The three repos need to be checked out side by side to run it.
+docker-compose.local.yml at the root of this repo bring up everything with one command, all three repos and throwaway mysql and meilisearch. The three repos need to be checked out side by side to run it.
 
-First download the secrets file docker.env from Bitwarden (named Land Explorer docker.env) and put it in this repo's root - or if you don't have Bitwarden access edit the docker.env.example and rename it to docker.env
+First download the secrets file docker.env from Bitwarden (named Land Explorer docker.env) and put it in this repo's root - or if you don't have Bitwarden access (only DCC employees do) edit the docker.env.example and rename it to docker.env
 
 Then from land-explorer-back-end run:
 
 ```
-docker compose --env-file docker.env -f compose.all.yml up --build
+docker compose --env-file docker.env -f docker-compose.local.yml up --build
 ```
 
 `--env-file docker.env` is needed because the front-end's map keys are build args, which Compose only resolves from `--env-file` or the shell not from the env_file arg in the compose file.
@@ -45,15 +45,15 @@ The SPA calls the API same-origin (the front-end's Caddy proxies /api to the
 back-end), so the host ports aren't coupled; 24000 is only for hitting the
 back-end directly.
 
-The credentials inlined in compose.all.yml are dev throwaways. Real secrets - map keys, SendGrid, analytics, PBS pipeline keys - are in docker.env (from Bitwarden). The live secrets are injected by Coolify.
+The credentials inlined in docker-compose.local.yml are dev throwaways. Real secrets - map keys, SendGrid, analytics, PBS pipeline keys - are in docker.env (from Bitwarden). The live secrets are injected by Coolify.
 
 ### Reset
 
 MySQL and Meilisearch data is stored in named volumes (mysql_data and meilisearch_data) - to wipe the database and start clean drop the volumes:
 
 ```
-docker compose --env-file docker.env  -f compose.all.yml down -v --remove-orphans
-docker compose --env-file docker.env -f compose.all.yml up --build
+docker compose --env-file docker.env  -f docker-compose.local.yml down -v --remove-orphans
+docker compose --env-file docker.env -f docker-compose.local.yml up --build
 ```
 
 ## Rebuild
@@ -61,7 +61,7 @@ docker compose --env-file docker.env -f compose.all.yml up --build
 To rebuild, for example, just the back end, run:
 
 ```
-docker compose --env-file docker.env -f compose.all.yml up --build back-end
+docker compose --env-file docker.env -f docker-compose.local.yml up --build back-end
 ```
 
 You can add `-d` to run in the background as well and use `docker logs` to inspect the logs.
@@ -70,7 +70,7 @@ You can add `-d` to run in the background as well and use `docker logs` to inspe
 
 There are two kinds of config:
 
-- dev throwaways - inlined in compose.all.yml (DB host/user/password, dev `TOKEN_KEY`, `devsecret`). Nothing to do.
+- dev throwaways - inlined in docker-compose.local.yml (DB host/user/password, dev `TOKEN_KEY`, `devsecret`). Nothing to do.
 - real secrets - in `docker.env` (download from Bitwarden, see `docker.env.example`). The back-end and PBS load it at runtime via `env_file:`; the front-end map keys are build args fed by `--env-file docker.env`. Without keys the app and login work but the map won't render and emails won't send.
 
 `.env.example` in each repo is the reference list of every variable and is what you copy to `.env` for *native* (non-Docker) dev - it is not read by the containers.
@@ -84,7 +84,7 @@ At some point we should add a small set of test data or the ability to copy from
 To populate the data needed for these features run this optional one-shot docker service - it happens in lx-pbs and you can watch the logs to see progress:
 
 ```
-docker compose --env-file docker.env -f compose.all.yml --profile seed up pbs-seed
+docker compose --env-file docker.env -f docker-compose.local.yml --profile seed up pbs-seed
 ```
 
 You can also trigger it manually:
