@@ -9,8 +9,7 @@ on:
 # Each app is a verbatim mirror of its original repo and keeps its OWN lockfile,
 # so CI builds each one in isolation from that lockfile - exactly as the per-app
 # Dockerfile does for deployment, and as the original per-repo CI did. This
-# sidesteps hoisting version-drift between the three apps. The package manager
-# is detected from the lockfile.
+# sidesteps hoisting version-drift between the three apps.
 # --workspaces=false is load-bearing: without it, npm ci inside apps/<name>
 # detects the workspace root and installs a workspace-scoped subset into the
 # ROOT node_modules (which skips peer deps under legacy-peer-deps, e.g.
@@ -33,19 +32,10 @@ jobs:
         with:
           node-version: 24.x
       - name: Install
-        run: |
-          if [ -f package-lock.json ]; then npm ci --legacy-peer-deps --workspaces=false
-          elif [ -f yarn.lock ]; then yarn install --frozen-lockfile
-          else npm install --legacy-peer-deps --workspaces=false; fi
+        run: npm ci --legacy-peer-deps --workspaces=false
       - name: Build
-        run: |
-          if [ -f yarn.lock ] && [ ! -f package-lock.json ]; then yarn build
-          else npm run build --if-present; fi
+        run: npm run build --if-present
       - name: Type-check
-        run: |
-          if [ -f yarn.lock ] && [ ! -f package-lock.json ]; then yarn typecheck || true
-          else npm run typecheck --if-present; fi
+        run: npm run typecheck --if-present
       - name: Test
-        run: |
-          if [ -f yarn.lock ] && [ ! -f package-lock.json ]; then yarn test --if-present || true
-          else npm test --if-present; fi
+        run: npm test --if-present
