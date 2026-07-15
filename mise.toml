@@ -3,7 +3,7 @@
 
 [tasks.dev]
 description = "Whole local stack - FE on http://localhost:28080 - needs docker.env from Bitwarden"
-run = "docker compose --env-file docker.env -f compose.all.yml up --build"
+run = "docker compose --env-file docker.env -f docker-compose.local.yml up --build"
 
 [tasks.build]
 description = "Build all workspaces (back-end, PBS, front-end)"

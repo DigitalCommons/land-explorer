@@ -8,7 +8,7 @@
 #
 # Usage (from the monorepo root) - REQUIRES the secrets file `docker.env` at the
 # root (download from Bitwarden; gitignored; see apps/back-end/docker.env.example):
-#   docker compose --env-file docker.env -f compose.all.yml up --build
+#   docker compose --env-file docker.env -f docker-compose.local.yml up --build
 # then open the front-end at http://localhost:28080
 #
 # Host ports are deliberately uncommon (28080/24000/24001/23306/27700). The SPA
