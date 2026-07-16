@@ -43,11 +43,12 @@ export const bulkCreateLandOwnershipSnapshots = async (
     "Company Registration No. (4)",
   ];
 
+  let skippedRowCount = 0;
   const parsedOwnerships = ownerships.map((ownership) => {
     const rows: SnapshotData[] = [];
 
     if (!ownership["Title Number"]) {
-      logger.error("Row missing title number, skipping...");
+      skippedRowCount++;
       return rows;
     }
 
@@ -73,6 +74,12 @@ export const bulkCreateLandOwnershipSnapshots = async (
     }
     return rows;
   });
+
+  if (skippedRowCount > 0) {
+    logger.error(
+      `Skipped ${skippedRowCount} of ${ownerships.length} rows in this chunk due to missing title number`,
+    );
+  }
 
   const snapshotRowChunks = chunk(parsedOwnerships.flat(), MAX_ROWS_PER_INSERT);
   for (const snapshotRowChunk of snapshotRowChunks) {
