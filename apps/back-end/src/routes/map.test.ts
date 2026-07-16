@@ -1,0 +1,355 @@
+import { expect } from "chai";
+import { createSandbox, fake } from "sinon"
+import { Server } from "@hapi/hapi";
+import { init } from "../server"
+import { UserMapAccess } from "../queries/database";
+
+// Dependencies to be stubbed
+const Model = require("../queries/database");
+const query = require("../queries/query");
+
+const sandbox = createSandbox();
+
+describe("GET /api/user/maps & GET/api/user/map/:eid", () => {
+  let server: Server;
+  const getUserMapsRequest = {
+    method: "GET",
+    url: "/api/user/maps",
+    auth: {
+      strategy: "simple",
+      credentials: {
+        user_id: 123,
+      },
+    },
+  };
+  const getMapDataRequest = (eid: number) => ({
+    method: "GET",
+    url: `/api/user/map/${eid}`,
+    auth: {
+      strategy: "simple",
+      credentials: {
+        user_id: 123,
+      },
+    },
+  });
+
+  beforeEach(async () => {
+    server = await init();
+    sandbox.replace(query, "trackUserEvent", fake.resolves(null));
+    sandbox.replace(query, "getUserById", fake.resolves(null));
+  });
+
+  afterEach(async () => {
+    await server.stop();
+    sandbox.restore();
+  });
+
+  context("User has no maps", () => {
+    beforeEach(() => {
+      sandbox.replace(Model.Map, "findAll", fake.resolves([]));
+      sandbox.replace(Model.UserMap, "findOne", fake.resolves(null));
+    });
+
+    it("getUserMaps returns status 200", async () => {
+      const res = await server.inject(getUserMapsRequest);
+
+      expect(res.statusCode).to.equal(200);
+    });
+
+    it("no maps are returned", async () => {
+      const res = await server.inject(getUserMapsRequest);
+
+      expect(res.result).to.be.an("array").that.is.empty;
+    });
+
+    it("getMapData returns status 404", async () => {
+      const res = await server.inject(getMapDataRequest(1));
+
+      expect(res.statusCode).to.equal(404);
+    });
+  });
+
+  context(
+    `User has 1 map, shared with 2 users (write access) and 1 pending user (read-only)`,
+    () => {
+      const testMapId = 1;
+      const testMapName = "test map";
+      const testMapData = {
+        map: {
+          zoom: [8],
+          lngLat: [-2.4, 54.1],
+          gettingLocation: false,
+          currentLocation: null,
+          movingMethod: "flyTo",
+        },
+        drawings: {
+          drawings: [],
+          polygonCount: 0,
+          lineCount: 0,
+        },
+        markers: { markers: [] },
+        mapLayers: { landDataLayers: [], myDataLayers: [] },
+        version: "1.1",
+      };
+      const testMapCreatedData = "2023-01-19 03:14:07";
+      const testMapLastModified = "2023-01-22 06:24:11";
+
+      beforeEach(() => {
+        const testMap = {
+          id: testMapId,
+          name: testMapName,
+          data: JSON.stringify(testMapData),
+          deleted: 0,
+          is_snapshot: false,
+          created_date: testMapCreatedData,
+          last_modified: testMapLastModified,
+        };
+        const testUserMap = {
+          id: 1,
+          viewed: 1,
+          map_id: testMapId,
+          user_id: 123,
+          access: 2,
+          created_date: testMapCreatedData,
+        };
+        // fake Map.findAll, Map.findOne and UserMap.findOne return the same single Map / UserMap
+        sandbox.replace(
+          Model.Map,
+          "findAll",
+          fake.resolves([{ ...testMap, UserMaps: [testUserMap] }])
+        );
+        sandbox.replace(
+          Model.Map,
+          "findOne",
+          fake.resolves({ ...testMap, UserMaps: [testUserMap] })
+        );
+        sandbox.replace(
+          Model.UserMap,
+          "findOne",
+          fake.resolves({ ...testUserMap, Map: testMap })
+        );
+        sandbox.replace(Model.UserMap, "update", fake.resolves(null));
+
+        // fake MapMembership.findAll to return empty array
+        sandbox.replace(Model.MapMembership, "findAll", fake.resolves([]));
+
+        // fake UserMap.findAll to return 2 UserMaps and associated fake Users
+        sandbox.replace(
+          Model.UserMap,
+          "findAll",
+          fake.resolves([
+            {
+              id: 2,
+              viewed: 1,
+              map_id: testMapId,
+              user_id: 2,
+              access: UserMapAccess.Readwrite,
+              User: {
+                id: 2,
+                username: "user2@mail.coop",
+              },
+            },
+            {
+              id: 3,
+              viewed: 0,
+              map_id: testMapId,
+              user_id: 3,
+              access: UserMapAccess.Readwrite,
+              User: {
+                id: 3,
+                username: "user3@mail.coop",
+              },
+            },
+          ])
+        );
+
+        // fake 1 PendingUser
+        sandbox.replace(
+          Model.PendingUserMap,
+          "findAll",
+          fake.resolves([
+            {
+              id: 1,
+              email_address: "pendingUser@mail.coop",
+              access: UserMapAccess.Readonly,
+              map_id: testMapId,
+            },
+          ])
+        );
+      });
+
+      it("getUserMaps returns status 200", async () => {
+        const res = await server.inject(getUserMapsRequest);
+
+        expect(res.statusCode).to.equal(200);
+      });
+
+      it("getMapData returns status 200", async () => {
+        const res = await server.inject(getMapDataRequest(testMapId));
+
+        expect(res.statusCode).to.equal(200);
+      });
+
+      it("getUserMaps returns an array of 1 map, including metadata about users that it is shared with", async () => {
+        const res = await server.inject(getUserMapsRequest);
+
+        // Use deep equal to match values within the array rather than strict object equality
+        expect(res.result).to.deep.equal([
+          {
+            eid: testMapId,
+            name: testMapName,
+            createdDate: testMapCreatedData,
+            lastModified: testMapLastModified,
+            sharedWith: [
+              {
+                email: "user2@mail.coop",
+                access: UserMapAccess.Readwrite,
+              },
+              {
+                email: "user3@mail.coop",
+                access: UserMapAccess.Readwrite,
+              },
+              {
+                email: "pendingUser@mail.coop",
+                access: UserMapAccess.Readonly,
+              },
+            ],
+            isSnapshot: false,
+            accessGrantedDate: testMapCreatedData,
+            access: 2,
+            viewed: true,
+          },
+        ]);
+      });
+
+      it("getMapData returns the full map data", async () => {
+        const res = await server.inject(getMapDataRequest(testMapId));
+
+        expect(res.result).to.deep.equal(testMapData);
+      });
+    }
+  );
+});
+
+describe("GET /api/ownership", () => {
+  let server: Server;
+
+  const getLandOwnershipPolygonsRequest = {
+    method: "GET",
+    url: "/api/ownership",
+    auth: {
+      strategy: "simple",
+      credentials: {
+        user_id: 123,
+      },
+    },
+  };
+
+  beforeEach(async () => {
+    server = await init();
+    sandbox.replace(query, "getLandOwnershipTitlesInBbox", fake.resolves([]));
+    getLandOwnershipPolygonsRequest.url =
+      "/api/ownership?sw_lng=0.3&sw_lat=53.2&ne_lng=0.4&ne_lat=53.3";
+  });
+
+  afterEach(async () => {
+    await server.stop();
+    sandbox.restore();
+  });
+
+  context("User is a super user", () => {
+    beforeEach(() => {
+      sandbox.replace(
+        Model.User,
+        "findOne",
+        fake.resolves({
+          id: 1,
+          username: "user1@mail.coop",
+          is_super_user: 1,
+        }),
+      );
+    });
+
+    it("getting all polygons returns status 200", async () => {
+      getLandOwnershipPolygonsRequest.url += "&type=all";
+      const res = await server.inject(getLandOwnershipPolygonsRequest);
+      expect(res.statusCode).to.equal(200);
+    });
+
+    it("getting undefined type (i.e. all) polygons returns status 200", async () => {
+      const res = await server.inject(getLandOwnershipPolygonsRequest);
+      expect(res.statusCode).to.equal(200);
+    });
+
+    it("getting localAuthority polygons returns status 200", async () => {
+      getLandOwnershipPolygonsRequest.url += "&type=localAuthority";
+      const res = await server.inject(getLandOwnershipPolygonsRequest);
+      expect(res.statusCode).to.equal(200);
+    });
+
+    it("getting churchOfEngland polygons returns status 200", async () => {
+      getLandOwnershipPolygonsRequest.url += "&type=churchOfEngland";
+      const res = await server.inject(getLandOwnershipPolygonsRequest);
+      expect(res.statusCode).to.equal(200);
+    });
+
+    it("getting socialHousing polygons returns status 200", async () => {
+      getLandOwnershipPolygonsRequest.url += "&type=socialHousing";
+      const res = await server.inject(getLandOwnershipPolygonsRequest);
+      expect(res.statusCode).to.equal(200);
+    });
+
+    it("getting pending polygons returns status 200", async () => {
+      getLandOwnershipPolygonsRequest.url += "&type=pending";
+      const res = await server.inject(getLandOwnershipPolygonsRequest);
+      expect(res.statusCode).to.equal(200);
+    });
+
+    it("getting unknown type of polygons returns status 400", async () => {
+      getLandOwnershipPolygonsRequest.url += "&type=aharheh";
+      const res = await server.inject(getLandOwnershipPolygonsRequest);
+      expect(res.statusCode).to.equal(400);
+    });
+  });
+
+  context(`User is not a super user`, () => {
+    beforeEach(() => {
+      sandbox.replace(Model.User, "findOne", fake.resolves(null));
+    });
+
+    it("getting all polygons returns status 200", async () => {
+      getLandOwnershipPolygonsRequest.url += "&type=all";
+      const res = await server.inject(getLandOwnershipPolygonsRequest);
+      expect(res.statusCode).to.equal(200);
+    });
+
+    it("getting undefined type (i.e. all) polygons returns status 200", async () => {
+      const res = await server.inject(getLandOwnershipPolygonsRequest);
+      expect(res.statusCode).to.equal(200);
+    });
+
+    it("getting localAuthority polygons returns status 200", async () => {
+      getLandOwnershipPolygonsRequest.url += "&type=localAuthority";
+      const res = await server.inject(getLandOwnershipPolygonsRequest);
+      expect(res.statusCode).to.equal(200);
+    });
+
+    it("getting churchOfEngland polygons returns status 200", async () => {
+      getLandOwnershipPolygonsRequest.url += "&type=churchOfEngland";
+      const res = await server.inject(getLandOwnershipPolygonsRequest);
+      expect(res.statusCode).to.equal(200);
+    });
+
+    it("getting pending polygons returns status 403", async () => {
+      getLandOwnershipPolygonsRequest.url += "&type=pending";
+      const res = await server.inject(getLandOwnershipPolygonsRequest);
+      expect(res.statusCode).to.equal(403);
+    });
+
+    it("getting unknown type of polygons returns status 400", async () => {
+      getLandOwnershipPolygonsRequest.url += "&type=kdukukg";
+      const res = await server.inject(getLandOwnershipPolygonsRequest);
+      expect(res.statusCode).to.equal(400);
+    });
+  });
+});

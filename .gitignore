@@ -1,0 +1,27 @@
+# Root-level ignores for the monorepo. Per-app ignores also live inside each
+# apps/<name>/.gitignore (mirrored from the spoke repos) and still apply.
+
+# Dependencies (hoisted to the root by npm workspaces)
+node_modules/
+apps/*/node_modules/
+
+# Build output
+apps/*/lib/
+apps/*/dist/
+apps/*/build/
+
+# Secrets (fetched from Bitwarden; never committed)
+docker.env
+apps/*/.env
+apps/*/.env.local
+
+# Logs / runtime
+apps/*/logs/
+apps/property-boundaries-service/downloads/
+
+# mkdocs build
+site/
+
+# Editor / OS
+.DS_Store
+*.log

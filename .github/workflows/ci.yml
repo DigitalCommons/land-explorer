@@ -1,0 +1,41 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+# Each app is a verbatim mirror of its original repo and keeps its OWN lockfile,
+# so CI builds each one in isolation from that lockfile - exactly as the per-app
+# Dockerfile does for deployment, and as the original per-repo CI did. This
+# sidesteps hoisting version-drift between the three apps.
+# --workspaces=false is load-bearing: without it, npm ci inside apps/<name>
+# detects the workspace root and installs a workspace-scoped subset into the
+# ROOT node_modules (which skips peer deps under legacy-peer-deps, e.g.
+# @hapi/boom) instead of the app's own full lockfile tree.
+jobs:
+  build-test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        app: [back-end, front-end, property-boundaries-service]
+    defaults:
+      run:
+        working-directory: apps/${{ matrix.app }}
+    env:
+      PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: "1"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24.x
+      - name: Install
+        run: npm ci --legacy-peer-deps --workspaces=false
+      - name: Build
+        run: npm run build --if-present
+      - name: Type-check
+        run: npm run typecheck --if-present
+      - name: Test
+        run: npm test --if-present

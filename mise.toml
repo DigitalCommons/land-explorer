@@ -1,0 +1,14 @@
+# Tasks only - tool versions live in .tool-versions (shared with asdf users)
+# Usage: mise run tool
+
+[tasks.dev]
+description = "Whole local stack - FE on http://localhost:28080 - needs docker.env from Bitwarden"
+run = "docker compose --env-file docker.env -f docker-compose.local.yml up --build"
+
+[tasks.build]
+description = "Build all workspaces (back-end, PBS, front-end)"
+run = "npm run build"
+
+[tasks.test]
+description = "Run all workspace test suites"
+run = "npm test"

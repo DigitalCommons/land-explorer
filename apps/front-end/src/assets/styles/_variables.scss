@@ -1,0 +1,88 @@
+$ltiphone6: "(max-width: 374px)";
+$xsmall: "(max-width: 575px)";
+$small: "(min-width: 576px)";
+$small-only: "(min-width: 576px) and (max-width: 768px)";
+$up-to-small: "(max-width: 767px)";
+$medium: "(min-width: 768px)";
+$up-to-medium: "(max-width: 991px)";
+// $large: '(min-width: 992px)';
+$large: "992px";
+$medium: "768px";
+$small: "480px";
+$xlarge: "1200px";
+$retina: "(min--moz-device-pixel-ratio: 1.5), (-o-min-device-pixel-ratio: 3/2),(-webkit-min-device-pixel-ratio: 1.5),(min-device-pixel-ratio: 1.5),(min-resolution: 144dpi),(min-resolution: 1.5dppx)";
+$ie: "(-ms-high-contrast: none), (-ms-high-contrast: active_";
+
+/*from https://css-tricks.com/snippets/css/media-queries-for-standard-devices/*/
+//iphone 4
+$iphone4: "(min-device-width: 320px) and (max-device-width: 480px) and (-webkit-min-device-pixel-ratio: 2)";
+$iphone4_p: "(min-device-width: 320px) and (max-device-width: 480px) and (-webkit-min-device-pixel-ratio: 2) and (orientation: portrait)";
+$iphone4_l: "(min-device-width: 320px) and (max-device-width: 480px) and (-webkit-min-device-pixel-ratio: 2) and (orientation: landscape)";
+
+//iphone 5
+$iphone5: "(min-device-width: 320px) and (max-device-width: 568px) and (-webkit-min-device-pixel-ratio: 2)";
+$iphone5_p: "(min-device-width: 320px) and (max-device-width: 568px) and (-webkit-min-device-pixel-ratio: 2) and (orientation: portrait)";
+$iphone5_l: "(min-device-width: 320px) and (max-device-width: 568px) and (-webkit-min-device-pixel-ratio: 2) and (orientation: landscape)";
+
+//iphone 6
+$iphone6: "(min-device-width: 375px) and (max-device-width: 667px) and (-webkit-min-device-pixel-ratio: 2)";
+$iphone6_p: "(min-device-width: 375px) and (max-device-width: 667px) and (-webkit-min-device-pixel-ratio: 2) and (orientation: portrait)";
+$iphone6_l: "(min-device-width: 375px) and (max-device-width: 667px) and (-webkit-min-device-pixel-ratio: 2) and (orientation: landscape)";
+
+//iphone 6+
+$iphone6plus: "(min-device-width: 414px) and (max-device-width: 736px) and (-webkit-min-device-pixel-ratio: 3)";
+$iphone6plus_p: "(min-device-width: 414px) and (max-device-width: 736px) and (-webkit-min-device-pixel-ratio: 3) and (orientation: portrait)";
+$iphone6plus_l: "(min-device-width: 414px) and (max-device-width: 736px) and (-webkit-min-device-pixel-ratio: 3) and (orientation: landscape)";
+
+$primaryColor: #27ae60;
+$secondaryColor: #78838f;
+$buttonGreen: #2ecc71;
+$blueAccent: #4a7abe;
+
+$toolbarBackground: #fbfbfb;
+$toolbarAccent: #e3e3e5;
+
+$trayBackground: #eff0f2;
+$trayAccent: #e5e7eb;
+
+$neutral: #e9e7e7;
+$darkNeutral: #707070;
+$midNeutral: #b1b1b1;
+$midNeutral2: #d4d2d2;
+$midNeutral3: #d8d8d8;
+$lightNeutral: #f5f5f5;
+
+// resilient green spaces palette
+$allotments: #8EA637;
+$communityGardens: #165F8C;
+$communityFarms: #403116;
+$incredibleEdible: #BF800B;
+$orchards: #BF573F;
+
+// notifications
+$warningNotificationBackground: #FFF1CE;
+$warningNotificationColor: #FFC16B;
+
+// New ownership layer colours
+$companyOwned: #BE4A97; // magenta
+$privatelyOwned: #39ABB3; // turquoise
+$selectedProperty: #244673; // blue
+$unregisteredProperty: #B85800; // orange
+
+$defaultFontFamily: "Lato", sans-serif;
+
+/** Mixins **/
+@mixin button-scaffold(
+  $padding: 0px,
+  $margin: 0px,
+  $backgroundColor: transparent,
+  $border: none,
+  $cursor: pointer
+) {
+  padding: $padding;
+  margin: $margin;
+  background-color: $backgroundColor;
+  border: $border;
+  cursor: $cursor;
+  box-sizing: border-box;
+}
