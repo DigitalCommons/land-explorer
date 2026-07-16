@@ -3,6 +3,7 @@ import {
   getFullOverseasDataset,
   getFullUKDataset,
 } from "../../gov-api/client.js";
+import { DataSet } from "../../gov-api/types.js";
 import {
   getLatestOwnershipSnapshotDataDate,
   setPipelineLatestOwnershipSnapshotData,
@@ -15,9 +16,10 @@ import { TaskOptions } from "../run.js";
 const EARLIEST_DATE_TO_PROCESS = new Date(2017, 11, 31); // The earliest end of year date for which we have ownership data
 
 /**
- *
- * @param options
- * @returns
+ * Update the ownership snapshots table
+ * This will insert land ownership records for each completed year
+ * The table inserts a row per proprietor
+ * @param options 
  */
 export const updateOwnershipSnapshots = async (options: TaskOptions) => {
   let latestOwnershipSnapshotDataDate =
@@ -47,8 +49,7 @@ export const updateOwnershipSnapshots = async (options: TaskOptions) => {
   // loop through each year from dateToProcessFrom to the end of last year and process the ownership snapshot data for that year
   for (let year of yearsToProcess) {
     const success = await downloadAndProcessOwnershipSnapshotDataForYear(
-      year.getFullYear(),
-      options,
+      year.getFullYear(),      
     );
 
     if (!success) {
@@ -84,109 +85,88 @@ const getDateToProcessFrom = async (
 };
 
 /**
- *
- * @param year
- * @param options
- * @returns
+ * Download the UK and overseas datasets for each year end and insert the data into our db
+ * @param year the year to process data for 
+ 
  */
 const downloadAndProcessOwnershipSnapshotDataForYear = async (
-  year: number,
-  options: TaskOptions,
+  year: number,  
 ): Promise<boolean> => {
   logger.info(`Processing ownership snapshot data for year ${year}`);
   //TODO check if the file exists first? And skip if not - try again next month?!
   const snapshotDate = new Date(year, 11, 31);
+
   // We need to download the January FULL dataset for the following year.
-  // e.g. for December 2023 we need the Jan 2024 file, which contains the snapshot data for 31/12/2023
+  // e.g. for December 2023 we need the Jan 2024 file, which contains the snapshot data for the previous month i.e. 31/12/2023
   const fileYear = year + 1;
 
-  let success = await downloadAndProcessUKDataset(fileYear, snapshotDate);
-  if (!success) {
-    return success;
-  }
-
-  success = await downloadAndProcessOverseasDataset(fileYear, snapshotDate);
-  if (!success) {
-    return success;
+  const [ukSuccess, overseasSuccess] = await Promise.all([
+    downloadAndProcessDataset(
+      "UK",
+      getFullUKDataset,
+      false,
+      fileYear,
+      snapshotDate,
+    ),
+    downloadAndProcessDataset(
+      "overseas",
+      getFullOverseasDataset,
+      true,
+      fileYear,
+      snapshotDate,
+    ),
+  ]);
+  if (!ukSuccess || !overseasSuccess) {
+    return false;
   }
 
   await setPipelineLatestOwnershipSnapshotData(snapshotDate);
   return true;
 };
 
-const downloadAndProcessUKDataset = async (
+/**
+ * Download and process a UK or overseas ownership snapshot dataset
+ * @param label human-readable label used in log messages, e.g. "UK" or "overseas"
+ * @param getDataset fetcher for the dataset's download URL
+ * @param overseas whether this is the overseas dataset
+ * @param fileYear the year of the file to retrieve
+ * @param snapshotDate the date of the snapshot e.g. 31/12/2020
+ */
+const downloadAndProcessDataset = async (
+  label: string,
+  getDataset: (month: number, year: number) => Promise<DataSet | null>,
+  overseas: boolean,
   fileYear: number,
   snapshotDate: Date,
 ): Promise<boolean> => {
   //Download the ownership snapshot data for the year and process it
   logger.info(
-    `Downloading FULL ownership UK snapshot data for 01/${fileYear} as this contains the data for December ${snapshotDate.getFullYear()}`,
+    `Downloading FULL ownership ${label} snapshot data for 01/${fileYear} as this contains the data for December ${snapshotDate.getFullYear()}`,
   );
 
-  const ukOwnershipSnapshotData = await getFullUKDataset(1, fileYear);
-  if (!ukOwnershipSnapshotData) {
+  const ownershipSnapshotData = await getDataset(1, fileYear);
+  if (!ownershipSnapshotData) {
     logger.error(
-      `Failed to download FULL UK ownership snapshot data for 01/${fileYear}`,
+      `Failed to download FULL ${label} ownership snapshot data for 01/${fileYear}`,
     );
     return false;
   }
   logger.info(
-    `Successfully downloaded FULL UK ownership snapshot data for 01/${fileYear}`,
+    `Successfully downloaded FULL ${label} ownership snapshot data for 01/${fileYear}`,
   );
 
   try {
     // Process the downloaded data
     await pipeZippedCsvFromUrlIntoFun(
-      ukOwnershipSnapshotData.downloadUrl,
+      ownershipSnapshotData.downloadUrl,
       (ownership) =>
-        bulkCreateLandOwnershipSnapshots(ownership, snapshotDate, false, false),
+        bulkCreateLandOwnershipSnapshots(ownership, snapshotDate, overseas, false),
       20000,
     );
   } catch (error) {
     logger.error(error);
     logger.error(
-      `Failed to process FULL UK ownership snapshot data for 01/${fileYear}`,
-    );
-    return false;
-  }
-  return true;
-};
-
-const downloadAndProcessOverseasDataset = async (
-  fileYear: number,
-  snapshotDate: Date,
-): Promise<boolean> => {
-  //Download the overseas ownership snapshot data for the year and process it
-  logger.info(
-    `Downloading FULL ownership overseas snapshot data for 01/${fileYear} as this contains the data for December ${snapshotDate.getFullYear()}`,
-  );
-
-  const overseasOwnershipSnapshotData = await getFullOverseasDataset(
-    1,
-    fileYear,
-  );
-  if (!overseasOwnershipSnapshotData) {
-    logger.error(
-      `Failed to download FULL Overseas ownership snapshot data for 01/${fileYear}`,
-    );
-    return false;
-  }
-  logger.info(
-    `Successfully downloaded FULL Overseas ownership snapshot data for 01/${fileYear}`,
-  );
-
-  try {
-    // Process the downloaded data
-    await pipeZippedCsvFromUrlIntoFun(
-      overseasOwnershipSnapshotData.downloadUrl,
-      (ownership) =>
-        bulkCreateLandOwnershipSnapshots(ownership, snapshotDate, true, false),
-      20000,
-    );
-  } catch (error) {
-    logger.error(error);
-    logger.error(
-      `Failed to process FULL overseas ownership snapshot data for 01/${fileYear}`,
+      `Failed to process FULL ${label} ownership snapshot data for 01/${fileYear}`,
     );
     return false;
   }
