@@ -39,13 +39,6 @@ export const updateOwnershipSnapshots = async () => {
     return;
   }
 
-  if (latestOwnershipSnapshotDataDate === null) {
-    //truncate the table
-    logger.info("Truncating land ownership snapshot table")    
-    await deleteAllLandOwnershipSnapshots();
-    logger.info("Successfully truncated land ownership snapshot table")
-  }
-
   const yearsToProcess = eachYearOfInterval({
     start: dateToProcessFrom,
     end: lastFullYearEndDate,
