@@ -1,0 +1,151 @@
+# Production deployment stack for Coolify.
+#
+# Coolify builds each service from its app context and serves it behind its own
+# reverse proxy, so we expose NO host ports here (exposing ports would bypass
+# Coolify's proxy + HTTPS). All secrets/config come from environment variables set
+# in the Coolify dashboard - the ${VAR?...} form makes a missing value fail fast.
+#
+# Migrations run as one-shot services that complete before the apps start,
+# mirroring a Coolify pre-deploy step. See docs/deployment.md.
+#
+# ${SERVICE_NAME_<SVC>} are Coolify magic vars resolving to the real compose
+# service name - suffixed -pr-N in PR previews, where hardcoded hostnames would
+# break. The :-fallbacks keep plain docker compose working.
+
+name: land-explorer
+
+services:
+  mysql:
+    image: mysql:8
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?set in Coolify}
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./apps/back-end/docker/mysql-init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "--protocol=TCP", "-uroot", "-p${MYSQL_ROOT_PASSWORD}", "--silent"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+      start_period: 40s
+    networks: [lx]
+
+  meilisearch:
+    image: getmeili/meilisearch:v1.41.0
+    environment:
+      MEILI_MASTER_KEY: ${MEILI_MASTER_KEY:?set in Coolify}
+      MEILI_ENV: production
+    volumes:
+      - meilisearch_data:/meili_data
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "http://127.0.0.1:7700/health"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+      start_period: 10s
+    networks: [lx]
+
+  be-migrate:
+    build: { context: ./apps/back-end, args: { NODE_VERSION: "24" } }
+    # Seeding is idempotent (seederStorage: sequelize tracks applied seeders).
+    # SEED_DEMO_DATA=true on dev only; PR previews inherit it and self-seed.
+    command: ["sh", "-c", "npx sequelize-cli db:create || true; npx sequelize-cli db:migrate; if [ \"$$SEED_DEMO_DATA\" = true ]; then npx sequelize-cli db:seed:all; fi"]
+    environment:
+      NODE_ENV: production
+      SEED_DEMO_DATA: ${SEED_DEMO_DATA:-false}
+      DATABASE_HOST: ${SERVICE_NAME_MYSQL:-mysql}
+      DATABASE_PORT: "3306"
+      DATABASE_USER: root
+      DATABASE_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      DATABASE_NAME: land_explorer
+    depends_on: { mysql: { condition: service_healthy } }
+    restart: "no"
+    networks: [lx]
+
+  back-end:
+    build: { context: ./apps/back-end, args: { NODE_VERSION: "24" } }
+    environment:
+      NODE_ENV: production
+      PORT: "4000"
+      CORS_ORIGINS: ${CORS_ORIGINS:?browser origin of the front-end}
+      DATABASE_HOST: ${SERVICE_NAME_MYSQL:-mysql}
+      DATABASE_PORT: "3306"
+      DATABASE_USER: root
+      DATABASE_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      DATABASE_NAME: land_explorer
+      TOKEN_KEY: ${TOKEN_KEY:?set in Coolify}
+      TOKEN_EXPIRY_DAYS: ${TOKEN_EXPIRY_DAYS:-365}
+      BOUNDARY_SERVICE_URL: http://${SERVICE_NAME_PBS:-pbs}:4000
+      BOUNDARY_SERVICE_SECRET: ${BOUNDARY_SERVICE_SECRET:?set in Coolify}
+      SENDGRID_API_KEY: ${SENDGRID_API_KEY:-}
+      BUTTONDOWN_API_KEY: ${BUTTONDOWN_API_KEY:-}
+      GLITCHTIP_KEY: ${GLITCHTIP_KEY:-}
+      MIXPANEL_TOKEN: ${MIXPANEL_TOKEN:-}
+      ANALYTICS_PEPPER: ${ANALYTICS_PEPPER:-}
+      MEILISEARCH_ENABLED: "true"
+    depends_on:
+      mysql: { condition: service_healthy }
+      be-migrate: { condition: service_completed_successfully }
+    networks: [lx]
+
+  pbs-migrate:
+    build: { context: ./apps/property-boundaries-service, args: { NODE_VERSION: "24" } }
+    command: ["sh", "-c", "npx sequelize-cli db:create || true; npx sequelize-cli db:migrate"]
+    environment:
+      NODE_ENV: production
+      DB_HOST: ${SERVICE_NAME_MYSQL:-mysql}
+      DB_USER: root
+      DB_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      DB_NAME: property_boundaries
+    depends_on: { mysql: { condition: service_healthy } }
+    restart: "no"
+    networks: [lx]
+
+  pbs:
+    build: { context: ./apps/property-boundaries-service, args: { NODE_VERSION: "24" } }
+    environment:
+      NODE_ENV: production
+      PORT: "4000"
+      DB_HOST: ${SERVICE_NAME_MYSQL:-mysql}
+      DB_USER: root
+      DB_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      DB_NAME: property_boundaries
+      SECRET: ${BOUNDARY_SERVICE_SECRET}
+      MEILISEARCH_ENABLED: "true"
+      MEILI_HOST: http://${SERVICE_NAME_MEILISEARCH:-meilisearch}:7700
+      MEILI_MASTER_KEY: ${MEILI_MASTER_KEY}
+      GOV_API_URL: ${GOV_API_URL:-}
+      GOV_API_KEY: ${GOV_API_KEY:-}
+      OS_NGD_API_URL: ${OS_NGD_API_URL:-}
+      OS_NGD_API_KEY: ${OS_NGD_API_KEY:-}
+      MAPBOX_GEOCODER_TOKEN: ${MAPBOX_GEOCODER_TOKEN:-}
+    depends_on:
+      mysql: { condition: service_healthy }
+      meilisearch: { condition: service_healthy }
+      pbs-migrate: { condition: service_completed_successfully }
+    networks: [lx]
+
+  front-end:
+    build:
+      context: ./apps/front-end
+      args:
+        NODE_VERSION: "24"
+        CADDY_HOSTNAME: ${FRONT_END_HOSTNAME:?public hostname of the app}
+        API_UPSTREAM: ${SERVICE_NAME_BACK_END:-back-end}:4000
+        VITE_OS_KEY: ${VITE_OS_KEY:?set in Coolify}
+        VITE_OS_PLACES_KEY: ${VITE_OS_PLACES_KEY:-}
+        VITE_PAYMENTS_URL: ${VITE_PAYMENTS_URL:-}
+        VITE_GEOCODER_TOKEN: ${VITE_GEOCODER_TOKEN:?set in Coolify}
+        VITE_MAPBOX_TOKEN: ${VITE_MAPBOX_TOKEN:?set in Coolify}
+        VITE_USER_GUIDE_URL: ${VITE_USER_GUIDE_URL:-}
+        VITE_MIXPANEL_TOKEN: ${VITE_MIXPANEL_TOKEN:-}
+        VITE_MIXPANEL_PEPPER: ${VITE_MIXPANEL_PEPPER:-}
+    depends_on: [back-end]
+    networks: [lx]
+
+volumes:
+  mysql_data:
+  meilisearch_data:
+
+networks:
+  lx:

@@ -1,0 +1,45 @@
+name: Development
+
+on:
+  push:
+    branches: [ development ]
+  pull_request:
+    branches: [ development ]
+
+jobs:
+  test:
+    name: Test application
+    runs-on: ubuntu-latest
+    steps:
+      - name: "☁️ checkout repository"
+        uses: actions/checkout@v3
+
+      - name: "🔧 setup node"
+        uses: actions/setup-node@v3
+        with:
+          node-version: '24.x'
+          cache: 'npm'
+
+      - name: "📦 install dependencies"
+        run: npm ci
+
+      - name: "📦 build code"
+        run: npm run build --if-present
+
+      - name: "🔍 run tests"
+        run: npm test
+
+  deploy:
+    name: Deploy to staging
+    needs: test
+    if: github.ref == 'refs/heads/development'
+    runs-on: ubuntu-latest
+    steps:
+      - name: "🚀 call webhook on staging server"
+        id: call_webhook
+        uses: distributhor/workflow-webhook@v3
+        env:
+          webhook_url: https://staging.hook-runner.landexplorer.coop/run.php?target=land-explorer-back-end
+      
+      - name: "👂 echo response from webhook"
+        run: echo "${{steps.call_webhook.outputs.response-body}}"
