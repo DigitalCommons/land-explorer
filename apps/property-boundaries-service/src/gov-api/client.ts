@@ -2,12 +2,13 @@ import axios from "axios";
 import { logger } from "../pipeline/logger.js";
 import { DataSet, FullDatasetResponse } from "./types.js";
 
+const GOV_API_TIMEOUT_MS = 30000
 export const govApiClient = axios.create({
   baseURL: process.env.GOV_API_URL,
   headers: {
     Authorization: process.env.GOV_API_KEY,
   },
-  timeout: 30
+  timeout: GOV_API_TIMEOUT_MS
 })
 
 /**
