@@ -2,26 +2,36 @@ import { Op } from "sequelize";
 import { PipelineRunModel } from "./models.js";
 import { getRunningPipelineKey } from "../pipeline/util.js";
 
+/** Columns on pipeline_runs that track the latest date of data processed by that run. */
+export type LatestDataColumn =
+  | "latest_ownership_data"
+  | "latest_inspire_data"
+  | "latest_snapshot_ownership_data";
+
+
 /**
- * Return the date of the latest ownership snapshot data that was processed by the latest pipeline run, or
- * null if no pipeline has completed yet.
+ * Return the date stored in `columnName` on the most recent pipeline run that has it set, or
+ * null if no pipeline run has set it yet.
  */
-export const getLatestOwnershipSnapshotDataDate = async () => {
-  const latestRun: any = await PipelineRunModel.findOne({
-    //TODO FIX THE ANY
-    where: { latest_snapshot_ownership_data: { [Op.ne]: null } },
+export const getLatestPipelineDataDate = async (
+  columnName: LatestDataColumn,
+): Promise<Date | null> => {
+  const latestRun: any = await PipelineRunModel.findOne({    
+    where: { [columnName]: { [Op.ne]: null } },
     order: [["startedAt", "DESC"]],
   });
-  return latestRun ? new Date(latestRun.latest_snapshot_ownership_data) : null;
+  return latestRun ? new Date(latestRun[columnName]) : null;
 };
 
 /**
- * Set latest ownership data date for a pipeline run.
- * @param date the lastest snapshot date
+ * Set `columnName` to `date` on the currently running pipeline run.
  */
-export const setPipelineLatestOwnershipSnapshotData = async (date: Date) => {
+export const setPipelineLatestData = async (
+  columnName: LatestDataColumn,
+  date: Date | string,
+) => {
   await PipelineRunModel.update(
-    { latest_snapshot_ownership_data: date },
+    { [columnName]: date },
     {
       where: {
         unique_key: getRunningPipelineKey(),
@@ -29,3 +39,17 @@ export const setPipelineLatestOwnershipSnapshotData = async (date: Date) => {
     },
   );
 };
+
+/**
+ * Return the date of the latest ownership snapshot data that was processed by the latest pipeline run, or
+ * null if no pipeline has completed yet.
+ */
+export const getLatestOwnershipSnapshotDataDate = () =>
+  getLatestPipelineDataDate("latest_snapshot_ownership_data");
+
+/**
+ * Set latest ownership snapshot data date for the running pipeline run.
+ * @param date the latest snapshot date
+ */
+export const setPipelineLatestOwnershipSnapshotData = (date: Date) =>
+  setPipelineLatestData("latest_snapshot_ownership_data", date);
