@@ -17,6 +17,8 @@ type SnapshotData = {
   postcode: string | null;
   proprietor_name: string | null;
   company_registration_no: string | null;
+  proprietor_uk_based: boolean | null;
+  date_proprietor_added: string | null;
 };
 
 /**
@@ -62,9 +64,10 @@ export const bulkCreateLandOwnershipSnapshots = async (
           county: ownership.County || null,
           region: ownership.Region || null,
           postcode: ownership.Postcode || null,
-          proprietor_name: proprietorName || null,
-          company_registration_no: companyRegNo || null,
-          //proprietor_uk_based: !overseas,
+          proprietor_name: proprietorName || "",
+          company_registration_no: companyRegNo || "",
+          proprietor_uk_based: !overseas,
+          date_proprietor_added: ownership["Date Proprietor Added"] || null
         });
       }
     }
