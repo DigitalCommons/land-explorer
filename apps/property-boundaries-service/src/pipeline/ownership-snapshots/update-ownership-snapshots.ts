@@ -11,7 +11,6 @@ import {
 import { logger } from "../logger.js";
 import { pipeZippedCsvFromUrlIntoFun } from "../ownerships/helpers.js";
 import { bulkCreateLandOwnershipSnapshots, deleteAllLandOwnershipSnapshots } from "../../queries/land-ownership-snapshot-query.js";
-import { TaskOptions } from "../run.js";
 
 const EARLIEST_DATE_TO_PROCESS = new Date(2017, 11, 31); // The earliest end of year date for which we have ownership data
 
@@ -19,9 +18,8 @@ const EARLIEST_DATE_TO_PROCESS = new Date(2017, 11, 31); // The earliest end of 
  * Update the ownership snapshots table
  * This will insert land ownership records for each completed year
  * The table inserts a row per proprietor
- * @param options 
  */
-export const updateOwnershipSnapshots = async (options: TaskOptions) => {
+export const updateOwnershipSnapshots = async () => {
   let latestOwnershipSnapshotDataDate =
     await getLatestOwnershipSnapshotDataDate();
   logger.info(
@@ -146,7 +144,6 @@ const downloadAndProcessDataset = async (
   fileYear: number,
   snapshotDate: Date,
 ): Promise<boolean> => {
-  //Download the ownership snapshot data for the year and process it
   logger.info(
     `Downloading FULL ownership ${label} snapshot data for 01/${fileYear} as this contains the data for December ${snapshotDate.getFullYear()}`,
   );
@@ -162,8 +159,7 @@ const downloadAndProcessDataset = async (
     `Successfully downloaded FULL ${label} ownership snapshot data for 01/${fileYear}`,
   );
 
-  try {
-    // Process the downloaded data
+  try {    
     await pipeZippedCsvFromUrlIntoFun(
       ownershipSnapshotData.downloadUrl,
       (ownership) =>
