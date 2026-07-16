@@ -50,8 +50,7 @@ const tasks = [
   {
     name: "ownershipSnapshots",
     desc: "Create snapshots of historic land ownership data",
-    method: async (options: TaskOptions) =>
-      await updateOwnershipSnapshots(options),
+    method: async (_options: TaskOptions) => await updateOwnershipSnapshots(),
   },
   {
     name: "updateProprietors",
