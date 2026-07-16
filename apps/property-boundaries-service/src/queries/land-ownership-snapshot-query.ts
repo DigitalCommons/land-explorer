@@ -10,14 +10,14 @@ const MAX_ROWS_PER_INSERT = 20000;
 type SnapshotData = {
   title_no: string;
   snapshot_date: Date;
+  proprietor_name: string;
+  company_registration_no: string;
   property_address: string | null;
   district: string | null;
   county: string | null;
   region: string | null;
   postcode: string | null;
-  proprietor_name: string | null;
-  company_registration_no: string | null;
-  proprietor_uk_based: boolean | null;
+  proprietor_uk_based: boolean;
   date_proprietor_added: string | null;
 };
 
@@ -67,7 +67,7 @@ export const bulkCreateLandOwnershipSnapshots = async (
           proprietor_name: proprietorName || "",
           company_registration_no: companyRegNo || "",
           proprietor_uk_based: !overseas,
-          date_proprietor_added: ownership["Date Proprietor Added"] || null
+          date_proprietor_added: convertDate(ownership["Date Proprietor Added"])
         });
       }
     }
@@ -83,3 +83,10 @@ export const bulkCreateLandOwnershipSnapshots = async (
     });
   }
 };
+
+export const deleteAllLandOwnershipSnapshots = async () => {
+  await LandOwnershipSnapshotModel.truncate();
+};
+
+
+const convertDate = (date?: string) => date ? date.split("-").reverse().join("-") : null;

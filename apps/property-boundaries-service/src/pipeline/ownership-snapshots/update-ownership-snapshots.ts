@@ -10,7 +10,7 @@ import {
 } from "../../queries/pipeline-query.js";
 import { logger } from "../logger.js";
 import { pipeZippedCsvFromUrlIntoFun } from "../ownerships/helpers.js";
-import { bulkCreateLandOwnershipSnapshots } from "../../queries/land-ownership-snapshot-query.js";
+import { bulkCreateLandOwnershipSnapshots, deleteAllLandOwnershipSnapshots } from "../../queries/land-ownership-snapshot-query.js";
 import { TaskOptions } from "../run.js";
 
 const EARLIEST_DATE_TO_PROCESS = new Date(2017, 11, 31); // The earliest end of year date for which we have ownership data
@@ -39,6 +39,13 @@ export const updateOwnershipSnapshots = async (options: TaskOptions) => {
       `No new ownership snapshot data to process, as the latest ownership snapshot data is from ${latestOwnershipSnapshotDataDate}`,
     );
     return;
+  }
+
+  if (latestOwnershipSnapshotDataDate === null) {
+    //truncate the table
+    logger.info("Truncating land ownership snapshot table")    
+    await deleteAllLandOwnershipSnapshots();
+    logger.info("Successfully truncated land ownership snapshot table")
   }
 
   const yearsToProcess = eachYearOfInterval({
@@ -74,7 +81,7 @@ const getDateToProcessFrom = async (
       "No ownership snapshot data found, so we will process all years from 2017 to the end of last year",
     );
     dateToProcessFrom = EARLIEST_DATE_TO_PROCESS;
-    // TODO clear tables down in case it is a rerun?
+    
   } else {
     logger.info(
       `We will process ownership snapshot data from ${latestOwnershipSnapshotDataDate} to the end of last year`,
