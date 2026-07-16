@@ -1,4 +1,5 @@
 import { Op } from "sequelize";
+import { format } from "date-fns";
 import { PipelineRunModel } from "./models.js";
 import { getRunningPipelineKey } from "../pipeline/util.js";
 
@@ -24,11 +25,11 @@ export const getLatestPipelineDataDate = async (
 };
 
 /**
- * Set `columnName` to `date` on the currently running pipeline run.
+ * Set `columnName` to `date` (in YYYY-MM-DD format) on the currently running pipeline run.
  */
 export const setPipelineLatestData = async (
   columnName: LatestDataColumn,
-  date: Date | string,
+  date: string,
 ) => {
   await PipelineRunModel.update(
     { [columnName]: date },
@@ -52,4 +53,7 @@ export const getLatestOwnershipSnapshotDataDate = () =>
  * @param date the latest snapshot date
  */
 export const setPipelineLatestOwnershipSnapshotData = (date: Date) =>
-  setPipelineLatestData("latest_snapshot_ownership_data", date);
+  setPipelineLatestData(
+    "latest_snapshot_ownership_data",
+    format(date, "yyyy-MM-dd"),
+  );
