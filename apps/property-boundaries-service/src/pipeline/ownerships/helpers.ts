@@ -97,7 +97,12 @@ export const pipeZippedCsvFromUrlIntoFun = async (
               );
             }
             const chunk = rowsToSend.splice(0, chunkSize);
-            await processChunkOfRowsFunc(chunk);
+            try {
+              await processChunkOfRowsFunc(chunk);
+            } catch (error) {
+              reject(error);
+              return;
+            }
             sendingChunk = false;
             csvPipe.resume();
           }
@@ -111,7 +116,12 @@ export const pipeZippedCsvFromUrlIntoFun = async (
 
         csvPipe.on("end", async () => {
           // Final chunk
-          await processChunkOfRowsFunc(rowsToSend);
+          try {
+            await processChunkOfRowsFunc(rowsToSend);
+          } catch (error) {
+            reject(error);
+            return;
+          }
           logger.debug(`Finished processing ${rowCount} rows of ${filePath}`);
           resolve();
         });
