@@ -1,3 +1,7 @@
+# Outdated
+
+This doc is **no longer current** as of July 2026 see ../deployment.md for the latest process - it is left here for reference until the new process has been running for a few months.
+
 # Our servers
 
 We have a staging server at https://staging.landexplorer.coop/ and a production server at https://landexplorer.coop/.
