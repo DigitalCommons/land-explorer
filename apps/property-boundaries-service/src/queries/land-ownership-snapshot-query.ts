@@ -23,6 +23,10 @@ type SnapshotData = {
 
 /**
  * Batch create each land ownership snapshot record.
+ * @param ownerships the raw ownership data read from the gov csv
+ * @param snapshotDate the date of the snapshot being processed
+ * @param overseas Whether the ownership is uk based or overseas
+ * @param logging Whether to do DB level logging
  */
 export const bulkCreateLandOwnershipSnapshots = async (
   ownerships: RawOwnership[],
@@ -90,10 +94,5 @@ export const bulkCreateLandOwnershipSnapshots = async (
     });
   }
 };
-
-export const deleteAllLandOwnershipSnapshots = async () => {
-  await LandOwnershipSnapshotModel.truncate();
-};
-
 
 const convertDate = (date?: string) => date ? date.split("-").reverse().join("-") : null;

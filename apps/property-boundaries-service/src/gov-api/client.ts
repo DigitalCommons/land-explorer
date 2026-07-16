@@ -7,7 +7,8 @@ export const govApiClient = axios.create({
   headers: {
     Authorization: process.env.GOV_API_KEY,
   },
-});
+  timeout: 30
+})
 
 /**
  * Retrieves the full UK dataset for a specific month and year.

@@ -9,15 +9,16 @@ import {
   setPipelineLatestOwnershipSnapshotData,
 } from "../../queries/pipeline-query.js";
 import { logger } from "../logger.js";
+import { notifyMatrix } from "../util.js";
 import { pipeZippedCsvFromUrlIntoFun } from "../ownerships/helpers.js";
-import { bulkCreateLandOwnershipSnapshots, deleteAllLandOwnershipSnapshots } from "../../queries/land-ownership-snapshot-query.js";
+import { bulkCreateLandOwnershipSnapshots } from "../../queries/land-ownership-snapshot-query.js";
 
 const EARLIEST_DATE_TO_PROCESS = new Date(2017, 11, 31); // The earliest end of year date for which we have ownership data
 
 /**
  * Update the ownership snapshots table
- * This will insert land ownership records for each completed year
- * The table inserts a row per proprietor
+ * This will insert land ownership snapshot records for each completed year
+ * The table inserts a row per proprietor, title number and snapshot date
  */
 export const updateOwnershipSnapshots = async () => {
   let latestOwnershipSnapshotDataDate =
@@ -53,13 +54,15 @@ export const updateOwnershipSnapshots = async () => {
     if (!success) {
       const msg = `Failed to process ownership snapshot data for year ${year.getFullYear()}. Halting further snapshot processing.`;
       logger.error(msg);
-      throw new Error(msg);
-    }
+      await notifyMatrix(`🔴 ${msg}`);
+      return;
+    }     
   }
+  await notifyMatrix(`✅ Successfully inserted land ownership snapshots for years: ${yearsToProcess.map(x=> x.getFullYear()).join(', ')}`);
 };
 
 /**
- * if latestOwnershipSnapshotDataDate is null, we need to process from 2017
+ * If latestOwnershipSnapshotDataDate is null, we need to process from 2017
  * otherwise we need to process from the year of latestOwnershipSnapshotDataDate
  * @param latestOwnershipSnapshotDataDate date of the latest snapshot in the db
  */
@@ -91,9 +94,7 @@ const downloadAndProcessOwnershipSnapshotDataForYear = async (
   year: number,  
 ): Promise<boolean> => {
   logger.info(`Processing ownership snapshot data for year ${year}`);
-  //TODO check if the file exists first? And skip if not - try again next month?!
   const snapshotDate = new Date(year, 11, 31);
-
   // We need to download the January FULL dataset for the following year.
   // e.g. for December 2023 we need the Jan 2024 file, which contains the snapshot data for the previous month i.e. 31/12/2023
   const fileYear = year + 1;
