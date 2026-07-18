@@ -126,7 +126,7 @@ It runs these tasks in sequential order:
         - Deletes `proprietors_new` (which now holds the old data after the swap).
     1. If any step fails, `proprietors_new` is cleaned up and the error is re-thrown, leaving the live `proprietors` index untouched.
 
-    
+
 1.  `downloadInspire`: This task
 
     1. downloads the latest INSPIRE data
@@ -189,6 +189,25 @@ They are scheduled to run after a Borg backup of the production database has bee
 itself is scheduled to run on the 8th night of each month (to ensure it's after the month's INSPIRE
 data has been published on the first Sunday of the month). To avoid getting into too many details that
 are specific to DCC infrastructure, see [this GitHub comment](https://github.com/DigitalCommons/technology-and-infrastructure/issues/116#issuecomment-2163420776){target="\_blank"} for more details, and [deployment.md](./deployment.md#dcc-servers) for a rough overview of our DCC deployment.
+
+### Running on Coolify
+
+The PBS image ships the whole pipeline toolchain (Playwright chromium for the INSPIRE page scrape, GDAL with the SQLite and MySQL drivers, the mysql client, bash, curl and the OSTN15 projection grid), so the pipeline runs inside the pbs container. Downloads and logs persist in the pbs_downloads and pbs_logs volumes, a rerun in the same month skips already-downloaded councils and resume=true works across container restarts.
+
+Schedule per environment as a Coolify Scheduled Task on the pbs service, monthly after INSPIRE publishes on the first Sunday (e.g. `0 3 10 * *`):
+
+- prod flavour (refresh ownerships and proprietor search, stage new INSPIRE polys as pending, no boundary writes):
+  ```sh
+  sh -c 'curl -sf "http://localhost:4000/run-pipeline?stopBeforeTask=analyseInspire&secret=$SECRET"'
+  ```
+- staging flavour (full pipeline including boundary writes):
+  ```sh
+  sh -c 'curl -sf "http://localhost:4000/run-pipeline?updateBoundaries=true&secret=$SECRET"'
+  ```
+
+Set `MATRIX_WEBHOOK_URL` on the resource for run/failure notifications.
+
+The INSPIRE zip backup to the Hetzner storage box (REMOTE_BACKUP_DESTINATION_PATH) stays disabled in containers for now - it needs an SSH key via ansible if we want to use it but Coolify has a full MySQL backup. Revisit with a mounted SSH if wanted as an extra layer of backup in future.
 
 ## Analysing the pipeline output
 

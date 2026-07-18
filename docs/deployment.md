@@ -42,9 +42,9 @@ Data on top:
 - **dev & PR previews** — be-migrate migrates then when SEED_DEMO_DATA=true the demo seeders are run (tracked in SequelizeData like migrations - see app/back-end/seeders. Previews self-seed a fresh DB. PBS starts empty.
 - **staging** - full copy of production DBs using Coolify container copy or mysqldump - run migrations after restore to apply any newer schema.
 
-## PBS pipeline (staging only)
+## PBS pipeline
 
-Staging runs the monthly INSPIRE/ownerships pipeline on top of the full copy, dev does not. A Coolify Scheduled Task on the pbs service runs monthly on the 8th at 3am, after INSPIRE publishes on the first Sunday.
+Staging and prod run the monthly INSPIRE/ownerships pipeline on top of the full copy, dev and PR builds do not. A Coolify Scheduled Task on the pbs service runs monthly on the 10th at 3am (0 3 10 * *), after INSPIRE publishes on the first Sunday. Prod (once cut over) gets the same task in the prod flavour (`stopBeforeTask=analyseInspire`, no boundary writes). Task commands: see property-boundaries-service/pipeline.md "Running on Coolify".
 
 ## Notes
 

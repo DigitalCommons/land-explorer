@@ -119,6 +119,16 @@ services:
       OS_NGD_API_URL: ${OS_NGD_API_URL:-}
       OS_NGD_API_KEY: ${OS_NGD_API_KEY:-}
       MAPBOX_GEOCODER_TOKEN: ${MAPBOX_GEOCODER_TOKEN:-}
+      # Pipeline devops notifications (skipped when unset)
+      MATRIX_WEBHOOK_URL: ${MATRIX_WEBHOOK_URL:-}
+      # INSPIRE zip backup/restore to the storage box (skipped when unset;
+      # needs an SSH key in the container - see docs/property-boundaries-service/pipeline.md)
+      REMOTE_BACKUP_DESTINATION_PATH: ${REMOTE_BACKUP_DESTINATION_PATH:-}
+      REMOTE_BACKUP_SSH_PORT: ${REMOTE_BACKUP_SSH_PORT:-}
+    volumes:
+      # INSPIRE downloads (lets a rerun resume the month) and pipeline logs
+      - pbs_downloads:/app/downloads
+      - pbs_logs:/app/logs
     depends_on:
       mysql: { condition: service_healthy }
       meilisearch: { condition: service_healthy }
@@ -146,6 +156,8 @@ services:
 volumes:
   mysql_data:
   meilisearch_data:
+  pbs_downloads:
+  pbs_logs:
 
 networks:
   lx:
