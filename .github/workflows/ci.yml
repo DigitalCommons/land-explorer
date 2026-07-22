@@ -66,6 +66,11 @@ jobs:
           --build-arg VITE_OS_KEY=ci-scan
           --build-arg VITE_GEOCODER_TOKEN=ci-scan
           --build-arg VITE_MAPBOX_TOKEN=ci-scan
+      - name: Install Trivy
+        uses: aquasecurity/setup-trivy@v0.3.1
+        with:
+          version: v0.72.0
+          cache: true
       - name: Trivy report (HIGH+CRITICAL, non-blocking)
         uses: aquasecurity/trivy-action@v0.33.1
         with:
@@ -73,6 +78,7 @@ jobs:
           severity: HIGH,CRITICAL
           ignore-unfixed: true
           exit-code: "0"
+          skip-setup-trivy: true
       - name: Trivy gate (CRITICAL)
         uses: aquasecurity/trivy-action@v0.33.1
         with:
