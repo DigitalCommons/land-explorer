@@ -91,9 +91,12 @@ services:
 
   pbs-migrate:
     build: { context: ./apps/property-boundaries-service, args: { NODE_VERSION: "24" } }
-    command: ["sh", "-c", "npx sequelize-cli db:create || true; npx sequelize-cli db:migrate"]
+    # SEED_DEMO_DATA=true
+    #   will seed the Penryn demo dataset for small real data - see seeders/
+    command: ["sh", "-c", "npx sequelize-cli db:create || true; npx sequelize-cli db:migrate; if [ \"$$SEED_DEMO_DATA\" = true ]; then npx sequelize-cli db:seed:all; fi"]
     environment:
       NODE_ENV: production
+      SEED_DEMO_DATA: ${SEED_DEMO_DATA:-false}
       DB_HOST: ${SERVICE_NAME_MYSQL:-mysql}
       DB_USER: root
       DB_PASSWORD: ${MYSQL_ROOT_PASSWORD}
@@ -124,6 +127,18 @@ services:
       meilisearch: { condition: service_healthy }
       pbs-migrate: { condition: service_completed_successfully }
 
+  # Build the Meilisearch proprietor index from the seeded data
+  # Only runs if SEED_DEMO_DATA=true - so for PR builds and dev
+  pbs-index:
+    image: curlimages/curl:8.11.1
+    command: ["sh", "-c", "if [ \"$$SEED_DEMO_DATA\" = true ]; then curl -sf --retry 30 --retry-connrefused --retry-delay 5 \"http://$$PBS_HOST:4000/run-pipeline?startAtTask=updateProprietors&stopBeforeTask=downloadInspire&secret=$$SECRET\"; fi"]
+    environment:
+      SEED_DEMO_DATA: ${SEED_DEMO_DATA:-false}
+      PBS_HOST: ${SERVICE_NAME_PBS:-pbs}
+      SECRET: ${BOUNDARY_SERVICE_SECRET}
+    depends_on: [pbs]
+    restart: "no"
+
   front-end:
     build:
       context: ./apps/front-end
@@ -144,4 +159,3 @@ services:
 volumes:
   mysql_data:
   meilisearch_data:
-
