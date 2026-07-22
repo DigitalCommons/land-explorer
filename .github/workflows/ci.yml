@@ -87,3 +87,4 @@ jobs:
           ignore-unfixed: true
           exit-code: "1"
           skip-setup-trivy: true
+          trivyignores: .trivyignore
