@@ -184,7 +184,7 @@ const runPipeline = async (options: PipelineOptions) => {
           ? taskOptions.updateBoundaries
             ? `Updates are written into the main DB table and visible in production layers. </p>\n<pre>${summaryTable}</pre>`
             : `Updates are visible in the pending polygons layer. </p>\n<pre>${summaryTable}</pre>`
-          : "Stopped before analyseInspire task.</p>"
+          : "Stopped before the analyseInspire task. ACTION NEEDED: this month's INSPIRE boundaries are now waiting on prod. A super user should review them (enable the Pending Polygons layer: green = accepted by the matching algorithm, yellow = not), check the staging run's summary for how the matching behaved, then write the accepted boundaries into the main table with: /run-pipeline?startAtTask=analyseInspire&amp;updateBoundaries=true&amp;secret=SECRET - see docs/property-boundaries-service/pipeline.md. Until this is done, production boundaries stay on last month's data.</p>"
       }`,
       true,
     );
