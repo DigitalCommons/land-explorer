@@ -46,6 +46,20 @@ Data on top:
 
 Staging runs the monthly INSPIRE/ownerships pipeline on top of the full copy, dev does not. A Coolify Scheduled Task on the pbs service runs monthly on the 8th at 3am, after INSPIRE publishes on the first Sunday.
 
+## Database backups (prod)
+
+The pbs container does the backups using scripts/backup-databases.sh - Configure on
+the lx-prod resource with the env vars from Bitwarden:
+
+- Scheduled Task, daily 02:30 (`30 2 * * *`):
+  `bash scripts/backup-databases.sh land_explorer`
+- Scheduled Task, monthly 11th 02:30 (`30 2 11 * *`), the day after the
+  pipeline: `bash scripts/backup-databases.sh property_boundaries`
+
+Retention - land_explorer keeps 31 dailies and the 1st of the month for 2 years - property_boundaries keeps 6 months. Raw INSPIRE zaip bacups are kept forever. Meilisearch is not backed up - rebuild it with the updateProprietors pipeline task.
+
+To restore: copy a dump down and pipe it into the mysql container then run the pipeline for Meilisearch.
+
 ## Notes
 
 - One-shot migrate containers exit 0 so Coolify may show them "unhealthy" but this is purely cosmetic.
