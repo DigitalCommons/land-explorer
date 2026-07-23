@@ -22,7 +22,7 @@ describe("mapRawOwnershipsToSnapshotRows", () => {
     ({ mapRawOwnershipsToSnapshotRows } = await esmock(
       "./land-ownership-snapshot-mapper.js",
       {
-        "../pipeline/logger.js": {
+        "../logger.js": {
           logger: { error: loggerErrorStub, info: sandbox.stub() },
         },
       },

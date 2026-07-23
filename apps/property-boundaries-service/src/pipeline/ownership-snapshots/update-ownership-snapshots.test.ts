@@ -159,7 +159,7 @@ describe("updateOwnershipSnapshots", function () {
   it("halts further processing and notifies matrix if the UK dataset download fails", async () => {
     // Arrange
     getLatestOwnershipSnapshotDataDateStub.resolves(null);
-    getFullUKDatasetStub.resolves(null);
+    getFullUKDatasetStub.rejects(new Error("download failed"));
     const { updateOwnershipSnapshots } = await loadModule();
 
     // Act
@@ -174,7 +174,7 @@ describe("updateOwnershipSnapshots", function () {
   it("halts further processing and notifies matrix if the overseas dataset download fails", async () => {
     // Arrange
     getLatestOwnershipSnapshotDataDateStub.resolves(null);
-    getFullOverseasDatasetStub.resolves(null);
+    getFullOverseasDatasetStub.rejects(new Error("download failed"));
     const { updateOwnershipSnapshots } = await loadModule();
 
     // Act
