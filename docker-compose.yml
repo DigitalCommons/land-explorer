@@ -122,6 +122,14 @@ services:
       OS_NGD_API_URL: ${OS_NGD_API_URL:-}
       OS_NGD_API_KEY: ${OS_NGD_API_KEY:-}
       MAPBOX_GEOCODER_TOKEN: ${MAPBOX_GEOCODER_TOKEN:-}
+      # DB backups to the storage box (scripts/backup-databases.sh, run as
+      # Coolify Scheduled Tasks on prod; envs without the tasks ignore these)
+      BACKUP_DESTINATION_PATH: ${BACKUP_DESTINATION_PATH:-}
+      MATRIX_WEBHOOK_URL: ${MATRIX_WEBHOOK_URL:-}
+      REMOTE_BACKUP_SSH_PORT: ${REMOTE_BACKUP_SSH_PORT:-}
+    # Storage box SSH key for backups
+    volumes:
+      - /root/pbs-backup-ssh:/home/node/.ssh
     depends_on:
       mysql: { condition: service_healthy }
       meilisearch: { condition: service_healthy }
