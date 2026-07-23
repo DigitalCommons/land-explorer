@@ -11,6 +11,11 @@
 # ${SERVICE_NAME_<SVC>} are Coolify magic vars resolving to the real compose
 # service name - suffixed -pr-N in PR previews, where hardcoded hostnames would
 # break. The :-fallbacks keep plain docker compose working.
+#
+# No custom network: services must sit on exactly one network (the compose
+# default; Coolify's per-resource network). A second network gives each
+# container two IPs and Coolify's Traefik picks its upstream IP arbitrarily,
+# 504ing when it picks the one its proxy is not attached to.
 
 name: land-explorer
 
@@ -28,7 +33,6 @@ services:
       timeout: 5s
       retries: 30
       start_period: 40s
-    networks: [lx]
 
   meilisearch:
     image: getmeili/meilisearch:v1.41.0
@@ -43,7 +47,6 @@ services:
       timeout: 5s
       retries: 30
       start_period: 10s
-    networks: [lx]
 
   be-migrate:
     build: { context: ./apps/back-end, args: { NODE_VERSION: "24" } }
@@ -60,7 +63,6 @@ services:
       DATABASE_NAME: land_explorer
     depends_on: { mysql: { condition: service_healthy } }
     restart: "no"
-    networks: [lx]
 
   back-end:
     build: { context: ./apps/back-end, args: { NODE_VERSION: "24" } }
@@ -80,26 +82,29 @@ services:
       SENDGRID_API_KEY: ${SENDGRID_API_KEY:-}
       BUTTONDOWN_API_KEY: ${BUTTONDOWN_API_KEY:-}
       GLITCHTIP_KEY: ${GLITCHTIP_KEY:-}
+      # Tags errors with the deploy environment: dev, staging or production
+      GLITCHTIP_ENVIRONMENT: ${GLITCHTIP_ENVIRONMENT:-}
       MIXPANEL_TOKEN: ${MIXPANEL_TOKEN:-}
       ANALYTICS_PEPPER: ${ANALYTICS_PEPPER:-}
       MEILISEARCH_ENABLED: "true"
     depends_on:
       mysql: { condition: service_healthy }
       be-migrate: { condition: service_completed_successfully }
-    networks: [lx]
 
   pbs-migrate:
     build: { context: ./apps/property-boundaries-service, args: { NODE_VERSION: "24" } }
-    command: ["sh", "-c", "npx sequelize-cli db:create || true; npx sequelize-cli db:migrate"]
+    # SEED_DEMO_DATA=true
+    #   will seed the Penryn demo dataset for small real data - see seeders/
+    command: ["sh", "-c", "npx sequelize-cli db:create || true; npx sequelize-cli db:migrate; if [ \"$$SEED_DEMO_DATA\" = true ]; then npx sequelize-cli db:seed:all; fi"]
     environment:
       NODE_ENV: production
+      SEED_DEMO_DATA: ${SEED_DEMO_DATA:-false}
       DB_HOST: ${SERVICE_NAME_MYSQL:-mysql}
       DB_USER: root
       DB_PASSWORD: ${MYSQL_ROOT_PASSWORD}
       DB_NAME: property_boundaries
     depends_on: { mysql: { condition: service_healthy } }
     restart: "no"
-    networks: [lx]
 
   pbs:
     build: { context: ./apps/property-boundaries-service, args: { NODE_VERSION: "24" } }
@@ -121,19 +126,32 @@ services:
       MAPBOX_GEOCODER_TOKEN: ${MAPBOX_GEOCODER_TOKEN:-}
       # Pipeline devops notifications (skipped when unset)
       MATRIX_WEBHOOK_URL: ${MATRIX_WEBHOOK_URL:-}
-      # INSPIRE zip backup/restore to the storage box (skipped when unset;
-      # needs an SSH key in the container - see docs/property-boundaries-service/pipeline.md)
+      # DB and INSPIRE backups, the first is MySQL, second is INSPIRE downloads
+      BACKUP_DESTINATION_PATH: ${BACKUP_DESTINATION_PATH:-}
       REMOTE_BACKUP_DESTINATION_PATH: ${REMOTE_BACKUP_DESTINATION_PATH:-}
       REMOTE_BACKUP_SSH_PORT: ${REMOTE_BACKUP_SSH_PORT:-}
     volumes:
       # INSPIRE downloads (lets a rerun resume the month) and pipeline logs
       - pbs_downloads:/app/downloads
       - pbs_logs:/app/logs
+      # Storage box SSH key for backups
+      - /root/pbs-backup-ssh:/home/node/.ssh
     depends_on:
       mysql: { condition: service_healthy }
       meilisearch: { condition: service_healthy }
       pbs-migrate: { condition: service_completed_successfully }
-    networks: [lx]
+
+  # Build the Meilisearch proprietor index from the seeded data
+  # Only runs if SEED_DEMO_DATA=true - so for PR builds and dev
+  pbs-index:
+    image: curlimages/curl:8.11.1
+    command: ["sh", "-c", "if [ \"$$SEED_DEMO_DATA\" = true ]; then curl -sf --retry 30 --retry-connrefused --retry-delay 5 \"http://$$PBS_HOST:4000/run-pipeline?startAtTask=updateProprietors&stopBeforeTask=downloadInspire&secret=$$SECRET\"; fi"]
+    environment:
+      SEED_DEMO_DATA: ${SEED_DEMO_DATA:-false}
+      PBS_HOST: ${SERVICE_NAME_PBS:-pbs}
+      SECRET: ${BOUNDARY_SERVICE_SECRET}
+    depends_on: [pbs]
+    restart: "no"
 
   front-end:
     build:
@@ -151,13 +169,9 @@ services:
         VITE_MIXPANEL_TOKEN: ${VITE_MIXPANEL_TOKEN:-}
         VITE_MIXPANEL_PEPPER: ${VITE_MIXPANEL_PEPPER:-}
     depends_on: [back-end]
-    networks: [lx]
 
 volumes:
   mysql_data:
   meilisearch_data:
   pbs_downloads:
   pbs_logs:
-
-networks:
-  lx:
