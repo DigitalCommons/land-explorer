@@ -39,7 +39,7 @@ Then set FRONT_END_HOSTNAME= the front-end domain (bakes into the FE image at bu
 Migrations run as one-shot services (be-migrate, pbs-migrate) before the apps.
 Data on top:
 
-- **dev & PR previews** — be-migrate migrates then when SEED_DEMO_DATA=true the demo seeders are run (tracked in SequelizeData like migrations - see app/back-end/seeders. Previews self-seed a fresh DB. PBS starts empty.
+- **dev & PR previews** — be-migrate migrates then when SEED_DEMO_DATA=true the demo seeders are run (tracked in SequelizeData like migrations - see app/back-end/seeders. Previews self-seed a fresh DB. PBS seeds too: a small slice of real polygon + ownership data around Penryn (apps/property-boundaries-service/seeders/), and the pbs-index one-shot then builds the Meilisearch index from it.
 - **staging** - full copy of production DBs using Coolify container copy or mysqldump - run migrations after restore to apply any newer schema.
 
 ## PBS pipeline (staging only)
