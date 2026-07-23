@@ -137,7 +137,7 @@ const downloadAndProcessOwnershipSnapshotDataForYear = async (
  */
 const downloadAndProcessDataset = async (
   label: string,
-  getDataset: (month: number, year: number) => Promise<DataSet | null>,
+  getDataset: (month: number, year: number) => Promise<DataSet>,
   overseas: boolean,
   fileYear: number,
   snapshotDate: Date,
@@ -146,9 +146,12 @@ const downloadAndProcessDataset = async (
     `Downloading FULL ownership ${label} snapshot data for 01/${fileYear} as this contains the data for December ${snapshotDate.getFullYear()}`,
   );
 
-  const ownershipSnapshotData = await getDataset(1, fileYear);
-  if (!ownershipSnapshotData) {
+  let ownershipSnapshotData: DataSet;
+  try {
+    ownershipSnapshotData = await getDataset(1, fileYear);
+  } catch (error) {
     logger.error(
+      error,
       `Failed to download FULL ${label} ownership snapshot data for 01/${fileYear}`,
     );
     return false;
