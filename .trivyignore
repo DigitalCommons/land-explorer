@@ -1,0 +1,8 @@
+# CVEs excluded from the CI CRITICAL gate only (the HIGH+CRITICAL report still shows them).
+# Justify every entry and remove once fixed
+
+# node-tar gzip bomb DoS
+# npm's bundled tar in the node base umage and bcrypts' node-pre-gym
+# neither are used to extract untrusted archives from users but should still be fixed
+# Remove when node image/npm ships tar > 7.5.19 and bcrypt is bumped
+CVE-2026-59873

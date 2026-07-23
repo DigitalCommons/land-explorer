@@ -39,3 +39,52 @@ jobs:
         run: npm run typecheck --if-present
       - name: Test
         run: npm test --if-present
+
+  # Dockerfile lint + image CVE scan (technology-and-infrastructure#171).
+  # DL3018 (pin apk versions) is ignored because pinned alpine packages
+  # disappear from the repos and break builds and Alpine should be kept updated
+  # Trivy reports fixable HIGH+CRITICAL but only CRITICAL fails the job
+  # The FE build needs its required build args - dummy vals fine for scanning
+  docker-scan:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        app: [back-end, front-end, property-boundaries-service]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Hadolint
+        uses: hadolint/hadolint-action@v3.1.0
+        with:
+          dockerfile: apps/${{ matrix.app }}/Dockerfile
+          ignore: DL3018
+      - name: Build image
+        run: >
+          docker build apps/${{ matrix.app }} -t ${{ matrix.app }}:scan
+          --build-arg NODE_VERSION=24
+          --build-arg CADDY_HOSTNAME=ci-scan.invalid
+          --build-arg VITE_OS_KEY=ci-scan
+          --build-arg VITE_GEOCODER_TOKEN=ci-scan
+          --build-arg VITE_MAPBOX_TOKEN=ci-scan
+      - name: Install Trivy
+        uses: aquasecurity/setup-trivy@v0.3.1
+        with:
+          version: v0.72.0
+          cache: true
+      - name: Trivy report (HIGH+CRITICAL, non-blocking)
+        uses: aquasecurity/trivy-action@v0.33.1
+        with:
+          image-ref: ${{ matrix.app }}:scan
+          severity: HIGH,CRITICAL
+          ignore-unfixed: true
+          exit-code: "0"
+          skip-setup-trivy: true
+      - name: Trivy gate (CRITICAL)
+        uses: aquasecurity/trivy-action@v0.33.1
+        with:
+          image-ref: ${{ matrix.app }}:scan
+          severity: CRITICAL
+          ignore-unfixed: true
+          exit-code: "1"
+          skip-setup-trivy: true
+          trivyignores: .trivyignore

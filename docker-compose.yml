@@ -82,6 +82,8 @@ services:
       SENDGRID_API_KEY: ${SENDGRID_API_KEY:-}
       BUTTONDOWN_API_KEY: ${BUTTONDOWN_API_KEY:-}
       GLITCHTIP_KEY: ${GLITCHTIP_KEY:-}
+      # Tags errors with the deploy environment: dev, staging or production
+      GLITCHTIP_ENVIRONMENT: ${GLITCHTIP_ENVIRONMENT:-}
       MIXPANEL_TOKEN: ${MIXPANEL_TOKEN:-}
       ANALYTICS_PEPPER: ${ANALYTICS_PEPPER:-}
       MEILISEARCH_ENABLED: "true"
