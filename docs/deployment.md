@@ -56,7 +56,7 @@ the lx-prod resource with the env vars from Bitwarden:
 - Scheduled Task, monthly 11th 02:30 (`30 2 11 * *`), the day after the
   pipeline: `bash scripts/backup-databases.sh property_boundaries`
 
-Retention - land_explorer keeps 31 dailies and the 1st of the month for 2 years - property_boundaries keeps 6 months. Raw INSPIRE zaip bacups are kept forever. Meilisearch is not backed up - rebuild it with the updateProprietors pipeline task.
+Retention - land_explorer keeps 31 dailies and the 1st of the month for 2 years - property_boundaries keeps 6 months. Raw INSPIRE zip bacups are kept forever. Meilisearch is not backed up - rebuild it with the updateProprietors pipeline task.
 
 To restore: copy a dump down and pipe it into the mysql container then run the pipeline for Meilisearch.
 
