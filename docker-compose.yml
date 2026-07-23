@@ -11,6 +11,11 @@
 # ${SERVICE_NAME_<SVC>} are Coolify magic vars resolving to the real compose
 # service name - suffixed -pr-N in PR previews, where hardcoded hostnames would
 # break. The :-fallbacks keep plain docker compose working.
+#
+# No custom network: services must sit on exactly one network (the compose
+# default; Coolify's per-resource network). A second network gives each
+# container two IPs and Coolify's Traefik picks its upstream IP arbitrarily,
+# 504ing when it picks the one its proxy is not attached to.
 
 name: land-explorer
 
@@ -28,7 +33,6 @@ services:
       timeout: 5s
       retries: 30
       start_period: 40s
-    networks: [lx]
 
   meilisearch:
     image: getmeili/meilisearch:v1.41.0
@@ -43,7 +47,6 @@ services:
       timeout: 5s
       retries: 30
       start_period: 10s
-    networks: [lx]
 
   be-migrate:
     build: { context: ./apps/back-end, args: { NODE_VERSION: "24" } }
@@ -60,7 +63,6 @@ services:
       DATABASE_NAME: land_explorer
     depends_on: { mysql: { condition: service_healthy } }
     restart: "no"
-    networks: [lx]
 
   back-end:
     build: { context: ./apps/back-end, args: { NODE_VERSION: "24" } }
@@ -86,7 +88,6 @@ services:
     depends_on:
       mysql: { condition: service_healthy }
       be-migrate: { condition: service_completed_successfully }
-    networks: [lx]
 
   pbs-migrate:
     build: { context: ./apps/property-boundaries-service, args: { NODE_VERSION: "24" } }
@@ -99,7 +100,6 @@ services:
       DB_NAME: property_boundaries
     depends_on: { mysql: { condition: service_healthy } }
     restart: "no"
-    networks: [lx]
 
   pbs:
     build: { context: ./apps/property-boundaries-service, args: { NODE_VERSION: "24" } }
@@ -119,11 +119,18 @@ services:
       OS_NGD_API_URL: ${OS_NGD_API_URL:-}
       OS_NGD_API_KEY: ${OS_NGD_API_KEY:-}
       MAPBOX_GEOCODER_TOKEN: ${MAPBOX_GEOCODER_TOKEN:-}
+      # DB backups to the storage box (scripts/backup-databases.sh, run as
+      # Coolify Scheduled Tasks on prod; envs without the tasks ignore these)
+      BACKUP_DESTINATION_PATH: ${BACKUP_DESTINATION_PATH:-}
+      MATRIX_WEBHOOK_URL: ${MATRIX_WEBHOOK_URL:-}
+      REMOTE_BACKUP_SSH_PORT: ${REMOTE_BACKUP_SSH_PORT:-}
+    # Storage box SSH key for backups
+    volumes:
+      - /root/pbs-backup-ssh:/home/node/.ssh
     depends_on:
       mysql: { condition: service_healthy }
       meilisearch: { condition: service_healthy }
       pbs-migrate: { condition: service_completed_successfully }
-    networks: [lx]
 
   front-end:
     build:
@@ -141,11 +148,7 @@ services:
         VITE_MIXPANEL_TOKEN: ${VITE_MIXPANEL_TOKEN:-}
         VITE_MIXPANEL_PEPPER: ${VITE_MIXPANEL_PEPPER:-}
     depends_on: [back-end]
-    networks: [lx]
 
 volumes:
   mysql_data:
   meilisearch_data:
-
-networks:
-  lx:
