@@ -14,7 +14,9 @@ ARG NODE_VERSION=nonesuch
 FROM node:${NODE_VERSION}-slim AS build
 WORKDIR /app
 
-# git: build/version metadata.
+# git: install git without the optional extras
+# first line gets the package index (list of all packages) and
+#   last line removes it to keep the image small
 RUN apt-get update \
     && apt-get install -y --no-install-recommends git \
     && rm -rf /var/lib/apt/lists/*
