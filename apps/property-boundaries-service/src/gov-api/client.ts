@@ -1,5 +1,4 @@
 import axios from "axios";
-import { logger } from "../pipeline/logger.js";
 import { DataSet, FullDatasetResponse } from "./response.types.js";
 
 const GOV_API_TIMEOUT_MS = 30000;
@@ -19,17 +18,12 @@ export const govApiClient = axios.create({
 export const getFullUKDataset = async (
   month: number,
   year: number,
-): Promise<DataSet | null> => {
+): Promise<DataSet> => {
   const paddedMonth = String(month).padStart(2, "0");
-  try {
-    const response = await govApiClient.get<FullDatasetResponse>(
-      `/datasets/history/ccod/CCOD_FULL_${year}_${paddedMonth}.zip`,
-    );
-    return { downloadUrl: response.data.result.download_url };
-  } catch (err) {
-    logger.error(err, `Failed to get UK dataset for ${paddedMonth}/${year}`);
-    return null;
-  }
+  const response = await govApiClient.get<FullDatasetResponse>(
+    `/datasets/history/ccod/CCOD_FULL_${year}_${paddedMonth}.zip`,
+  );
+  return { downloadUrl: response.data.result.download_url };
 };
 
 /**
@@ -40,18 +34,10 @@ export const getFullUKDataset = async (
 export const getFullOverseasDataset = async (
   month: number,
   year: number,
-): Promise<DataSet | null> => {
+): Promise<DataSet> => {
   const paddedMonth = String(month).padStart(2, "0");
-  try {
-    const response = await govApiClient.get<FullDatasetResponse>(
-      `/datasets/history/ocod/OCOD_FULL_${year}_${paddedMonth}.zip`,
-    );
-    return { downloadUrl: response.data.result.download_url };
-  } catch (err) {
-    logger.error(
-      err,
-      `Failed to get overseas dataset for ${paddedMonth}/${year}`,
-    );
-    return null;
-  }
+  const response = await govApiClient.get<FullDatasetResponse>(
+    `/datasets/history/ocod/OCOD_FULL_${year}_${paddedMonth}.zip`,
+  );
+  return { downloadUrl: response.data.result.download_url };
 };
