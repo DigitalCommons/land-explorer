@@ -1,5 +1,5 @@
 import chunk from "lodash.chunk";
-import { RawOwnership } from "../gov-api/land-ownership-datasets.types.js";
+import { RawOwnership } from "../gov-api/datasets.types.js";
 import { LandOwnershipSnapshotModel } from "./models.js";
 import { logger } from "../pipeline/logger.js";
 
@@ -72,7 +72,9 @@ export const bulkCreateLandOwnershipSnapshots = async (
           proprietor_name: proprietorName || "",
           company_registration_no: companyRegNo || "",
           proprietor_uk_based: !overseas,
-          date_proprietor_added: convertDate(ownership["Date Proprietor Added"])
+          date_proprietor_added: convertDate(
+            ownership["Date Proprietor Added"],
+          ),
         });
       }
     }
@@ -95,4 +97,5 @@ export const bulkCreateLandOwnershipSnapshots = async (
   }
 };
 
-const convertDate = (date?: string) => date ? date.split("-").reverse().join("-") : null;
+const convertDate = (date?: string) =>
+  date ? date.split("-").reverse().join("-") : null;

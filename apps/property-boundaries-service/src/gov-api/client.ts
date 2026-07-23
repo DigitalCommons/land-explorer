@@ -1,15 +1,15 @@
 import axios from "axios";
 import { logger } from "../pipeline/logger.js";
-import { DataSet, FullDatasetResponse } from "./types.js";
+import { DataSet, FullDatasetResponse } from "./response.types.js";
 
-const GOV_API_TIMEOUT_MS = 30000
+const GOV_API_TIMEOUT_MS = 30000;
 export const govApiClient = axios.create({
   baseURL: process.env.GOV_API_URL,
   headers: {
     Authorization: process.env.GOV_API_KEY,
   },
-  timeout: GOV_API_TIMEOUT_MS
-})
+  timeout: GOV_API_TIMEOUT_MS,
+});
 
 /**
  * Retrieves the full UK dataset for a specific month and year.
