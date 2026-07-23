@@ -129,7 +129,9 @@ describe("updateOwnershipSnapshots", function () {
     // Arrange
     getLatestOwnershipSnapshotDataDateStub.resolves(new Date(2018, 11, 31));
     pipeZippedCsvFromUrlIntoFunStub.callsFake(async (_url, processFn) => {
-      await processFn([{ "Title Number": "T1" }]);
+      await processFn([
+        { "Title Number": "T1", "Proprietor Name (1)": "Alice" },
+      ]);
     });
     const { updateOwnershipSnapshots } = await loadModule();
 
@@ -141,11 +143,17 @@ describe("updateOwnershipSnapshots", function () {
     expect(getFullOverseasDatasetStub.calledWith(1, 2020)).to.be.true;
     expect(bulkCreateLandOwnershipSnapshotsStub.calledTwice).to.be.true;
 
-    const [ukCallArgs, overseasCallArgs] =
-      bulkCreateLandOwnershipSnapshotsStub.args;
-    expect(ukCallArgs[1]).to.deep.equal(new Date(2019, 11, 31));
-    expect(ukCallArgs[2]).to.equal(false); // not overseas
-    expect(overseasCallArgs[2]).to.equal(true); // overseas
+    // The rows fed to bulkCreateLandOwnershipSnapshots are mapped from the raw CSV row,
+    // so we check the mapped shape rather than the pre-mapping snapshotDate/overseas args
+    const [ukRows, overseasRows] = bulkCreateLandOwnershipSnapshotsStub.args.map(
+      (args) => args[0],
+    );
+    expect(ukRows[0]).to.include({
+      title_no: "T1",
+      proprietor_uk_based: true,
+    });
+    expect(ukRows[0].snapshot_date).to.deep.equal(new Date(2019, 11, 31));
+    expect(overseasRows[0]).to.include({ proprietor_uk_based: false });
   });
 
   it("halts further processing and notifies matrix if the UK dataset download fails", async () => {

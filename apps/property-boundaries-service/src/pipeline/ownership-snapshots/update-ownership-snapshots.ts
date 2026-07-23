@@ -12,6 +12,7 @@ import { logger } from "../logger.js";
 import { notifyMatrix } from "../util.js";
 import { pipeZippedCsvFromUrlIntoFun } from "../ownerships/helpers.js";
 import { bulkCreateLandOwnershipSnapshots } from "../../queries/land-ownership-snapshot-query.js";
+import { mapRawOwnershipsToSnapshotRows } from "./land-ownership-snapshot-mapper.js";
 
 const EARLIEST_DATE_TO_PROCESS = new Date(2017, 11, 31); // The earliest end of year date for which we have ownership data
 
@@ -159,13 +160,14 @@ const downloadAndProcessDataset = async (
   try {
     await pipeZippedCsvFromUrlIntoFun(
       ownershipSnapshotData.downloadUrl,
-      (ownership) =>
-        bulkCreateLandOwnershipSnapshots(
+      (ownership) => {
+        const mappedRows = mapRawOwnershipsToSnapshotRows(
           ownership,
           snapshotDate,
           overseas,
-          false,
-        ),
+        );
+        return bulkCreateLandOwnershipSnapshots(mappedRows);
+      },
       20000,
     );
   } catch (error) {
