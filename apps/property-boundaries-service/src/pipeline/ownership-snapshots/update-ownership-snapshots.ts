@@ -3,7 +3,7 @@ import {
   getFullOverseasDataset,
   getFullUKDataset,
 } from "../../gov-api/client.js";
-import { DataSet } from "../../gov-api/types.js";
+import { DataSet } from "../../gov-api/response.types.js";
 import {
   getLatestOwnershipSnapshotDataDate,
   setPipelineLatestOwnershipSnapshotData,
@@ -48,7 +48,7 @@ export const updateOwnershipSnapshots = async () => {
   // loop through each year from dateToProcessFrom to the end of last year and process the ownership snapshot data for that year
   for (let year of yearsToProcess) {
     const success = await downloadAndProcessOwnershipSnapshotDataForYear(
-      year.getFullYear(),      
+      year.getFullYear(),
     );
 
     if (!success) {
@@ -56,9 +56,13 @@ export const updateOwnershipSnapshots = async () => {
       logger.error(msg);
       await notifyMatrix(`🔴 ${msg}`);
       return;
-    }     
+    }
   }
-  await notifyMatrix(`✅ Successfully inserted land ownership snapshots for years: ${yearsToProcess.map(x=> x.getFullYear()).join(', ')}`);
+  await notifyMatrix(
+    `✅ Successfully inserted land ownership snapshots for years: ${yearsToProcess
+      .map((x) => x.getFullYear())
+      .join(", ")}`,
+  );
 };
 
 /**
@@ -75,7 +79,6 @@ const getDateToProcessFrom = async (
       "No ownership snapshot data found, so we will process all years from 2017 to the end of last year",
     );
     dateToProcessFrom = EARLIEST_DATE_TO_PROCESS;
-    
   } else {
     logger.info(
       `We will process ownership snapshot data from ${latestOwnershipSnapshotDataDate} to the end of last year`,
@@ -91,7 +94,7 @@ const getDateToProcessFrom = async (
  
  */
 const downloadAndProcessOwnershipSnapshotDataForYear = async (
-  year: number,  
+  year: number,
 ): Promise<boolean> => {
   logger.info(`Processing ownership snapshot data for year ${year}`);
   const snapshotDate = new Date(year, 11, 31);
@@ -153,11 +156,16 @@ const downloadAndProcessDataset = async (
     `Successfully downloaded FULL ${label} ownership snapshot data for 01/${fileYear}`,
   );
 
-  try {    
+  try {
     await pipeZippedCsvFromUrlIntoFun(
       ownershipSnapshotData.downloadUrl,
       (ownership) =>
-        bulkCreateLandOwnershipSnapshots(ownership, snapshotDate, overseas, false),
+        bulkCreateLandOwnershipSnapshots(
+          ownership,
+          snapshotDate,
+          overseas,
+          false,
+        ),
       20000,
     );
   } catch (error) {
