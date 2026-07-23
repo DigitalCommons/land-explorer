@@ -7,7 +7,9 @@ Add the analytic to our [tracking plan](https://docs.google.com/spreadsheets/d/1
 * Building a picture of usage and usability once people are in
 * Building a picture of how much people like/value it, share/come back
 
-Think about which properties would be useful to include in the events, how the server-side can know this info, and therefore where in the app it will need to be sent. We currently send all analytics on the server-side, and aim to do this for all future analytics where possible since they are more reliable than client-side analytics. 
+Think about which properties would be useful to include in the events, how the server-side can know this info, and therefore where in the app it will need to be sent. We currently send all analytics on the server-side, and aim to do this for all future analytics where possible since they are more reliable than client-side analytics.
+
+We need to ensure anonymity in the backend analytics if the user hasn't consented. See https://github.com/DigitalCommons/land-explorer/issues/29 for more discussion.
 
 ## Implementation
 
