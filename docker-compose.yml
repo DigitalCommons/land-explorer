@@ -124,13 +124,17 @@ services:
       OS_NGD_API_URL: ${OS_NGD_API_URL:-}
       OS_NGD_API_KEY: ${OS_NGD_API_KEY:-}
       MAPBOX_GEOCODER_TOKEN: ${MAPBOX_GEOCODER_TOKEN:-}
-      # DB backups to the storage box (scripts/backup-databases.sh, run as
-      # Coolify Scheduled Tasks on prod; envs without the tasks ignore these)
-      BACKUP_DESTINATION_PATH: ${BACKUP_DESTINATION_PATH:-}
+      # Pipeline devops notifications (skipped when unset)
       MATRIX_WEBHOOK_URL: ${MATRIX_WEBHOOK_URL:-}
+      # DB and INSPIRE backups, the first is MySQL, second is INSPIRE downloads
+      BACKUP_DESTINATION_PATH: ${BACKUP_DESTINATION_PATH:-}
+      REMOTE_BACKUP_DESTINATION_PATH: ${REMOTE_BACKUP_DESTINATION_PATH:-}
       REMOTE_BACKUP_SSH_PORT: ${REMOTE_BACKUP_SSH_PORT:-}
-    # Storage box SSH key for backups
     volumes:
+      # INSPIRE downloads (lets a rerun resume the month) and pipeline logs
+      - pbs_downloads:/app/downloads
+      - pbs_logs:/app/logs
+      # Storage box SSH key for backups
       - /root/pbs-backup-ssh:/home/node/.ssh
     depends_on:
       mysql: { condition: service_healthy }
@@ -169,3 +173,5 @@ services:
 volumes:
   mysql_data:
   meilisearch_data:
+  pbs_downloads:
+  pbs_logs:
