@@ -18,6 +18,7 @@ import {
 } from "../queries/query.js";
 import { PipelineOptions, triggerPipelineRun } from "../pipeline/run.js";
 import { proprietorsRoute } from "./proprietors/proprietors.js";
+import { proprietorOwnershipsRoute } from "./proprietors/ownerships.js";
 
 type GetPolygonsInBoxRequest = Request & {
   query: {
@@ -276,6 +277,7 @@ const routes = [
   searchRoute,
   runPipelineRoute,
   proprietorsRoute,
+  proprietorOwnershipsRoute,
   // postTestDataRoute
 ];
 

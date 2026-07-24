@@ -24,3 +24,59 @@ export const bulkCreateLandOwnershipSnapshots = async (
     });
   }
 };
+
+export type ProprietorOwnershipRecord = {
+  title_no: string;
+  property_address: string | null;
+  proprietor_name: string;
+  company_registration_no: string;
+};
+
+export type ProprietorOwnershipResult = {
+  rows: ProprietorOwnershipRecord[];
+  totalResults: number;
+};
+
+/**
+ * Find land ownership snapshot rows for a proprietor that held title on 31 December of the given
+ * year. When a company registration number is given, it's used on its own to match, since it's
+ * the stable unique key for a company; proprietor name spelling can vary slightly between title
+ * records. Otherwise, matches are made on proprietor name.
+ * @param proprietorName proprietor name to match (ignored if companyRegistrationNo is given)
+ * @param companyRegistrationNo company registration number to match
+ * @param year the year to find ownerships for (matches the snapshot taken on 31 December)
+ * @param page 1-indexed page number
+ * @param pageSize number of rows per page
+ */
+export const getOwnershipsForProprietorAndYear = async (
+  proprietorName: string | undefined,
+  companyRegistrationNo: string | undefined,
+  year: number,
+  page: number,
+  pageSize: number,
+): Promise<ProprietorOwnershipResult> => {
+  const { rows, count } = await LandOwnershipSnapshotModel.findAndCountAll({
+    where: {
+      snapshot_date: `${year}-12-31`,
+      ...(companyRegistrationNo
+        ? { company_registration_no: companyRegistrationNo }
+        : { proprietor_name: proprietorName }),
+    },
+    attributes: [
+      "title_no",
+      "property_address",
+      "proprietor_name",
+      "company_registration_no",
+    ],
+    order: [["title_no", "ASC"]],
+    limit: pageSize,
+    offset: (page - 1) * pageSize,
+  });
+
+  return {
+    rows: rows.map((row) =>
+      row.get({ plain: true }),
+    ) as ProprietorOwnershipRecord[],
+    totalResults: count,
+  };
+};
