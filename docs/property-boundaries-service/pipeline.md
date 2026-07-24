@@ -18,6 +18,11 @@ We store data in 3 database tables:
   each row in this table gives the geometry of a land boundary for a registered property. It has a `poly_id` (a.k.a. INSPIRE ID) and possibly a `title_no` to link the property to on ownership in the above table.
 - `unregistered_land` -
   each row has the geometry of a polygon boundary for a piece of unregistered land.
+- `land_ownership_snapshots` -
+  each row is a proprietor's ownership of a title as it stood on 31 December of a given year (one
+  row per populated proprietor slot per title per year, since a title can have up to 4
+  proprietors). Unlike `land_ownerships`, which only holds the *current* state, this table
+  preserves ownership history year-on-year, so we can answer "who owned this property in year X".
 
 The pipeline obtains data from these open source datasets:
 
@@ -111,6 +116,29 @@ It runs these tasks in sequential order:
     ownership data. This stage is quite fast and non-destructive, since the government API provides all
     historical data since Nov 2017, so the new data is always written straight into the DB.
 
+1. `ownershipSnapshots`: This task builds up the `land_ownership_snapshots` table (see above), one
+   full year at a time, so we have a year-by-year ownership history rather than just the current
+   state. It's used by the [proprietor ownerships endpoint](./ownerships-endpoint.md) to look up
+   what a proprietor owned in a given year.
+
+    It works as follows:
+
+    1. Reads `latest_snapshot_ownership_data` from the most recent pipeline run to find which year
+       to resume from (starting from 2017, the earliest year the data is available for, if no
+       snapshot has been processed yet).
+    1. For each complete year from there up to the end of last year, downloads that year's FULL UK
+       and overseas company ownership datasets from the government API - specifically, the dataset
+       published in January of the *following* year, since that's the first FULL dataset that
+       reflects the state of ownership on 31 December of the target year.
+    1. Maps each downloaded CSV row into one snapshot row per populated proprietor slot (up to 4
+       per title), and bulk inserts them into `land_ownership_snapshots`, in chunks and with
+       `ignoreDuplicates` so that re-running a year that's already been processed is a no-op rather
+       than creating duplicates or erroring.
+    1. Records the year just processed in `latest_snapshot_ownership_data` on the pipeline run, so
+       the next pipeline run knows where to resume from.
+    1. If a year fails to download or process, processing halts there (so we don't skip ahead and
+       leave a gap) and Matrix is notified; earlier years already inserted are unaffected.
+
 1. `updateProprietors`: This task rebuilds the Meilisearch `proprietors` search index from the `land_ownerships` data that was updated in the previous step, so that proprietor name search is kept up to date.
 
     It works as follows:
@@ -193,6 +221,8 @@ are specific to DCC infrastructure, see [this GitHub comment](https://github.com
 ## Analysing the pipeline output
 
 After the `updateOwnerships` task is complete, the new company ownership data should be visible in LX for all users.
+
+After the `ownershipSnapshots` task is complete, any newly-completed year(s) become queryable via the [proprietor ownerships endpoint](./ownerships-endpoint.md). It only adds rows to `land_ownership_snapshots`, so it doesn't affect `land_ownerships`, `land_ownership_polygons`, or any of the live LX ownership layers.
 
 After the `updateProprietors` task is complete, the Meilisearch proprietor index should be updated to match the proprietors in the Landownership table. These are visible to all users via the search bar in the LX frontend.
 
