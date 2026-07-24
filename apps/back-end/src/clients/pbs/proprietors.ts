@@ -1,4 +1,4 @@
-import axios from "axios";
+import { pbsClient } from "./client";
 
 export type ProprietorSearchResponse = {
   results: { id: string; proprietorName: string }[];
@@ -21,17 +21,9 @@ export const searchProprietors = async (
   pageSize: number,
   signal?: AbortSignal,
 ): Promise<ProprietorSearchResponse> => {
-  const response = await axios.get(
-    `${process.env.BOUNDARY_SERVICE_URL}/proprietors`,
-    {
-      params: {
-        searchTerm,
-        page,
-        pageSize,
-        secret: process.env.BOUNDARY_SERVICE_SECRET,
-      },
-      signal,
-    },
-  );
+  const response = await pbsClient.get("/proprietors", {
+    params: { searchTerm, page, pageSize },
+    signal,
+  });
   return response.data;
 };

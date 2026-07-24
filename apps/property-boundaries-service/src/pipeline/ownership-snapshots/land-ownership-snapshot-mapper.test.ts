@@ -1,7 +1,7 @@
 import { expect } from "chai";
 import sinon from "sinon";
 import esmock from "esmock";
-import { RawOwnership } from "../../gov-api/datasets.types.js";
+import { RawOwnership } from "../../clients/gov-api/datasets.types.js";
 
 describe("mapRawOwnershipsToSnapshotRows", () => {
   let sandbox: sinon.SinonSandbox;

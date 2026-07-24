@@ -45,7 +45,9 @@ describe("update proprietors", () => {
     getDistinctProprietorNamesStub = sandbox.stub().resolves([]);
 
     update = await esmock("./update.js", {
-      "../../meilisearch/client.js": { getMeiliClient: getMeiliClientStub },
+      "../../clients/meilisearch/client.js": {
+        getMeiliClient: getMeiliClientStub,
+      },
       "../../queries/proprietor-query.js": {
         getDistinctProprietorNames: getDistinctProprietorNamesStub,
       },

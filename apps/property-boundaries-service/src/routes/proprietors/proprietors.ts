@@ -4,7 +4,7 @@ import {
   ResponseObject,
   ResponseToolkit,
 } from "@hapi/hapi";
-import { getMeiliClient } from "../../meilisearch/client.js";
+import { getMeiliClient } from "../../clients/meilisearch/client.js";
 import Joi from "joi";
 import { logger } from "../../pipeline/logger.js";
 

@@ -17,7 +17,7 @@ describe("updateOwnershipSnapshots", function () {
   // (and its mocked dependencies) have finished loading, not while it's being imported.
   const loadModule = async () => {
     const mod = await esmock("./update-ownership-snapshots.js", {
-      "../../gov-api/client.js": {
+      "../../clients/gov-api/client.js": {
         getFullUKDataset: getFullUKDatasetStub,
         getFullOverseasDataset: getFullOverseasDatasetStub,
       },
@@ -145,9 +145,8 @@ describe("updateOwnershipSnapshots", function () {
 
     // The rows fed to bulkCreateLandOwnershipSnapshots are mapped from the raw CSV row,
     // so we check the mapped shape rather than the pre-mapping snapshotDate/overseas args
-    const [ukRows, overseasRows] = bulkCreateLandOwnershipSnapshotsStub.args.map(
-      (args) => args[0],
-    );
+    const [ukRows, overseasRows] =
+      bulkCreateLandOwnershipSnapshotsStub.args.map((args) => args[0]);
     expect(ukRows[0]).to.include({
       title_no: "T1",
       proprietor_uk_based: true,

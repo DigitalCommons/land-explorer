@@ -1,7 +1,7 @@
 import { ResponseToolkit, ResponseObject, ServerRoute } from "@hapi/hapi";
 import Joi from "joi";
-import { LoggedInRequest } from "./request_types";
-import { searchProprietors } from "../queries/proprietors";
+import { LoggedInRequest } from "../request_types";
+import { searchProprietors } from "../../clients/pbs/proprietors";
 
 const DEFAULT_PAGE: number = 1;
 const DEFAULT_PAGE_SIZE: number = 10;
@@ -23,7 +23,7 @@ type GetProprietorsRequest = LoggedInRequest & {
  * @param h - The Hapi response toolkit for constructing responses.
  * @returns A response object containing the search results or an error message.
  */
-async function getProprietors(
+export async function getProprietors(
   request: GetProprietorsRequest,
   h: ResponseToolkit,
 ): Promise<ResponseObject> {
@@ -53,32 +53,27 @@ async function getProprietors(
   }
 }
 
-export const proprietorRoutes: ServerRoute[] = [
-  {
-    method: "GET",
-    path: "/api/proprietors",
-    handler: getProprietors,
-    options: {
-      validate: {
-        query: Joi.object({
-          searchTerm: Joi.string()
-            .min(1)
-            .max(MAX_SEARCH_TERM_LENGTH)
-            .required(),
-          page: Joi.number().integer().min(1).optional().default(DEFAULT_PAGE),
-          pageSize: Joi.number()
-            .integer()
-            .min(1)
-            .max(MAX_PAGE_SIZE)
-            .optional()
-            .default(DEFAULT_PAGE_SIZE),
-        }),
-        failAction: (request, h, err) =>
-          h
-            .response({ message: (err as Error).message })
-            .code(400)
-            .takeover(),
-      },
+export const proprietorsRoute: ServerRoute = {
+  method: "GET",
+  path: "/api/proprietors",
+  handler: getProprietors,
+  options: {
+    validate: {
+      query: Joi.object({
+        searchTerm: Joi.string().min(1).max(MAX_SEARCH_TERM_LENGTH).required(),
+        page: Joi.number().integer().min(1).optional().default(DEFAULT_PAGE),
+        pageSize: Joi.number()
+          .integer()
+          .min(1)
+          .max(MAX_PAGE_SIZE)
+          .optional()
+          .default(DEFAULT_PAGE_SIZE),
+      }),
+      failAction: (request, h, err) =>
+        h
+          .response({ message: (err as Error).message })
+          .code(400)
+          .takeover(),
     },
   },
-];
+};
