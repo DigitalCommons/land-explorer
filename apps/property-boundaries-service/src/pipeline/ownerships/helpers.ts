@@ -5,7 +5,7 @@ import csvParser, { CsvParser } from "csv-parser";
 import { logger } from "../logger.js";
 
 // These are all helper functions for the 2 main functions in ./update.ts
-
+// TODO: https://github.com/DigitalCommons/land-explorer/issues/79 Refactor this code into the gov api client
 export const getDatasetHistory = async (overseas: boolean) => {
   const type = overseas ? "ocod" : "ccod";
   const response = await axios.get(
@@ -31,6 +31,7 @@ export const getDatasetHistory = async (overseas: boolean) => {
   }));
 };
 
+// TODO: https://github.com/DigitalCommons/land-explorer/issues/79 Refactor this code into the gov api client
 export const getLatestDatasets = async (overseas: boolean) => {
   const type = overseas ? "ocod" : "ccod";
   const response = await axios.get(
@@ -69,6 +70,7 @@ export const pipeZippedCsvFromUrlIntoFun = async (
   chunkSize: number,
   logProgress: boolean = true,
 ) => {
+  // TODO: https://github.com/DigitalCommons/land-explorer/issues/79 Refactor this code into the gov api client
   const response = await axios.get(downloadUrl, {
     responseType: "stream",
   });
@@ -97,7 +99,12 @@ export const pipeZippedCsvFromUrlIntoFun = async (
               );
             }
             const chunk = rowsToSend.splice(0, chunkSize);
-            await processChunkOfRowsFunc(chunk);
+            try {
+              await processChunkOfRowsFunc(chunk);
+            } catch (error) {
+              reject(error);
+              return;
+            }
             sendingChunk = false;
             csvPipe.resume();
           }
@@ -111,7 +118,12 @@ export const pipeZippedCsvFromUrlIntoFun = async (
 
         csvPipe.on("end", async () => {
           // Final chunk
-          await processChunkOfRowsFunc(rowsToSend);
+          try {
+            await processChunkOfRowsFunc(rowsToSend);
+          } catch (error) {
+            reject(error);
+            return;
+          }
           logger.debug(`Finished processing ${rowCount} rows of ${filePath}`);
           resolve();
         });
