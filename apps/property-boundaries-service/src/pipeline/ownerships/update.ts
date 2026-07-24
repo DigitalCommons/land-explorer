@@ -34,7 +34,7 @@ export const updateOwnerships = async (options: any) => {
     // datasets from Nov 2017 (the first set of data provided by the gov API in the current data
     // format)
     logger.info(
-      "Download the first full set of ownership data published in Nov 2017"
+      "Download the first full set of ownership data published in Nov 2017",
     );
     await downloadOwnershipsFullData(11, 2017);
     latestOwnershipDataDate = new Date("2017-11-28");
@@ -60,7 +60,7 @@ export const updateOwnerships = async (options: any) => {
         // only keep monthly 'change only updates'
         dataset.filename.includes("_COU_") &&
         // only keep new files since the latest pipeline run
-        new Date(dataset.unsorted_date) > latestOwnershipDataDate
+        new Date(dataset.unsorted_date) > latestOwnershipDataDate,
     )
     // Sort chronologically (oldest first)
     .sort((a, b) => (a.unsorted_date > b.unsorted_date ? 1 : -1));
@@ -69,7 +69,7 @@ export const updateOwnerships = async (options: any) => {
 
   for (const [index, file] of filesToProcess.entries()) {
     logger.info(
-      `Processing ownership change file ${file.filename}, size ${file.file_size}`
+      `Processing ownership change file ${file.filename}, size ${file.file_size}`,
     );
 
     const ownershipAdditions = [];
@@ -92,10 +92,10 @@ export const updateOwnerships = async (options: any) => {
         default:
           logger.error(
             { filename: file.filename, ownership },
-            "No change indicator... we don't expect this!"
+            "No change indicator... we don't expect this!",
           );
           throw new Error(
-            `No change indicator for ownership title ${ownership["Title Number"]} in file ${file.filename}`
+            `No change indicator for ownership title ${ownership["Title Number"]} in file ${file.filename}`,
           );
       }
     };
@@ -113,12 +113,12 @@ export const updateOwnerships = async (options: any) => {
       fileResponse.data.result.download_url,
       (ownershipsChunk) => addOwnershipToArray(ownershipsChunk[0]),
       1,
-      false
+      false,
     );
 
     // First processs deletions, then additions (so we don't delete new data)
     const ownershipDeletionTitleNos = ownershipDeletions.map(
-      (ownership) => ownership["Title Number"]
+      (ownership) => ownership["Title Number"],
     );
     logger.info(`Deleting ${ownershipDeletionTitleNos.length} ownerships`);
     await bulkDeleteLandOwnerships(ownershipDeletionTitleNos);
@@ -171,18 +171,19 @@ async function downloadOwnershipsFullData(month: number, year: number) {
     await bulkCreateOrUpdateLandOwnerships(ownerships, overseas, false);
   };
 
+  // TODO: https://github.com/DigitalCommons/land-explorer/issues/79 Refactor this code to use the method in the gov api client
   const datasetUKResponse = await axios.get(
     `${process.env.GOV_API_URL}/datasets/history/ccod/CCOD_FULL_${year}_${paddedMonth}.zip`,
     {
       headers: {
         Authorization: process.env.GOV_API_KEY,
       },
-    }
+    },
   );
 
   if (datasetUKResponse.status !== 200) {
     logger.error(
-      `We failed to get UK data for ${paddedMonth}/${year} , status code: ${datasetUKResponse.status}`
+      `We failed to get UK data for ${paddedMonth}/${year} , status code: ${datasetUKResponse.status}`,
     );
     return;
   }
@@ -193,21 +194,22 @@ async function downloadOwnershipsFullData(month: number, year: number) {
   await pipeZippedCsvFromUrlIntoFun(
     datasetUKResponse.data.result.download_url,
     (ownership) => processOwnership(ownership, false),
-    20000
+    20000,
   );
 
+  // TODO: https://github.com/DigitalCommons/land-explorer/issues/79 Refactor this code to use the method in the gov api client
   const datasetOverseasResponse = await axios.get(
     `${process.env.GOV_API_URL}/datasets/history/ocod/OCOD_FULL_${year}_${paddedMonth}.zip`,
     {
       headers: {
         Authorization: process.env.GOV_API_KEY,
       },
-    }
+    },
   );
 
   if (datasetOverseasResponse.status !== 200) {
     logger.error(
-      `We failed to get overseas data for ${paddedMonth}/${year} , status code: ${datasetOverseasResponse.status}`
+      `We failed to get overseas data for ${paddedMonth}/${year} , status code: ${datasetOverseasResponse.status}`,
     );
     return;
   }
@@ -215,13 +217,13 @@ async function downloadOwnershipsFullData(month: number, year: number) {
   await pipeZippedCsvFromUrlIntoFun(
     datasetOverseasResponse.data.result.download_url,
     (ownership) => processOwnership(ownership, true),
-    20000
+    20000,
   );
 
   logger.info(
-    `Finished downloading the whole UK and overseas companies data from ${paddedMonth}/${year}`
+    `Finished downloading the whole UK and overseas companies data from ${paddedMonth}/${year}`,
   );
   await setPipelineLatestOwnershipData(
-    `${year}-${paddedMonth}-28` // data is valid until the start of next month, so the exact day doesn't really matter
+    `${year}-${paddedMonth}-28`, // data is valid until the start of next month, so the exact day doesn't really matter
   );
 }
