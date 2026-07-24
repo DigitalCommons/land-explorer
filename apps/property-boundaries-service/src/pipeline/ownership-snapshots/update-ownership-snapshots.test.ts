@@ -145,9 +145,8 @@ describe("updateOwnershipSnapshots", function () {
 
     // The rows fed to bulkCreateLandOwnershipSnapshots are mapped from the raw CSV row,
     // so we check the mapped shape rather than the pre-mapping snapshotDate/overseas args
-    const [ukRows, overseasRows] = bulkCreateLandOwnershipSnapshotsStub.args.map(
-      (args) => args[0],
-    );
+    const [ukRows, overseasRows] =
+      bulkCreateLandOwnershipSnapshotsStub.args.map((args) => args[0]);
     expect(ukRows[0]).to.include({
       title_no: "T1",
       proprietor_uk_based: true,
