@@ -1,11 +1,11 @@
 import { expect } from "chai";
 import { createSandbox, fake } from "sinon";
 import { Server } from "@hapi/hapi";
-import { init } from "../server";
-import { ProprietorSearchResponse } from "../queries/proprietors";
+import { init } from "../../server";
+import { ProprietorSearchResponse } from "../../clients/pbs/proprietors";
 
 // Dependencies to be stubbed
-const proprietors = require("../queries/proprietors");
+const proprietors = require("../../clients/pbs/proprietors");
 
 const sandbox = createSandbox();
 
