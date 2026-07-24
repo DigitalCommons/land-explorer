@@ -6,11 +6,7 @@ import {
 } from "@hapi/hapi";
 import Joi from "joi";
 import { logger } from "../../pipeline/logger.js";
-import { getOwnershipsForProprietorAndYear } from "../../queries/land-ownership-snapshot-query.js";
-
-const DEFAULT_PAGE = 1;
-const DEFAULT_PAGE_SIZE = 10;
-const MAX_PAGE_SIZE = 100;
+import { getProprietorOwnershipRecords } from "../../services/proprietor-ownership.js";
 
 const MINUMUM_YEAR = 2017;
 
@@ -19,8 +15,6 @@ type GetProprietorOwnershipsRequest = Request & {
     proprietorName?: string;
     companyRegistrationNo?: string;
     year: number;
-    page: number;
-    pageSize: number;
     secret: string;
   };
 };
@@ -29,52 +23,33 @@ type GetProprietorOwnershipsRequest = Request & {
  * Returns the properties a proprietor held on 31 December of the given year, based on the
  * land_ownership_snapshots table. When companyRegistrationNo is given it's used on its own to
  * match, since it's the stable unique key for a company; otherwise proprietorName is matched.
+ *
+ * Not paginated: the frontend needs every one of the proprietor's properties at once, both to
+ * list them and to highlight all of them on the map together.
  * @param request The incoming request, containing `proprietorName` and/or `companyRegistrationNo`,
- * `year`, `page`, `pageSize` and api secret query params
+ * `year` and api secret query params
  * @param h The Hapi response toolkit
- * @returns A paginated response containing the proprietor's ownerships for that year, or an error
- * response
+ * @returns The proprietor's ownerships for that year, each with the polygon(s) for its title, or
+ * an error response
  */
 export const getProprietorOwnerships = async (
   request: GetProprietorOwnershipsRequest,
   h: ResponseToolkit,
 ): Promise<ResponseObject> => {
-  const {
-    proprietorName,
-    companyRegistrationNo,
-    year,
-    page,
-    pageSize,
-    secret,
-  } = request.query;
+  const { proprietorName, companyRegistrationNo, year, secret } = request.query;
 
   if (!secret || secret !== process.env.SECRET) {
     return h.response("missing or incorrect secret").code(403);
   }
 
   try {
-    const { rows, totalResults } = await getOwnershipsForProprietorAndYear(
+    const records = await getProprietorOwnershipRecords(
+      year,
       proprietorName,
       companyRegistrationNo,
-      year,
-      page,
-      pageSize,
     );
 
-    return h
-      .response({
-        proprietorName: rows[0]?.proprietor_name ?? null,
-        companyRegNumber: rows[0]?.company_registration_no ?? null,
-        year,
-        ownerships: rows.map((row) => ({
-          titleNumber: row.title_no,
-          address: row.property_address,
-        })),
-        page,
-        pageSize,
-        totalResults,
-      })
-      .code(200);
+    return h.response(records).code(200);
   } catch (error) {
     logger.error(error, "Error fetching proprietor ownerships");
     return h.response("Internal server error").code(500);
@@ -89,13 +64,6 @@ export const querySchema = Joi.object({
     .min(MINUMUM_YEAR)
     .max(new Date().getFullYear() - 1)
     .required(),
-  page: Joi.number().integer().min(1).optional().default(DEFAULT_PAGE),
-  pageSize: Joi.number()
-    .integer()
-    .min(1)
-    .max(MAX_PAGE_SIZE)
-    .optional()
-    .default(DEFAULT_PAGE_SIZE),
   secret: Joi.string().required(),
 }).or("proprietorName", "companyRegistrationNo");
 
