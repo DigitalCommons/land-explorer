@@ -1,6 +1,6 @@
 import { createHash } from "crypto";
 import chunk from "lodash.chunk";
-import { getMeiliClient } from "../../meilisearch/client.js";
+import { getMeiliClient } from "../../clients/meilisearch/client.js";
 import { getDistinctProprietorNames } from "../../queries/proprietor-query.js";
 import { logger } from "../logger.js";
 import { notifyMatrix } from "../util.js";

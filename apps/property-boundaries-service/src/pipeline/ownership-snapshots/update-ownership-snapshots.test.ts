@@ -17,7 +17,7 @@ describe("updateOwnershipSnapshots", function () {
   // (and its mocked dependencies) have finished loading, not while it's being imported.
   const loadModule = async () => {
     const mod = await esmock("./update-ownership-snapshots.js", {
-      "../../gov-api/client.js": {
+      "../../clients/gov-api/client.js": {
         getFullUKDataset: getFullUKDatasetStub,
         getFullOverseasDataset: getFullOverseasDatasetStub,
       },

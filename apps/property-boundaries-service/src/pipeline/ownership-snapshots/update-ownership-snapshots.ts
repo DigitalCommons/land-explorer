@@ -2,8 +2,8 @@ import { addYears, eachYearOfInterval, endOfYear } from "date-fns";
 import {
   getFullOverseasDataset,
   getFullUKDataset,
-} from "../../gov-api/client.js";
-import { DataSet } from "../../gov-api/response.types.js";
+} from "../../clients/gov-api/client.js";
+import { DataSet } from "../../clients/gov-api/response.types.js";
 import {
   getLatestOwnershipSnapshotDataDate,
   setPipelineLatestOwnershipSnapshotData,

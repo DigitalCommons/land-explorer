@@ -6,7 +6,7 @@ import {
 } from "@hapi/hapi";
 import Joi from "joi";
 import { logger } from "../../pipeline/logger.js";
-import { getProprietorOwnershipRecords } from "../../services/proprietor-ownership.js";
+import { getOwnershipRecordsByProprietor } from "../../services/ownership/ownership-service.js";
 
 const MINUMUM_YEAR = 2017;
 
@@ -43,7 +43,7 @@ export const getProprietorOwnerships = async (
   }
 
   try {
-    const records = await getProprietorOwnershipRecords(
+    const records = await getOwnershipRecordsByProprietor(
       year,
       proprietorName,
       companyRegistrationNo,

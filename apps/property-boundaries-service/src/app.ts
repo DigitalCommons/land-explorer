@@ -5,7 +5,7 @@ import qs from "qs";
 import routes from "./routes/index.js";
 import { resumePipelineRunIfInterrupted } from "./pipeline/run.js";
 import { logger } from "./pipeline/logger.js";
-import { initMeiliSearch } from "./meilisearch/client.js";
+import { initMeiliSearch } from "./clients/meilisearch/client.js";
 
 export const server: Server = Hapi.server({
   port: process.env.PORT || 4000,

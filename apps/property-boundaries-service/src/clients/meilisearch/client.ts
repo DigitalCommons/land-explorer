@@ -1,5 +1,5 @@
 import { MeiliSearch } from "meilisearch";
-import { logger } from "../pipeline/logger.js";
+import { logger } from "../../pipeline/logger.js";
 
 const DEFAULT_ADMIN_KEY_NAME = "Default Admin API Key";
 
