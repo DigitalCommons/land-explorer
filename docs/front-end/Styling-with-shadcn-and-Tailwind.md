@@ -35,6 +35,21 @@ See `src/components/ui/button.tsx` for a worked example of this pattern.
 
 Configuration for the CLI lives in `apps/front-end/components.json` - this is where the style variant (`base-nova`), base colour, icon library (`lucide`), and import aliases (`@/components`, `@/lib`, `@/hooks`, etc.) are set.
 
+### Preflight is turned off
+
+A stock Tailwind v4 setup imports everything with a single `@import "tailwindcss";`, which pulls in Tailwind's [Preflight](https://tailwindcss.com/docs/preflight) reset along with the theme and utility layers. Preflight strips browsers' default styling from built-in HTML elements (headings, lists, buttons, form controls, etc.) so components look the same everywhere before any classes are applied.
+
+We can't use it here: the existing app already has SCSS rules (`src/assets/styles/*.scss`) that target those same built-in elements directly (e.g. bare `button`, `input`, `a` selectors), relying on the browser defaults Preflight would remove. Turning Preflight on reset styling across the whole app, not just the new shadcn components, breaking everything we haven't migrated yet.
+
+So in `src/tailwind.css` we import the theme and utilities layers individually and skip `tailwindcss/preflight.css`:
+
+```css
+@import "tailwindcss/theme.css" layer(theme);
+@import "tailwindcss/utilities.css" layer(utilities);
+```
+
+This should be revisited once the legacy SCSS is fully migrated (see [Migrating old files](#migrating-old-files)) - at that point there should be no more hand-styled built-in elements for Preflight to conflict with, and it can be turned back on.
+
 ### Adding a new shadcn component
 
 Use the CLI rather than hand-writing primitives:
