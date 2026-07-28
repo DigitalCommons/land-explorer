@@ -47,6 +47,10 @@ export type ProprietorOwnershipRecord = {
  * row per polygon. Titles with no matched polygon are not returned, since there'd be nothing to
  * highlight on the map. There's no pagination: the frontend needs the full set of a proprietor's
  * properties at once, both to list them and to highlight all of them on the map together.
+ *
+ * Geometry is returned as GeoJSON truncated to 6 decimal places (~11cm), since full double
+ * precision vastly inflates response size for no visible benefit at map scale or land registry
+ * source accuracy.
  * @param proprietorName proprietor name to match (ignored if companyRegistrationNo is given)
  * @param companyRegistrationNo company registration number to match
  * @param year the year to find ownerships for (matches the snapshot taken on 31 December)
@@ -67,7 +71,7 @@ export const getOwnershipsForProprietorAndYear = async (
       land_ownership_snapshots.proprietor_name,
       land_ownership_snapshots.company_registration_no,
       land_ownership_polygons.poly_id AS poly_id,
-      land_ownership_polygons.geom AS geom
+      ST_AsGeoJSON(land_ownership_polygons.geom, 6) AS geom
     FROM land_ownership_snapshots
     INNER JOIN land_ownership_polygons
       ON land_ownership_snapshots.title_no = land_ownership_polygons.title_no
