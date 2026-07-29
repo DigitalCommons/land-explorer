@@ -10,8 +10,9 @@ import { PropsWithChildren } from "react";
 import { cn } from "@/lib/utils";
 import iconArrowGrey from "@/assets/img/icon-arrow-grey.svg";
 import iconArrowGreen from "@/assets/img/icon-arrow-green.svg";
+import { Property } from "@/reducers/LandOwnershipReducer";
 
-const RelatedProperty = ({ property }: { property: any }) => {
+const RelatedProperty = ({ property }: { property: Property }) => {
   const dispatch = useAppDispatch();
   const highlighted = useAppSelector((state) =>
     state.landOwnership.highlightedProperties.hasOwnProperty(property.title_no),

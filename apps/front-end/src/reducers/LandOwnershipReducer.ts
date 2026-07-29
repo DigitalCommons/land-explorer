@@ -9,31 +9,31 @@ export type PropertyDisplayType =
   | "socialHousing"
   | "unregistered";
 
-  export type PolygonGeom = {
-    poly_id: string;
-    geom: Polygon;
-  };
+export type PolygonGeom = {
+  poly_id: string;
+  geom: Polygon;
+};
 
-  export type Property = {
-    id: string;
-    title_no: string;
-    property_address: string;
-    proprietor_name_1?: string;
-    proprietor_name_2?: string;
-    proprietor_name_3?: string;
-    proprietor_name_4?: string;
-    proprietor_1_address_1: string;
-    proprietor_2_address_1: string;
-    proprietor_3_address_1: string;
-    proprietor_4_address_1: string;
-    proprietor_category_1: string;
-    proprietor_category_2: string;
-    proprietor_category_3: string;
-    proprietor_category_4: string;
-    tenure: string;
-    date_proprietor_added: string;
-    polygons: PolygonGeom[];
-  };
+export type Property = {
+  id: string;
+  title_no: string;
+  property_address: string;
+  proprietor_name_1?: string;
+  proprietor_name_2?: string;
+  proprietor_name_3?: string;
+  proprietor_name_4?: string;
+  proprietor_1_address_1: string;
+  proprietor_2_address_1: string;
+  proprietor_3_address_1: string;
+  proprietor_4_address_1: string;
+  proprietor_category_1: string;
+  proprietor_category_2: string;
+  proprietor_category_3: string;
+  proprietor_category_4: string;
+  tenure: string;
+  date_proprietor_added: string;
+  polygons: PolygonGeom[];
+};
 
 type HighlightedProperties = {
   [titleNo: string]: Property;
@@ -80,7 +80,7 @@ type LoadMapPayload = {
 
 export default (
   state: LandOwnershipState = INITIAL_STATE,
-  action: Action
+  action: Action,
 ): LandOwnershipState => {
   switch (action.type) {
     case "TOGGLE_PROPERTY_DISPLAY": {
@@ -121,7 +121,7 @@ export default (
       const rest = { ...state.highlightedProperties }; // Create a shallow copy
       propertyTitleNosToClear.forEach((id) => delete rest[id]);
       const activePropertyTitleNo = propertyTitleNosToClear.includes(
-        state.activePropertyTitleNo as string
+        state.activePropertyTitleNo as string,
       )
         ? null
         : state.activePropertyTitleNo;
@@ -166,6 +166,13 @@ export default (
       return {
         ...state,
         relatedPropertiesLoading: true,
+      };
+    case "FETCH_RELATED_PROPERTIES_EMPTY":
+      return {
+        ...state,
+        relatedProperties: {},
+        relatedPropertiesError: null,
+        relatedPropertiesLoading: false,
       };
     case "SET_RELATED_PROPERTIES_PROPRIETOR_NAME":
       return {

@@ -1,12 +1,33 @@
 import { getRequest } from "./RequestActions";
 import { autoSave } from "./MapActions";
-import { PropertyDisplayType } from "@/reducers/LandOwnershipReducer";
+import { Polygon } from "geojson";
+import {
+  PolygonGeom,
+  Property,
+  PropertyDisplayType,
+} from "@/reducers/LandOwnershipReducer";
+
+type OwnershipPolygon = { polyId: number; geom: unknown };
+
+type ProprietorOwnership = {
+  titleNumber: string;
+  address: string | null;
+  polygons: OwnershipPolygon[];
+};
+
+type ProprietorOwnershipsResponse = {
+  proprietorName: string | null;
+  companyRegNumber: string | null;
+  year: number;
+  ownerships: ProprietorOwnership[];
+  totalResults: number;
+};
 
 export const fetchPropertiesInBox = (
   sw_lng: number,
   sw_lat: number,
   ne_lng: number,
-  ne_lat: number
+  ne_lat: number,
 ) => {
   return async (dispatch: any, getState: any) => {
     dispatch({ type: "SET_LOADING_PROPERTIES", payload: true });
@@ -16,8 +37,8 @@ export const fetchPropertiesInBox = (
     const properties = propertiesType
       ? await dispatch(
           getRequest(
-            `/api/ownership?sw_lng=${sw_lng}&sw_lat=${sw_lat}&ne_lng=${ne_lng}&ne_lat=${ne_lat}&type=${propertiesType}`
-          )
+            `/api/ownership?sw_lng=${sw_lng}&sw_lat=${sw_lat}&ne_lng=${ne_lng}&ne_lat=${ne_lat}&type=${propertiesType}`,
+          ),
         )
       : null;
 
@@ -72,7 +93,7 @@ export const setActiveProperty = (titleNo: string) => {
     });
     console.log(
       "setActiveProperty",
-      getState().landOwnership.highlightedProperties[titleNo]
+      getState().landOwnership.highlightedProperties[titleNo],
     );
   };
 };
@@ -96,6 +117,67 @@ export const fetchRelatedProperties = (proprietorName: string) => {
         type: "FETCH_RELATED_PROPERTIES_SUCCESS",
         payload: relatedPropertiesTitleMap,
       });
+    } else {
+      dispatch({
+        type: "FETCH_RELATED_PROPERTIES_FAILURE",
+        payload: "Error fetching related properties",
+      });
+    }
+  };
+};
+
+export const fetchPropertyOwnershipByYear = (
+  year: number,
+  proprietorName: string,
+  companyRegNum?: string,
+) => {
+  return async (dispatch: any) => {
+    dispatch({ type: "FETCH_RELATED_PROPERTIES_LOADING" });
+
+    let url;
+    if (companyRegNum) {
+      url = `/api/proprietors/ownerships?year=${year}&proprietorName=${encodeURIComponent(
+        proprietorName,
+      )}&companyRegNo=${encodeURIComponent(companyRegNum)}`;
+    } else {
+      url = `/api/proprietors/ownerships?year=${year}&proprietorName=${encodeURIComponent(
+        proprietorName,
+      )}`;
+    }
+
+    const propertyOwnershipsForYear: ProprietorOwnershipsResponse | null =
+      await dispatch(getRequest(url));
+
+    if (propertyOwnershipsForYear !== null) {
+      if (propertyOwnershipsForYear.ownerships.length > 0) {
+        // map the results into a { [titleNo]: Property } map
+        const payload = propertyOwnershipsForYear.ownerships.reduce(
+          (
+            acc: { [titleNo: string]: Partial<Property> },
+            x: ProprietorOwnership,
+          ) => {
+            const polygons: PolygonGeom[] = x.polygons.map((p) => ({
+              poly_id: String(p.polyId),
+              geom: p.geom as Polygon,
+            }));
+            acc[x.titleNumber] = {
+              id: "",
+              title_no: x.titleNumber,
+              polygons,
+              property_address: x.address ?? "",
+            };
+            return acc;
+          },
+          {},
+        );
+        dispatch({
+          type: "FETCH_RELATED_PROPERTIES_SUCCESS",
+          payload: payload,
+        });
+      } else {
+        dispatch({ type: "FETCH_RELATED_PROPERTIES_EMPTY" });
+      }
+      // TODO need to handle no properties found
     } else {
       dispatch({
         type: "FETCH_RELATED_PROPERTIES_FAILURE",
