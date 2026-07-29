@@ -1,15 +1,13 @@
 import axios from "axios";
 import { Fragment, useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import SelectLib from "react-select";
 import Swal from "sweetalert2";
 import Spinner from "../components/common/Spinner";
 import GoCardlessModal from "../components/modals/GoCardlessModal";
 import TopBar from "../components/top-bar/TopBar";
 import constants from "../constants";
-
-// react-select v5 is used with legacy v1 API; cast to any to avoid prop type errors
-const Select = SelectLib as any;
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 // valid field starts as "" (unvalidated) and becomes boolean after user interaction
 type FieldState = { value: string; valid: string | boolean };
@@ -154,7 +152,7 @@ const Register = ({ updateBgImage }: Props) => {
         </div>
       )}
       <form onSubmit={handleSubmit}>
-        <input
+        <Input
           type="text"
           className={`text-input text-input-half text-input-first-half
                                 ${firstName.valid !== ""
@@ -173,7 +171,7 @@ const Register = ({ updateBgImage }: Props) => {
           required
           maxLength={101}
         />
-        <input
+        <Input
           type="text"
           className={`text-input text-input-half
                                 ${lastName.valid !== ""
@@ -192,7 +190,7 @@ const Register = ({ updateBgImage }: Props) => {
           }}
           required
         />
-        <input
+        <Input
           type="email"
           className={`text-input ${email.valid !== "" ? (email.valid ? "valid" : "invalid") : ""
             }`}
@@ -207,7 +205,7 @@ const Register = ({ updateBgImage }: Props) => {
           }}
           required
         />
-        <input
+        <Input
           type="password"
           className={`text-input text-input-half text-input-first-half
                                 ${password.valid !== ""
@@ -229,7 +227,7 @@ const Register = ({ updateBgImage }: Props) => {
           }}
           required
         />
-        <input
+        <Input
           type="password"
           className={`text-input text-input-half
                                 ${password.value !== ""
@@ -252,7 +250,7 @@ const Register = ({ updateBgImage }: Props) => {
           }}
           required
         />
-        <input
+        <Input
           type="tel"
           className={`text-input text-input-half text-input-first-half
                                 ${phone.valid !== ""
@@ -270,8 +268,8 @@ const Register = ({ updateBgImage }: Props) => {
             setPhone({ value, valid });
           }}
         />
-        <input
-          type="number"
+        <Input
+          type="text"
           className={`text-input text-input-half
                                 ${organisationNumber.valid !== ""
               ? organisationNumber.valid
@@ -281,17 +279,14 @@ const Register = ({ updateBgImage }: Props) => {
             }`}
           placeholder="Organisation / Charity number"
           value={organisationNumber.value}
+          maxLength={101}
           onChange={(e) => {
             let value = e.target.value;
             let valid = value !== "";
-            if (value.length > 101) {
-              alert("Max Characters is 101");
-            } else {
-              setOrganisationNumber({ value, valid });
-            }
+            setOrganisationNumber({ value, valid });
           }}
         />
-        <input
+        <Input
           type="text"
           className={`text-input
                                 ${address1.valid !== ""
@@ -309,7 +304,7 @@ const Register = ({ updateBgImage }: Props) => {
             setAddress1({ value, valid });
           }}
         />
-        <input
+        <Input
           type="text"
           className={`text-input`}
           placeholder="Address 2"
@@ -321,7 +316,7 @@ const Register = ({ updateBgImage }: Props) => {
             setAddress2({ value, valid });
           }}
         />
-        <input
+        <Input
           type="text"
           className={`text-input text-input-half text-input-first-half
                                 ${city.valid !== ""
@@ -339,7 +334,7 @@ const Register = ({ updateBgImage }: Props) => {
             setCity({ value, valid });
           }}
         />
-        <input
+        <Input
           type="text"
           className={`text-input text-input-half
                                 ${postcode.valid !== ""
@@ -357,7 +352,7 @@ const Register = ({ updateBgImage }: Props) => {
             setPostcode({ value, valid });
           }}
         />
-        <input
+        <Input
           type="text"
           className={`text-input
                                 ${organisation.valid !== ""
@@ -378,76 +373,69 @@ const Register = ({ updateBgImage }: Props) => {
         <Select
           name="organisation-type"
           value={organisationType.value}
-          onChange={(selectedOption: any) => {
-            let value = selectedOption.value;
-            let valid = value !== "";
-            setOrganisationType({ value, valid });
+          onValueChange={(value) => {
+            let valid = value !== null;
+            setOrganisationType({ value: value ?? "", valid });
           }}
-          options={[
-            { value: "community-interest", label: "Community Interest" },
-            { value: "commercial", label: "Commercial" },
-          ]}
-          clearable={false}
-          searchable={false}
-          placeholder="My organisation is..."
-        />
+        >
+          <SelectTrigger className="w-full">
+            <SelectValue placeholder="My organisation is..." />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="community-interest">Community Interest</SelectItem>
+            <SelectItem value="commercial">Commercial</SelectItem>
+          </SelectContent>
+        </Select>
         {organisationType.value === "community-interest" && (
           <Select
             name="community-interest"
             value={organisationCommunityInterest.value}
-            onChange={(selectedOption: any) => {
-              let value = selectedOption.value;
-              let valid = value !== "";
-              setOrganisationCommunityInterest({ value, valid });
+            onValueChange={(value) => {
+              let valid = value !== null;
+              setOrganisationCommunityInterest({ value: value ?? "", valid });
             }}
-            style={{ marginBottom: "6px" }}
-            options={[
-              { value: "community-energy", label: "Community Energy" },
-              {
-                value: "community-growing",
-                label: "Community Growing or Rural Enterprise",
-              },
-              {
-                value: "community-group",
-                label: "Community Group (other)",
-              },
-              { value: "coop", label: "Co-op" },
-              {
-                value: "neighbourhood-planning",
-                label: "Neighbourhood Planning",
-              },
-              { value: "renters-union", label: "Renters Union" },
-              { value: "woodland-enterprise", label: "Woodland Enterprise" },
-            ]}
-            clearable={false}
-            searchable={false}
-            placeholder="Community interest type"
-          />
+          >
+            <SelectTrigger className="w-full" style={{ marginBottom: "6px" }}>
+              <SelectValue placeholder="Community interest type" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="community-energy">Community Energy</SelectItem>
+              <SelectItem value="community-growing">
+                Community Growing or Rural Enterprise
+              </SelectItem>
+              <SelectItem value="community-group">Community Group (other)</SelectItem>
+              <SelectItem value="coop">Co-op</SelectItem>
+              <SelectItem value="neighbourhood-planning">
+                Neighbourhood Planning
+              </SelectItem>
+              <SelectItem value="renters-union">Renters Union</SelectItem>
+              <SelectItem value="woodland-enterprise">Woodland Enterprise</SelectItem>
+            </SelectContent>
+          </Select>
         )}
         {organisationType.value === "commercial" && (
           <Select
             name="community-interest"
             value={organisationCommercial.value}
-            onChange={(selectedOption: any) => {
-              let value = selectedOption.value;
-              let valid = value !== "";
-              setOrganisationCommercial({ value, valid });
+            onValueChange={(value) => {
+              let valid = value !== null;
+              setOrganisationCommercial({ value: value ?? "", valid });
             }}
-            options={[
-              { value: "local-authority", label: "Local Authority" },
-              { value: "power-network", label: "Power Network" },
-              { value: "utility-company", label: "Utility Company" },
-              { value: "other", label: "Other (please specify)" },
-            ]}
-            style={{ marginBottom: "6px" }}
-            clearable={false}
-            searchable={false}
-            placeholder="Commercial type"
-          />
+          >
+            <SelectTrigger className="w-full" style={{ marginBottom: "6px" }}>
+              <SelectValue placeholder="Commercial type" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="local-authority">Local Authority</SelectItem>
+              <SelectItem value="power-network">Power Network</SelectItem>
+              <SelectItem value="utility-company">Utility Company</SelectItem>
+              <SelectItem value="other">Other (please specify)</SelectItem>
+            </SelectContent>
+          </Select>
         )}
         {organisationType.value === "commercial" &&
           organisationCommercial.value === "other" && (
-            <input
+            <Input
               type="text"
               className={`text-input
                                         ${organisationCommercialOther.valid !==
