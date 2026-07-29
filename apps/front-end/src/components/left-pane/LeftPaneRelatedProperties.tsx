@@ -11,6 +11,8 @@ import {
 import { Spinner } from "../ui/spinner";
 import { Button } from "../ui/button";
 import { Separator } from "../ui/separator";
+import { Slider } from "../ui/slider";
+import { Label } from "../ui/label";
 
 type Props = {
   onClose: () => void;
@@ -105,6 +107,7 @@ const OwnershipSearch = ({ itemsPerPage }: OwnershipSearchProps) => {
           properties
         </div>
       </div>
+      <OwnershipYearSection />
       <Separator />
       <div className="flex items-center gap-2 px-4">
         <Button onClick={selectAll}>Select all</Button>
@@ -128,6 +131,39 @@ const OwnershipSearch = ({ itemsPerPage }: OwnershipSearchProps) => {
           itemsPerPage={itemsPerPage}
         />
       )}
+    </div>
+  );
+};
+
+// type OwnershipYearProps
+const OwnershipYearSection = () => {
+  const minimumYear = 2017;
+  const currentYear = new Date().getFullYear();
+  const currentMonth = new Date().toLocaleString("default", { month: "long" });
+
+  const [selectedYear, setSelectedYear] = useState(currentYear);
+
+  const label =
+    selectedYear === currentYear
+      ? `Viewing current ownership as of ${currentMonth} ${currentYear}`
+      : `Viewing properties owned in December ${selectedYear}`;
+
+  return (
+    <div className="flex flex-col gap-3 mt-2 mx-4">
+      <div className="text-primary">{label}</div>
+      <Label htmlFor="slider-ownership-year">Ownership Year</Label>
+      <Slider
+        id="slider-ownership-year"
+        defaultValue={[currentYear]}
+        max={currentYear}
+        min={minimumYear}
+        step={1}
+        onValueChange={(value) => setSelectedYear(value as number)}
+      />
+      <div className="flex justify-between text-sm">
+        <div>{minimumYear}</div>
+        <div>{currentYear}</div>
+      </div>
     </div>
   );
 };

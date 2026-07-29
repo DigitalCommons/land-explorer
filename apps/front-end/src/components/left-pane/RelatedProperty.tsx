@@ -54,11 +54,11 @@ const RelatedProperty = ({ property }: { property: any }) => {
         <div>Title no: {property.title_no}</div>
       </div>
       <Button
-        size="icon-xs"
+        size="sm"
         variant="ghost"
         aria-label="move map to property icon"
         title="Go to Property"
-        className="justify-end"
+        className="justify-end -m-1"
         onClick={gotoProperty}
       >
         <IconArrow />
