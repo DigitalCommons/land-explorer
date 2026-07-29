@@ -54,7 +54,7 @@ const RelatedProperty = ({ property }: { property: any }) => {
         <div>Title no: {property.title_no}</div>
       </div>
       <Button
-        size="icon-lg"
+        size="icon-xs"
         variant="ghost"
         aria-label="move map to property icon"
         title="Go to Property"

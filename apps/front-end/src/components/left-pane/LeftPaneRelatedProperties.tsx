@@ -10,6 +10,7 @@ import {
 } from "../../actions/LandOwnershipActions";
 import { Spinner } from "../ui/spinner";
 import { Button } from "../ui/button";
+import { Separator } from "../ui/separator";
 
 type Props = {
   onClose: () => void;
@@ -94,9 +95,9 @@ const OwnershipSearch = ({ itemsPerPage }: OwnershipSearchProps) => {
   }
 
   return (
-    <div className="flex flex-col gap-4 p-4 border-b-primary">
-      <div className="">
-        <div className="text-primary">
+    <div className="flex flex-col gap-4 border-b-primary">
+      <div className="flex flex-col gap-2 px-4">
+        <div className="pt-4 text-primary">
           {propertiesOnThisPage[0].proprietor_name_1}
         </div>
         <div>
@@ -104,7 +105,8 @@ const OwnershipSearch = ({ itemsPerPage }: OwnershipSearchProps) => {
           properties
         </div>
       </div>
-      <div className="flex items-center gap-2">
+      <Separator />
+      <div className="flex items-center gap-2 px-4">
         <Button onClick={selectAll}>Select all</Button>
         {hasHighlightedProperties && (
           <Button variant="secondary" onClick={clearAll}>
@@ -113,7 +115,9 @@ const OwnershipSearch = ({ itemsPerPage }: OwnershipSearchProps) => {
         )}
       </div>
       {propertiesOnThisPage.map((property) => (
-        <RelatedProperty key={property.title_no} property={property} />
+        <div className="px-4">
+          <RelatedProperty key={property.title_no} property={property} />
+        </div>
       ))}
       {noOfPages > 1 && (
         <Pagination
@@ -133,23 +137,23 @@ const LeftPaneRelatedProperties = ({ onClose, open, itemsPerPage }: Props) => {
     <LeftPaneTray title="Ownership Search" open={open} onClose={onClose}>
       <div className="flex flex-col grow">
         <OwnershipSearch itemsPerPage={itemsPerPage} />
-        <div className="p-5">
-          <p>
-            Information produced by HM Land Registry.
-            <br />
-            © Crown copyright 2020
-            <br />
-            Some data is displayed here for evaluation purposes only. For more
-            information{" "}
-            <a
-              href="https://landexplorer.coop/land-ownership-how"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              click here
-            </a>
-          </p>
-        </div>
+      </div>
+      <div className="p-5 text-sm">
+        <p>
+          Information produced by HM Land Registry.
+          <br />
+          © Crown copyright 2020
+          <br />
+          Some data is displayed here for evaluation purposes only. For more
+          information{" "}
+          <a
+            href="https://landexplorer.coop/land-ownership-how"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            click here
+          </a>
+        </p>
       </div>
     </LeftPaneTray>
   );
