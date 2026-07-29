@@ -1,6 +1,9 @@
 import axios from "axios";
 import { Fragment, useState, useEffect } from "react";
 import { Link } from "react-router-dom";
+import { useForm, useWatch, Controller } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import Swal from "sweetalert2";
 import Spinner from "../components/common/Spinner";
 import GoCardlessModal from "../components/modals/GoCardlessModal";
@@ -8,9 +11,56 @@ import TopBar from "../components/top-bar/TopBar";
 import constants from "../constants";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { emailRegexp, ukPhoneRegexp, ukPostcodeRegexp } from "@/lib/validation";
 
-// valid field starts as "" (unvalidated) and becomes boolean after user interaction
-type FieldState = { value: string; valid: string | boolean };
+const registerSchema = z
+  .object({
+    firstName: z.string().min(3).max(19),
+    lastName: z.string().min(3).max(19),
+    email: z.string().regex(emailRegexp, "Invalid email address"),
+    password: z.string().min(6).max(29),
+    confirmPassword: z.string(),
+    phone: z.string().refine((v) => v === "" || ukPhoneRegexp.test(v), "Invalid UK phone number"),
+    organisationNumber: z.string(),
+    address1: z.string(),
+    address2: z.string(),
+    city: z.string(),
+    postcode: z.string().refine((v) => v === "" || ukPostcodeRegexp.test(v), "Invalid UK postcode"),
+    organisation: z.string(),
+    organisationType: z.string(),
+    organisationCommunityInterest: z.string(),
+    organisationCommercial: z.string(),
+    organisationCommercialOther: z.string(),
+    agree: z.boolean(),
+    marketing: z.boolean(),
+  })
+  .refine((data) => data.confirmPassword === data.password, {
+    message: "Passwords do not match",
+    path: ["confirmPassword"],
+  });
+
+type RegisterFormValues = z.infer<typeof registerSchema>;
+
+const defaultValues: RegisterFormValues = {
+  firstName: "",
+  lastName: "",
+  email: "",
+  password: "",
+  confirmPassword: "",
+  phone: "",
+  organisationNumber: "",
+  address1: "",
+  address2: "",
+  city: "",
+  postcode: "",
+  organisation: "",
+  organisationType: "",
+  organisationCommunityInterest: "",
+  organisationCommercial: "",
+  organisationCommercialOther: "",
+  agree: false,
+  marketing: false,
+};
 
 type Props = { updateBgImage: (n: number) => void };
 
@@ -18,52 +68,39 @@ const Register = ({ updateBgImage }: Props) => {
   const [registering, setRegistering] = useState(false);
   const [registerSuccess, setRegisterSuccess] = useState(false);
   const [registerErrors, setRegisterErrors] = useState<string[]>([]);
-  const [firstName, setFirstName] = useState<FieldState>({ value: "", valid: "" });
-  const [lastName, setLastName] = useState<FieldState>({ value: "", valid: "" });
-  const [organisation, setOrganisation] = useState<FieldState>({ value: "", valid: "" });
-  const [organisationType, setOrganisationType] = useState<FieldState>({
-    value: "",
-    valid: "",
-  });
-  const [organisationCommercial, setOrganisationCommercial] = useState<FieldState>({
-    value: "",
-    valid: "",
-  });
-  const [organisationCommercialOther, setOrganisationCommercialOther] =
-    useState<FieldState>({ value: "", valid: "" });
-  const [organisationCommunityInterest, setOrganisationCommunityInterest] =
-    useState<FieldState>({ value: "", valid: "" });
-  const [organisationNumber, setOrganisationNumber] = useState<FieldState>({
-    value: "",
-    valid: "",
-  });
-  const [phone, setPhone] = useState<FieldState>({ value: "", valid: "" });
-  const [address1, setAddress1] = useState<FieldState>({ value: "", valid: "" });
-  const [address2, setAddress2] = useState<FieldState>({ value: "", valid: "" });
-  const [city, setCity] = useState<FieldState>({ value: "", valid: "" });
-  const [postcode, setPostcode] = useState<FieldState>({ value: "", valid: "" });
-  const [email, setEmail] = useState<FieldState>({ value: "", valid: "" });
-  const [password, setPassword] = useState<FieldState>({ value: "", valid: "" });
-  const [confirmPassword, setConfirmPassword] = useState<FieldState>({
-    value: "",
-    valid: "",
-  });
   const [accountType, setAccountType] = useState("free");
-  const [agree, setAgree] = useState(false);
-  const [marketing, setMarketing] = useState(false);
   const [formStage, setFormStage] = useState("personal");
   const [mandate, setMandate] = useState<string | undefined>();
   const [goCardlessVisible, setGoCardLessVisible] = useState(false);
+
+  const {
+    register,
+    control,
+    handleSubmit,
+    getValues,
+    formState: { errors, dirtyFields },
+  } = useForm<RegisterFormValues>({
+    resolver: zodResolver(registerSchema),
+    mode: "onChange",
+    defaultValues,
+  });
+
+  const fieldStateClass = (name: keyof RegisterFormValues) =>
+    errors[name] ? "invalid" : dirtyFields[name] ? "valid" : "";
+
+  const [organisationType, organisationCommercial, agree] = useWatch({
+    control,
+    name: ["organisationType", "organisationCommercial", "agree"] as const,
+  });
 
   useEffect(() => {
     updateBgImage(1);
   }, []);
 
-  const handleSubmit = async (e: any) => {
-    e.preventDefault();
+  const onSubmit = async (data: RegisterFormValues) => {
     if (accountType === "free") {
       setRegistering(true);
-      register();
+      submitRegistration(data);
     } else {
       if (formStage === "personal") {
         const response = await axios.post(
@@ -79,12 +116,13 @@ const Register = ({ updateBgImage }: Props) => {
     }
   };
 
-  const handlePaymentSubmit = async (e: any) => {
+  const handlePaymentSubmit = async () => {
+    const { email, firstName, lastName } = getValues();
     const requestData = {
       mandate,
-      email: email.value,
-      firstName: firstName.value,
-      lastName: lastName.value,
+      email,
+      firstName,
+      lastName,
       subscriptionTypeId: 1,
     };
     const response = await axios.post(
@@ -93,30 +131,30 @@ const Register = ({ updateBgImage }: Props) => {
     );
     const { success } = response.data;
     if (success) {
-      register();
+      submitRegistration(getValues());
     }
   };
 
-  const register = () => {
+  const submitRegistration = (data: RegisterFormValues) => {
     const organisationSubType =
-      organisationType.value === "community-interest"
-        ? organisationCommunityInterest.value
-        : organisationCommercial.value === "other"
-        ? organisationCommercialOther.value
-        : organisationCommercial.value;
+      data.organisationType === "community-interest"
+        ? data.organisationCommunityInterest
+        : data.organisationCommercial === "other"
+        ? data.organisationCommercialOther
+        : data.organisationCommercial;
 
     const request = {
-      address: address1.value,
-      firstName: firstName.value,
-      lastName: lastName.value,
-      marketing: marketing,
-      organisation: organisation.value,
-      organisationNumber: organisationNumber.value,
-      organisationType: organisationType.value,
+      address: data.address1,
+      firstName: data.firstName,
+      lastName: data.lastName,
+      marketing: data.marketing,
+      organisation: data.organisation,
+      organisationNumber: data.organisationNumber,
+      organisationType: data.organisationType,
       organisationSubType,
-      password: password.value,
-      phone: phone.value,
-      username: email.value,
+      password: data.password,
+      phone: data.phone,
+      username: data.email,
     };
     console.log("registration request", request);
     axios
@@ -151,309 +189,177 @@ const Register = ({ updateBgImage }: Props) => {
           ))}{" "}
         </div>
       )}
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={handleSubmit(onSubmit)}>
         <Input
           type="text"
-          className={`text-input text-input-half text-input-first-half
-                                ${firstName.valid !== ""
-              ? firstName.valid
-                ? "valid"
-                : "invalid"
-              : ""
-            }`}
+          className={`text-input text-input-half text-input-first-half ${fieldStateClass("firstName")}`}
           placeholder="First name (Required)"
-          value={firstName.value}
-          onChange={(e) => {
-            let value = e.target.value;
-            let valid = value.length > 2 && value.length < 20;
-            setFirstName({ value, valid });
-          }}
-          required
           maxLength={101}
+          {...register("firstName")}
         />
         <Input
           type="text"
-          className={`text-input text-input-half
-                                ${lastName.valid !== ""
-              ? lastName.valid
-                ? "valid"
-                : "invalid"
-              : ""
-            }`}
+          className={`text-input text-input-half ${fieldStateClass("lastName")}`}
           placeholder="Last name (Required)"
-          value={lastName.value}
           maxLength={101}
-          onChange={(e) => {
-            let value = e.target.value;
-            let valid = value.length > 2 && value.length < 20;
-            setLastName({ value, valid });
-          }}
-          required
+          {...register("lastName")}
         />
         <Input
           type="email"
-          className={`text-input ${email.valid !== "" ? (email.valid ? "valid" : "invalid") : ""
-            }`}
+          className={`text-input ${fieldStateClass("email")}`}
           placeholder="Email address (Required)"
           autoComplete="username"
-          value={email.value}
           maxLength={101}
-          onChange={(e) => {
-            let value = e.target.value;
-            let valid = emailRegexp.test(value);
-            setEmail({ value, valid });
-          }}
-          required
+          {...register("email")}
         />
         <Input
           type="password"
-          className={`text-input text-input-half text-input-first-half
-                                ${password.valid !== ""
-              ? password.valid
-                ? "valid"
-                : "invalid"
-              : ""
-            }`}
+          className={`text-input text-input-half text-input-first-half ${fieldStateClass("password")}`}
           placeholder="Password (Required)"
           autoComplete="new-password"
-          value={password.value}
           style={{ marginRight: "2%" }}
           minLength={4}
           maxLength={101}
-          onChange={(e) => {
-            let value = e.target.value;
-            let valid = value.length > 5 && value.length < 30;
-            setPassword({ value, valid });
-          }}
-          required
+          {...register("password")}
         />
         <Input
           type="password"
-          className={`text-input text-input-half
-                                ${password.value !== ""
-              ? confirmPassword.valid !== ""
-                ? confirmPassword.valid
-                  ? "valid"
-                  : "invalid"
-                : "invalid"
-              : ""
-            }`}
+          className={`text-input text-input-half ${fieldStateClass("confirmPassword")}`}
           placeholder="Confirm password (Required)"
           autoComplete="new-password"
-          value={confirmPassword.value}
           minLength={4}
           maxLength={101}
-          onChange={(e) => {
-            let value = e.target.value;
-            let valid = password.value === value;
-            setConfirmPassword({ value, valid });
-          }}
-          required
+          {...register("confirmPassword")}
         />
         <Input
           type="tel"
-          className={`text-input text-input-half text-input-first-half
-                                ${phone.valid !== ""
-              ? phone.valid
-                ? "valid"
-                : "invalid"
-              : ""
-            }`}
+          className={`text-input text-input-half text-input-first-half ${fieldStateClass("phone")}`}
           placeholder="Tel"
-          value={phone.value}
           maxLength={15}
-          onChange={(e) => {
-            let value = e.target.value;
-            let valid = ukPhoneRegexp.test(value);
-            setPhone({ value, valid });
-          }}
+          {...register("phone")}
         />
         <Input
           type="text"
-          className={`text-input text-input-half
-                                ${organisationNumber.valid !== ""
-              ? organisationNumber.valid
-                ? "valid"
-                : "invalid"
-              : ""
-            }`}
+          className={`text-input text-input-half ${fieldStateClass("organisationNumber")}`}
           placeholder="Organisation / Charity number"
-          value={organisationNumber.value}
           maxLength={101}
-          onChange={(e) => {
-            let value = e.target.value;
-            let valid = value !== "";
-            setOrganisationNumber({ value, valid });
-          }}
+          {...register("organisationNumber")}
         />
         <Input
           type="text"
-          className={`text-input
-                                ${address1.valid !== ""
-              ? address1.valid
-                ? "valid"
-                : "invalid"
-              : ""
-            }`}
+          className={`text-input ${fieldStateClass("address1")}`}
           placeholder="Address 1"
-          value={address1.value}
           maxLength={101}
-          onChange={(e) => {
-            let value = e.target.value;
-            let valid = value !== "";
-            setAddress1({ value, valid });
-          }}
+          {...register("address1")}
         />
         <Input
           type="text"
-          className={`text-input`}
+          className="text-input"
           placeholder="Address 2"
-          value={address2.value}
           maxLength={101}
-          onChange={(e) => {
-            let value = e.target.value;
-            let valid = true;
-            setAddress2({ value, valid });
-          }}
+          {...register("address2")}
         />
         <Input
           type="text"
-          className={`text-input text-input-half text-input-first-half
-                                ${city.valid !== ""
-              ? city.valid
-                ? "valid"
-                : "invalid"
-              : ""
-            }`}
+          className={`text-input text-input-half text-input-first-half ${fieldStateClass("city")}`}
           placeholder="City"
-          value={city.value}
           maxLength={101}
-          onChange={(e) => {
-            let value = e.target.value;
-            let valid = value !== "";
-            setCity({ value, valid });
-          }}
+          {...register("city")}
         />
         <Input
           type="text"
-          className={`text-input text-input-half
-                                ${postcode.valid !== ""
-              ? postcode.valid
-                ? "valid"
-                : "invalid"
-              : ""
-            }`}
+          className={`text-input text-input-half ${fieldStateClass("postcode")}`}
           placeholder="Postcode"
-          value={postcode.value}
           maxLength={7}
-          onChange={(e) => {
-            let value = e.target.value;
-            let valid = ukPostcodeRegexp.test(value);
-            setPostcode({ value, valid });
-          }}
+          {...register("postcode")}
         />
         <Input
           type="text"
-          className={`text-input
-                                ${organisation.valid !== ""
-              ? organisation.valid
-                ? "valid"
-                : "invalid"
-              : ""
-            }`}
+          className={`text-input ${fieldStateClass("organisation")}`}
           placeholder="Organisation Name"
-          value={organisation.value}
           maxLength={101}
-          onChange={(e) => {
-            let value = e.target.value;
-            let valid = value !== "";
-            setOrganisation({ value, valid });
-          }}
+          {...register("organisation")}
         />
-        <Select
-          name="organisation-type"
-          value={organisationType.value}
-          onValueChange={(value) => {
-            let valid = value !== null;
-            setOrganisationType({ value: value ?? "", valid });
-          }}
-        >
-          <SelectTrigger className="w-full">
-            <SelectValue placeholder="My organisation is..." />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="community-interest">Community Interest</SelectItem>
-            <SelectItem value="commercial">Commercial</SelectItem>
-          </SelectContent>
-        </Select>
-        {organisationType.value === "community-interest" && (
-          <Select
-            name="community-interest"
-            value={organisationCommunityInterest.value}
-            onValueChange={(value) => {
-              let valid = value !== null;
-              setOrganisationCommunityInterest({ value: value ?? "", valid });
-            }}
-          >
-            <SelectTrigger className="w-full" style={{ marginBottom: "6px" }}>
-              <SelectValue placeholder="Community interest type" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="community-energy">Community Energy</SelectItem>
-              <SelectItem value="community-growing">
-                Community Growing or Rural Enterprise
-              </SelectItem>
-              <SelectItem value="community-group">Community Group (other)</SelectItem>
-              <SelectItem value="coop">Co-op</SelectItem>
-              <SelectItem value="neighbourhood-planning">
-                Neighbourhood Planning
-              </SelectItem>
-              <SelectItem value="renters-union">Renters Union</SelectItem>
-              <SelectItem value="woodland-enterprise">Woodland Enterprise</SelectItem>
-            </SelectContent>
-          </Select>
-        )}
-        {organisationType.value === "commercial" && (
-          <Select
-            name="community-interest"
-            value={organisationCommercial.value}
-            onValueChange={(value) => {
-              let valid = value !== null;
-              setOrganisationCommercial({ value: value ?? "", valid });
-            }}
-          >
-            <SelectTrigger className="w-full" style={{ marginBottom: "6px" }}>
-              <SelectValue placeholder="Commercial type" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="local-authority">Local Authority</SelectItem>
-              <SelectItem value="power-network">Power Network</SelectItem>
-              <SelectItem value="utility-company">Utility Company</SelectItem>
-              <SelectItem value="other">Other (please specify)</SelectItem>
-            </SelectContent>
-          </Select>
-        )}
-        {organisationType.value === "commercial" &&
-          organisationCommercial.value === "other" && (
-            <Input
-              type="text"
-              className={`text-input
-                                        ${organisationCommercialOther.valid !==
-                  ""
-                  ? organisationCommercialOther.valid
-                    ? "valid"
-                    : "invalid"
-                  : ""
-                }`}
-              placeholder="Other"
-              value={organisationCommercialOther.value}
-              onChange={(e) => {
-                let value = e.target.value;
-                let valid = value !== "";
-                setOrganisationCommercialOther({ value, valid });
-              }}
-            />
+        <Controller
+          control={control}
+          name="organisationType"
+          render={({ field }) => (
+            <Select
+              name="organisation-type"
+              value={field.value}
+              onValueChange={(value) => field.onChange(value ?? "")}
+            >
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="My organisation is..." />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="community-interest">Community Interest</SelectItem>
+                <SelectItem value="commercial">Commercial</SelectItem>
+              </SelectContent>
+            </Select>
           )}
+        />
+        {organisationType === "community-interest" && (
+          <Controller
+            control={control}
+            name="organisationCommunityInterest"
+            render={({ field }) => (
+              <Select
+                name="community-interest"
+                value={field.value}
+                onValueChange={(value) => field.onChange(value ?? "")}
+              >
+                <SelectTrigger className="w-full" style={{ marginBottom: "6px" }}>
+                  <SelectValue placeholder="Community interest type" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="community-energy">Community Energy</SelectItem>
+                  <SelectItem value="community-growing">
+                    Community Growing or Rural Enterprise
+                  </SelectItem>
+                  <SelectItem value="community-group">Community Group (other)</SelectItem>
+                  <SelectItem value="coop">Co-op</SelectItem>
+                  <SelectItem value="neighbourhood-planning">
+                    Neighbourhood Planning
+                  </SelectItem>
+                  <SelectItem value="renters-union">Renters Union</SelectItem>
+                  <SelectItem value="woodland-enterprise">Woodland Enterprise</SelectItem>
+                </SelectContent>
+              </Select>
+            )}
+          />
+        )}
+        {organisationType === "commercial" && (
+          <Controller
+            control={control}
+            name="organisationCommercial"
+            render={({ field }) => (
+              <Select
+                name="community-interest"
+                value={field.value}
+                onValueChange={(value) => field.onChange(value ?? "")}
+              >
+                <SelectTrigger className="w-full" style={{ marginBottom: "6px" }}>
+                  <SelectValue placeholder="Commercial type" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="local-authority">Local Authority</SelectItem>
+                  <SelectItem value="power-network">Power Network</SelectItem>
+                  <SelectItem value="utility-company">Utility Company</SelectItem>
+                  <SelectItem value="other">Other (please specify)</SelectItem>
+                </SelectContent>
+              </Select>
+            )}
+          />
+        )}
+        {organisationType === "commercial" && organisationCommercial === "other" && (
+          <Input
+            type="text"
+            className={`text-input ${fieldStateClass("organisationCommercialOther")}`}
+            placeholder="Other"
+            {...register("organisationCommercialOther")}
+          />
+        )}
         <div className="account-type-container">
           <div
             className={`account-type-card ${accountType == "free" ? "active" : "inactive"
@@ -508,13 +414,9 @@ const Register = ({ updateBgImage }: Props) => {
               terms of use
             </a>.
             <input
-              name="agree"
               type="checkbox"
-              checked={agree}
-              onChange={(e) => {
-                setAgree(e.target.checked);
-              }}
               style={{ display: "inline" }}
+              {...register("agree")}
             />
             <div className="control_indicator"></div>
           </label>
@@ -525,13 +427,9 @@ const Register = ({ updateBgImage }: Props) => {
             Keep me up to date with Land Explorer and Digital Commons
             developments
             <input
-              name="agree"
               type="checkbox"
-              checked={marketing}
-              onChange={(e) => {
-                setMarketing(e.target.checked);
-              }}
               style={{ display: "inline" }}
+              {...register("marketing")}
             />
             <div className="control_indicator"></div>
           </label>
@@ -677,12 +575,5 @@ const Register = ({ updateBgImage }: Props) => {
     </div>
   );
 };
-
-const emailRegexp =
-  /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
-const ukPhoneRegexp =
-  /^(((\+44\s?\d{4}|\(?0\d{4}\)?)\s?\d{3}\s?\d{3})|((\+44\s?\d{3}|\(?0\d{3}\)?)\s?\d{3}\s?\d{4})|((\+44\s?\d{2}|\(?0\d{2}\)?)\s?\d{4}\s?\d{4}))(\s?\#(\d{4}|\d{3}))?$/;
-const ukPostcodeRegexp =
-  /([Gg][Ii][Rr] 0[Aa]{2})|((([A-Za-z][0-9]{1,2})|(([A-Za-z][A-Ha-hJ-Yj-y][0-9]{1,2})|(([A-Za-z][0-9][A-Za-z])|([A-Za-z][A-Ha-hJ-Yj-y][0-9]?[A-Za-z]))))\s?[0-9][A-Za-z]{2})/;
 
 export default Register;
