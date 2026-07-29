@@ -98,7 +98,10 @@ export const setActiveProperty = (titleNo: string) => {
   };
 };
 
-export const fetchRelatedProperties = (proprietorName: string) => {
+export const fetchRelatedProperties = (
+  proprietorName: string,
+  signal?: AbortSignal,
+) => {
   return async (dispatch: any) => {
     dispatch({
       type: "SET_RELATED_PROPERTIES_PROPRIETOR_NAME",
@@ -109,8 +112,14 @@ export const fetchRelatedProperties = (proprietorName: string) => {
     const relatedPropertiesTitleMap = await dispatch(
       getRequest(
         `/api/search?proprietorName=${encodeURIComponent(proprietorName)}`,
+        signal,
       ),
     );
+
+    // A newer request has superseded this one - let it own the state update.
+    if (signal?.aborted) {
+      return;
+    }
 
     if (relatedPropertiesTitleMap !== null) {
       dispatch({
@@ -130,6 +139,7 @@ export const fetchPropertyOwnershipByYear = (
   year: number,
   proprietorName: string,
   companyRegNum?: string,
+  signal?: AbortSignal,
 ) => {
   return async (dispatch: any) => {
     dispatch({ type: "FETCH_RELATED_PROPERTIES_LOADING" });
@@ -146,7 +156,12 @@ export const fetchPropertyOwnershipByYear = (
     }
 
     const propertyOwnershipsForYear: ProprietorOwnershipsResponse | null =
-      await dispatch(getRequest(url));
+      await dispatch(getRequest(url, signal));
+
+    // A newer request has superseded this one - let it own the state update.
+    if (signal?.aborted) {
+      return;
+    }
 
     if (propertyOwnershipsForYear !== null) {
       if (propertyOwnershipsForYear.ownerships.length > 0) {

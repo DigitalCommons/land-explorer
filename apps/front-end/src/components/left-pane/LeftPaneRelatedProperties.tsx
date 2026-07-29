@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useDebounceCallback } from "usehooks-ts";
 import LeftPaneTray from "./LeftPaneTray";
 import { useAppDispatch, useAppSelector } from "@/hooks/react-redux";
@@ -193,15 +193,40 @@ const OwnershipYearSection = ({ proprietorName }: OwnershipYearProps) => {
       ? `Viewing current ownership as of ${currentMonth} ${currentYear}`
       : `Viewing properties owned in December ${selectedYear}`;
 
-  const dispatchYearChange = useDebounceCallback((year: number) => {
-    if (year === currentYear) {
-      dispatch(fetchRelatedProperties(proprietorName));
-    } else {
-      dispatch(fetchPropertyOwnershipByYear(year, proprietorName));
-    }
-  }, 400);
+  const abortControllerRef = useRef<AbortController | null>(null);
 
-  useEffect(() => () => dispatchYearChange.cancel(), [dispatchYearChange]);
+  const yearChangeCallback = useCallback(
+    (year: number) => {
+      abortControllerRef.current?.abort();
+
+      const controller = new AbortController();
+      abortControllerRef.current = controller;
+
+      if (year === currentYear) {
+        dispatch(fetchRelatedProperties(proprietorName, controller.signal));
+      } else {
+        dispatch(
+          fetchPropertyOwnershipByYear(
+            year,
+            proprietorName,
+            undefined,
+            controller.signal,
+          ),
+        );
+      }
+    },
+    [currentYear, dispatch, proprietorName],
+  );
+
+  const dispatchYearChange = useDebounceCallback(yearChangeCallback, 400);
+
+  useEffect(
+    () => () => {
+      dispatchYearChange.cancel();
+      abortControllerRef.current?.abort();
+    },
+    [dispatchYearChange],
+  );
 
   const onYearChange = (value: number) => {
     setSelectedYear(value);
