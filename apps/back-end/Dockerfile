@@ -58,6 +58,9 @@ COPY --from=build /app/.sequelizerc ./.sequelizerc
 RUN npm prune --omit=dev \
     && npm install --no-save sequelize-cli@6
 
+# Writable dir for transient shapefile exports (see routes/map.ts downloadShapefile).
+RUN mkdir -p data && chown node:node data
+
 USER node
 EXPOSE 4000
 
