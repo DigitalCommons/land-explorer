@@ -32,7 +32,7 @@ export const getUserInitials = async (id: number): Promise<string | null> => {
   return user === null
     ? null
     : (user.first_name || "?")[0].toUpperCase() +
-    (user.last_name || "?")[0].toUpperCase();
+        (user.last_name || "?")[0].toUpperCase();
 };
 
 /**
@@ -73,7 +73,7 @@ export const createUser = async (data: any) => {
         headers: {
           Authorization: `Token ${process.env.BUTTONDOWN_API_KEY}`,
         },
-      }
+      },
     );
   }
 
@@ -106,7 +106,7 @@ export const createUser = async (data: any) => {
  * @returns The number of maps that were shared with the user and migrated
  */
 export const migrateGuestUserMap = async (
-  user: typeof User
+  user: typeof User,
 ): Promise<number> => {
   const userMapData = (
     await PendingUserMap.findAll({
@@ -147,7 +147,7 @@ export const migrateGuestUserMap = async (
 export const checkAndReturnUser = async (
   username: string,
   password?: string,
-  reset_token?: string
+  reset_token?: string,
 ) => {
   const user = await getUserByEmail(username);
 
@@ -240,7 +240,7 @@ export const trackUserEvent = async (
     return;
   }
   let analyticsConsent = computeAnalyticsConsent(user) ?? false;
-    
+
   if (analyticsConsent) {
     analyticsUserId = await hashUserId(user);
     // Include data on which user groups the user is a member of
@@ -278,10 +278,10 @@ export const trackUserEvent = async (
  * a dummy title_no of the form "unknown_<poly_id>".
  */
 export const groupPolysByTitleNo = (
-  polygons: any[]
-): { [title_no: string]: { polygons: any[];[key: string]: any } } => {
+  polygons: any[],
+): { [title_no: string]: { polygons: any[]; [key: string]: any } } => {
   const groupedPolygons: {
-    [title_no: string]: { polygons: any[];[key: string]: any };
+    [title_no: string]: { polygons: any[]; [key: string]: any };
   } = {};
 
   polygons.forEach((polygon: any) => {
@@ -331,8 +331,8 @@ export const getLandOwnershipTitlesInBbox = async (
   ne_lng: number,
   ne_lat: number,
   type?: string,
-  acceptedOnly?: boolean
-): Promise<{ [title_no: string]: { polygons: any[];[key: string]: any } }> => {
+  acceptedOnly?: boolean,
+): Promise<{ [title_no: string]: { polygons: any[]; [key: string]: any } }> => {
   const boundaryResponse = await axios.get(
     `${process.env.BOUNDARY_SERVICE_URL}/boundaries`,
     {
@@ -345,7 +345,7 @@ export const getLandOwnershipTitlesInBbox = async (
         acceptedOnly,
         secret: process.env.BOUNDARY_SERVICE_SECRET,
       },
-    }
+    },
   );
 
   const polygons = boundaryResponse.data;
@@ -360,8 +360,9 @@ export const getLandOwnershipTitlesInBbox = async (
  * owned (or jointly owned) by the given proprietor.
  */
 export const searchOwner = async (
-  proprietorName: string
-): Promise<{ [title_no: string]: { polygons: any[];[key: string]: any } }> => {
+  proprietorName: string,
+  signal?: AbortSignal,
+): Promise<{ [title_no: string]: { polygons: any[]; [key: string]: any } }> => {
   const boundaryResponse = await axios.get(
     `${process.env.BOUNDARY_SERVICE_URL}/search`,
     {
@@ -369,7 +370,8 @@ export const searchOwner = async (
         proprietorName,
         secret: process.env.BOUNDARY_SERVICE_SECRET,
       },
-    }
+      signal,
+    },
   );
 
   const polygons = boundaryResponse.data ?? [];
@@ -398,14 +400,14 @@ export const findAllDataGroupContentForUser = async (userId: number) => {
     // Check that user group actually exists
     if (userGroup) {
       const existingUserGroup = userGroups.find(
-        (group) => group.iduser_groups === userGroup.iduser_groups
+        (group) => group.iduser_groups === userGroup.iduser_groups,
       );
 
       // If the user group is already in the list, use the highest access level
       if (existingUserGroup) {
         existingUserGroup.access = Math.max(
           existingUserGroup.access,
-          userGroup.access
+          userGroup.access,
         );
       } else {
         userGroups.push(userGroup);
@@ -468,7 +470,7 @@ export const findAllDataGroupContentForUser = async (userId: number) => {
 
 export const hasWriteAccessToDataGroup = async (
   userId: number,
-  dataGroupId: number
+  dataGroupId: number,
 ): Promise<boolean> => {
   const userGroupMemberships = await UserGroupMembership.findAll({
     where: {
@@ -498,7 +500,7 @@ export const createUserFeedback = async (
   question_impact: string,
   question_who_benefits: string,
   question_improvements: string,
-  user_id: number
+  user_id: number,
 ) => {
   try {
     // Create a new user feedback entry in the database
