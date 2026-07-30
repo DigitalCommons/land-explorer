@@ -64,6 +64,10 @@ const defaultValues: RegisterFormValues = {
   marketing: false,
 };
 
+// Preflight is disabled project-wide (see docs/front-end/Styling-with-shadcn-and-Tailwind.md).
+const inputClassName =
+  "box-border h-9 !rounded-[7px] border-2 border-[#D4D2D2] bg-[#F5F5F5] px-3 text-[#78838F] font-normal focus-visible:border-primary focus-visible:ring-0";
+
 type Props = { updateBgImage: (n: number) => void };
 
 const Register = ({ updateBgImage }: Props) => {
@@ -189,10 +193,10 @@ const Register = ({ updateBgImage }: Props) => {
       >
         <X className="size-4" />
       </Link>
-      <h2 className="text-left text-2xl font-semibold text-primary">
+      <h2 className="mb-2.5 text-left text-2xl font-semibold text-primary!">
         For everyone. Funded by those who can.
       </h2>
-      <p className="mb-6 text-left text-sm text-muted-foreground">
+      <p className="mt-0 mb-6 text-left text-sm text-muted-foreground">
         The core Land Explorer tool is free, always. Organisations that
         choose the Solidarity Tier help fund access for grassroots groups,
         tenants&rsquo; unions and community projects.
@@ -205,80 +209,80 @@ const Register = ({ updateBgImage }: Props) => {
         </div>
       )}
       <form onSubmit={handleSubmit(onSubmit)}>
-        <h3 className="mb-3 text-left text-sm font-medium text-foreground">Account details</h3>
-        <div className="mb-6 grid grid-cols-1 gap-4 md:grid-cols-2">
+        <h3 className="mb-1.25! text-left text-sm font-medium! text-foreground">Account details</h3>
+        <div className="mb-6 grid grid-cols-1 gap-x-4 gap-y-3 md:grid-cols-2">
           <div>
             <Input
               type="text"
-              className={`text-input ${fieldStateClass("firstName")}`}
+              className={`${inputClassName} ${fieldStateClass("firstName")}`}
               placeholder="First name (Required)"
               maxLength={101}
               {...register("firstName")}
             />
-            <FieldError errors={[errors.firstName]} />
+            <FieldError errors={[errors.firstName]} className="mt-1.25 text-left" />
           </div>
           <div>
             <Input
               type="text"
-              className={`text-input ${fieldStateClass("lastName")}`}
+              className={`${inputClassName} ${fieldStateClass("lastName")}`}
               placeholder="Last name (Required)"
               maxLength={101}
               {...register("lastName")}
             />
-            <FieldError errors={[errors.lastName]} />
+            <FieldError errors={[errors.lastName]} className="mt-1.25 text-left" />
           </div>
           <div>
             <Input
               type="email"
-              className={`text-input ${fieldStateClass("email")}`}
+              className={`${inputClassName} ${fieldStateClass("email")}`}
               placeholder="Email address (Required)"
               autoComplete="username"
               maxLength={101}
               {...register("email")}
             />
-            <FieldError errors={[errors.email]} />
+            <FieldError errors={[errors.email]} className="mt-1.25 text-left" />
           </div>
           <div>
             <Input
               type="password"
-              className={`text-input ${fieldStateClass("password")}`}
+              className={`${inputClassName} ${fieldStateClass("password")}`}
               placeholder="Password (Required)"
               autoComplete="new-password"
               minLength={4}
               maxLength={101}
               {...register("password")}
             />
-            <FieldError errors={[errors.password]} />
+            <FieldError errors={[errors.password]} className="mt-1.25 text-left" />
           </div>
           <div>
             <Input
               type="tel"
-              className={`text-input ${fieldStateClass("phone")}`}
-              placeholder="Tel"
+              className={`${inputClassName} ${fieldStateClass("phone")}`}
+              placeholder="Telephone"
               maxLength={15}
               {...register("phone")}
             />
-            <FieldError errors={[errors.phone]} />
+            <FieldError errors={[errors.phone]} className="mt-1.25 text-left" />
           </div>
           <div>
             <Input
               type="password"
-              className={`text-input ${fieldStateClass("confirmPassword")}`}
+              className={`${inputClassName} ${fieldStateClass("confirmPassword")}`}
               placeholder="Confirm password (Required)"
               autoComplete="new-password"
               minLength={4}
               maxLength={101}
               {...register("confirmPassword")}
             />
-            <FieldError errors={[errors.confirmPassword]} />
+            <FieldError errors={[errors.confirmPassword]} className="mt-1.25 text-left" />
           </div>
         </div>
 
-        <h3 className="mb-3 text-left text-sm font-medium text-foreground">Organisation details</h3>
-        <div className="mb-6 grid grid-cols-1 gap-4 md:grid-cols-2">
+        <h3 className="mb-1.25! text-left text-sm font-medium! text-foreground">Organisation details</h3>
+        <div className="mb-6 grid grid-cols-1 gap-x-4 gap-y-3 md:grid-cols-2">
           <Input
             type="text"
-            className={`text-input ${fieldStateClass("organisation")}`}
+            className={`${inputClassName} ${fieldStateClass("organisation")}`}
             placeholder="Organisation Name"
             maxLength={101}
             {...register("organisation")}
@@ -363,7 +367,7 @@ const Register = ({ updateBgImage }: Props) => {
             <div className="md:col-span-2">
               <Input
                 type="text"
-                className={`text-input ${fieldStateClass("organisationCommercialOther")}`}
+                className={`${inputClassName} ${fieldStateClass("organisationCommercialOther")}`}
                 placeholder="Other"
                 {...register("organisationCommercialOther")}
               />
@@ -371,28 +375,28 @@ const Register = ({ updateBgImage }: Props) => {
           )}
           <Input
             type="text"
-            className={`text-input md:col-span-2 ${fieldStateClass("organisationNumber")}`}
+            className={`${inputClassName} md:col-span-2 ${fieldStateClass("organisationNumber")}`}
             placeholder="Organisation / Charity number"
             maxLength={101}
             {...register("organisationNumber")}
           />
           <Input
             type="text"
-            className={`text-input ${fieldStateClass("address1")}`}
+            className={`${inputClassName} ${fieldStateClass("address1")}`}
             placeholder="Address 1"
             maxLength={101}
             {...register("address1")}
           />
           <Input
             type="text"
-            className="text-input"
+            className={`${inputClassName}`}
             placeholder="Address 2"
             maxLength={101}
             {...register("address2")}
           />
           <Input
             type="text"
-            className={`text-input ${fieldStateClass("city")}`}
+            className={`${inputClassName} ${fieldStateClass("city")}`}
             placeholder="City"
             maxLength={101}
             {...register("city")}
@@ -400,16 +404,16 @@ const Register = ({ updateBgImage }: Props) => {
           <div>
             <Input
               type="text"
-              className={`text-input ${fieldStateClass("postcode")}`}
+              className={`${inputClassName} ${fieldStateClass("postcode")}`}
               placeholder="Postcode"
               maxLength={7}
               {...register("postcode")}
             />
-            <FieldError errors={[errors.postcode]} />
+            <FieldError errors={[errors.postcode]} className="mt-1.25 text-left" />
           </div>
         </div>
 
-        <h3 className="mb-3 text-left text-sm font-medium text-foreground">Access tiers</h3>
+        <h3 className="mb-1.25! text-left text-sm font-medium! text-foreground">Access tiers</h3>
         <div className="account-type-container">
           <div
             className={`account-type-card ${accountType == "free" ? "active" : "inactive"
