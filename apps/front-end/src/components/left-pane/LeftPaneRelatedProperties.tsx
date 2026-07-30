@@ -6,7 +6,7 @@ import RelatedProperty from "./RelatedProperty";
 import Pagination from "../common/Pagination";
 import {
   clearHighlightedProperties,
-  fetchRelatedProperties,
+  fetchPropertyOwnerships,
   highlightProperties,
 } from "../../actions/LandOwnershipActions";
 import { Spinner } from "../ui/spinner";
@@ -14,6 +14,15 @@ import { Button } from "../ui/button";
 import { Separator } from "../ui/separator";
 import OwnershipYear from "./ownership-section/OwnershipYear";
 import { RelatedProperties } from "@/reducers/LandOwnershipReducer";
+import {
+  Empty,
+  EmptyContent,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from "../ui/empty";
+import { SearchAlert } from "lucide-react";
 
 type LeftPaneRelatedPropertiesProps = {
   onClose: () => void;
@@ -144,8 +153,29 @@ const OwnershipSearch = ({
       </>
     );
   } else if (!hasProperties) {
+    let month = "December";
+    if (selectedYear === new Date().getFullYear()) {
+      month = new Date().toLocaleString("default", { month: "long" });
+    }
     content = (
-      <div className="flex grow p-4 justify-center">No Related Properties</div>
+      <div className="flex grow m-7">
+        <Empty>
+          <EmptyHeader>
+            <EmptyMedia>
+              <SearchAlert />
+            </EmptyMedia>
+            <EmptyTitle>No related properties found</EmptyTitle>
+            <EmptyDescription>
+              No properties found related to <strong>{proprietorName}</strong>{" "}
+              in {month} {selectedYear}
+            </EmptyDescription>
+            <EmptyDescription>
+              Try searching for a different year
+            </EmptyDescription>
+          </EmptyHeader>
+          <EmptyContent></EmptyContent>
+        </Empty>
+      </div>
     );
   } else {
     content = (
