@@ -66,7 +66,7 @@ const defaultValues: RegisterFormValues = {
 
 // Preflight is disabled project-wide (see docs/front-end/Styling-with-shadcn-and-Tailwind.md).
 const inputClassName =
-  "box-border h-9 !rounded-[7px] border-2 border-[#D4D2D2] bg-[#F5F5F5] px-3 text-[#78838F] font-normal focus-visible:border-primary focus-visible:ring-0";
+  "box-border h-9 rounded-[7px]! border-2 border-[#D4D2D2] bg-[#F5F5F5] px-3 text-[#78838F] font-normal focus-visible:border-primary focus-visible:ring-0";
 
 type Props = { updateBgImage: (n: number) => void };
 
