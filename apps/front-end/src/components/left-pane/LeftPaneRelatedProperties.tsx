@@ -171,7 +171,7 @@ const OwnershipSearch = ({
     <div className="flex grow flex-col gap-4 border-b-primary">
       <div className="flex flex-col gap-2 px-4">
         <div className="pt-4 text-primary">{proprietorName}</div>
-        {hasProperties && (
+        {hasProperties && !loading && (
           <div>
             <span className="text-primary">{propertyCount}</span> associated
             properties
