@@ -58,6 +58,7 @@ type LandOwnershipState = {
   relatedPropertiesError: string | null;
   relatedPropertiesLoading: boolean;
   relatedPropertiesProprietorName: string | null;
+  relatedPropertiesYear: number;
 };
 
 const INITIAL_STATE: LandOwnershipState = {
@@ -70,6 +71,7 @@ const INITIAL_STATE: LandOwnershipState = {
   relatedPropertiesError: null,
   relatedPropertiesLoading: false,
   relatedPropertiesProprietorName: null,
+  relatedPropertiesYear: new Date().getFullYear(),
 };
 
 type LoadMapPayload = {
@@ -148,6 +150,12 @@ export default (
         ...state,
         activePropertyTitleNo: null,
       };
+    case "SET_RELATED_PROPERTIES_YEAR":
+      return {
+        ...state,
+        relatedPropertiesYear: action.payload as number,
+      };
+
     case "FETCH_RELATED_PROPERTIES_SUCCESS":
       return {
         ...state,
@@ -166,6 +174,11 @@ export default (
       return {
         ...state,
         relatedPropertiesLoading: true,
+      };
+    case "CLEAR_RELATED_PROPERTIES":
+      return {
+        ...state,
+        relatedProperties: {},
       };
     case "SET_RELATED_PROPERTIES_PROPRIETOR_NAME":
       return {

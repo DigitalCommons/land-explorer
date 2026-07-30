@@ -76,8 +76,11 @@ const OwnershipSearch = ({
   properties,
   proprietorName,
 }: OwnershipSearchProps) => {
-  const { relatedPropertiesError: error, relatedPropertiesLoading: loading } =
-    useAppSelector((state) => state.landOwnership);
+  const {
+    relatedPropertiesError: error,
+    relatedPropertiesLoading: loading,
+    relatedPropertiesYear: selectedYear,
+  } = useAppSelector((state) => state.landOwnership);
   const propertyCount = Object.keys(properties).length;
 
   // Chop up the properties into pages
@@ -99,7 +102,13 @@ const OwnershipSearch = ({
   );
   const dispatch = useAppDispatch();
   const handleRetrySearch = () => {
-    dispatch(fetchRelatedProperties(proprietorName!));
+    dispatch(
+      fetchPropertyOwnerships(
+        selectedYear,
+        new Date().getFullYear(),
+        proprietorName,
+      ),
+    );
   };
 
   const selectAll = () => {

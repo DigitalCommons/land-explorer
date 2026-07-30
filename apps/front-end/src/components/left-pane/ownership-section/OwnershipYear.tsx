@@ -1,5 +1,6 @@
 import {
   fetchPropertyOwnershipByYear,
+  fetchPropertyOwnerships,
   fetchRelatedProperties,
 } from "@/actions/LandOwnershipActions";
 import { Label } from "@/components/ui/label";
@@ -15,14 +16,15 @@ type OwnershipYearProps = {
 const OwnershipYear = ({ proprietorName }: OwnershipYearProps) => {
   const dispatch = useAppDispatch();
 
+  const { relatedPropertiesYear: selectedYear } = useAppSelector(
+    (state) => state.landOwnership,
+  );
   const minimumYear = 2017;
   const currentYear = new Date().getFullYear();
   const currentMonth = new Date().toLocaleString("default", { month: "long" });
 
-  const [selectedYear, setSelectedYear] = useState(currentYear);
-
   useEffect(() => {
-    setSelectedYear(currentYear);
+    dispatch({ type: "SET_RELATED_PROPERTIES_YEAR", payload: currentYear });
   }, [proprietorName]);
 
   const label =
@@ -34,23 +36,20 @@ const OwnershipYear = ({ proprietorName }: OwnershipYearProps) => {
 
   const yearChangeCallback = useCallback(
     (year: number) => {
+      dispatch({ type: "SET_RELATED_PROPERTIES_YEAR", payload: year });
       abortControllerRef.current?.abort();
 
       const controller = new AbortController();
       abortControllerRef.current = controller;
 
-      if (year === currentYear) {
-        dispatch(fetchRelatedProperties(proprietorName, controller.signal));
-      } else {
-        dispatch(
-          fetchPropertyOwnershipByYear(
-            year,
-            proprietorName,
-            undefined,
-            controller.signal,
-          ),
-        );
-      }
+      dispatch(
+        fetchPropertyOwnerships(
+          year,
+          currentYear,
+          proprietorName,
+          controller.signal,
+        ),
+      );
     },
     [currentYear, dispatch, proprietorName],
   );
@@ -65,11 +64,6 @@ const OwnershipYear = ({ proprietorName }: OwnershipYearProps) => {
     [dispatchYearChange],
   );
 
-  const onYearChange = (value: number) => {
-    setSelectedYear(value);
-    dispatchYearChange(value);
-  };
-
   return (
     <div className="flex flex-col gap-3 mt-2 mx-4">
       <div className="text-primary">{label}</div>
@@ -82,7 +76,7 @@ const OwnershipYear = ({ proprietorName }: OwnershipYearProps) => {
         step={1}
         tooltipContent={`${selectedYear}`}
         onValueChange={(value) =>
-          onYearChange(Array.isArray(value) ? value[0] : value)
+          dispatchYearChange(Array.isArray(value) ? value[0] : value)
         }
       />
       <div className="flex justify-between text-sm">
