@@ -188,6 +188,11 @@ services:
       args:
         NODE_VERSION: ${NODE_VERSION:-24}
         CADDY_HOSTNAME: localhost
+        # Optional /pbs/* proxy route behind basic auth. Enabled only when
+        #  PBS_AUTH_HASH is set
+        # Use `htpasswd -nbB username 'password'` to generate it with a given
+        #  username and password
+        PBS_AUTH_HASH: ${PBS_AUTH_HASH:-}
         VITE_OS_KEY: ${VITE_OS_KEY:?missing - download docker.env from Bitwarden and run with --env-file docker.env}
         VITE_GEOCODER_TOKEN: ${VITE_GEOCODER_TOKEN:?missing - download docker.env from Bitwarden and run with --env-file docker.env}
         VITE_MAPBOX_TOKEN: ${VITE_MAPBOX_TOKEN:?missing - download docker.env from Bitwarden and run with --env-file docker.env}

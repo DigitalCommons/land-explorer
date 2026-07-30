@@ -13,7 +13,7 @@ The services (mysql and meilisearch) run in stack as named volumes.
 Coolify routes a public domain to the service port - the front end Caddy vhost must equal the domain the app runs on. In the Coolify UI set for each resource:
 
 - front-end: app.landexplorer.coop port 80
-- back-end, pbs, mysql, meilisearch: no domain (internal only) - the API is same-origin - the FE's Caddy proxies /api/* and /socket.io/* to the API_UPSTREAM build arg - back-end:4000 by default (in the compose file)
+- back-end, pbs, mysql, meilisearch: no domain (internal only) - the API is same-origin - the FE's Caddy proxies /api/* and /socket.io/* to the API_UPSTREAM build arg - back-end:4000 by default (in the compose file). In addition /pbs/* can be proxied to PBS behind basic auth - see "Triggering the PBS pipeline on dev"
 
 Then set FRONT_END_HOSTNAME= the front-end domain (bakes into the FE image at build).
 
@@ -33,6 +33,7 @@ Then set FRONT_END_HOSTNAME= the front-end domain (bakes into the FE image at bu
 - SENDGRID_API_KEY - required to send email
 - MIXPANEL_TOKEN, ANALYTICS_PEPPER, VITE_MIXPANEL_TOKEN, VITE_MIXPANEL_PEPPER - leave off for non-production - stores analytics data if consent given
 - GOV_API_URL, GOV_API_KEY, OS_NGD_API_URL, OS_NGD_API_KEY, MAPBOX_GEOCODER_TOKEN\ - required for PBS pipeline, each is an API key requiring an account or subscription
+- PBS_AUTH_HASH - enables the /pbs/* proxy route (see "Triggering the PBS pipeline on dev")
 
 ## Databases — seed vs full copy
 
@@ -45,6 +46,27 @@ Data on top:
 ## PBS pipeline
 
 Staging and prod run the monthly INSPIRE/ownerships pipeline on top of the full copy, dev and PR builds do not. A Coolify Scheduled Task on the pbs service runs monthly on the 10th at 3am (0 3 10 * *), after INSPIRE publishes on the first Sunday. Prod (once cut over) gets the same task in the prod flavour (`stopBeforeTask=analyseInspire`, no boundary writes). Task commands: see property-boundaries-service/pipeline.md "Running on Coolify".
+
+### Triggering the PBS pipeline on dev
+
+PBS doesn't have its own public domain but the FE Caddy can proxy /pbs/* to it behind basic auth to prevent it being triggered by accident through the user browser. Off by default. Enable it by setting PBS_AUTH_HASH:
+
+1. Generate the auth in htpasswd format (user:bcrypt-hash) - devops is the username you can edit and the-password is the password which you MUST edit:
+
+```
+docker run --rm httpd:2-alpine htpasswd -nbB devops 'the-password'
+```
+
+2. Coolify: on the dev resource add env var PBS_AUTH_HASH= and user the code from before
+3. Store the plain text username and password in Vaultwarden
+4. Hit Redeploy (the route bakes into the FE image)
+5. Trigger, with the username from step 1 - e.g. on prod:
+
+```
+curl -u devops "https://app.landexplorer.coop/pbs/run-pipeline?secret=<BOUNDARY_SERVICE_SECRET>&startAtTask=ownerships&stopBeforeTask=downloadInspire"
+```
+
+The /pbs prefix is stripped, so any PBS route works. PBS still requires its secret query param. Progress: pbs container logs. Do not run downloadInspire onwards on previews - it pulls the full monthly INSPIRE dataset and needs the GOV_API keys.
 
 ## Database backups (prod)
 

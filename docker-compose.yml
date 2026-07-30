@@ -160,6 +160,11 @@ services:
         NODE_VERSION: "24"
         CADDY_HOSTNAME: ${FRONT_END_HOSTNAME:?public hostname of the app}
         API_UPSTREAM: ${SERVICE_NAME_BACK_END:-back-end}:4000
+        # Optional /pbs/* proxy route behind basic auth. Enabled only when
+        #  PBS_AUTH_HASH is set
+        # Use `htpasswd -nbB username 'password'` to generate it with a given
+        #  username and password
+        PBS_AUTH_HASH: ${PBS_AUTH_HASH:-}
         VITE_OS_KEY: ${VITE_OS_KEY:?set in Coolify}
         VITE_OS_PLACES_KEY: ${VITE_OS_PLACES_KEY:-}
         VITE_PAYMENTS_URL: ${VITE_PAYMENTS_URL:-}
