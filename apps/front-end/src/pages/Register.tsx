@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 import { useForm, useWatch, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import { X } from "lucide-react";
 import Swal from "sweetalert2";
 import Spinner from "../components/common/Spinner";
 import GoCardlessModal from "../components/modals/GoCardlessModal";
@@ -181,7 +182,20 @@ const Register = ({ updateBgImage }: Props) => {
 
   let formDisplay = (
     <Fragment>
-      <h2 className="title">Register</h2>
+      <Link
+        to="/auth"
+        className="absolute top-4 right-4 flex size-8 items-center justify-center rounded-full bg-muted text-muted-foreground hover:bg-muted/80"
+      >
+        <X className="size-4" />
+      </Link>
+      <h2 className="text-left text-2xl font-semibold text-primary">
+        For everyone. Funded by those who can.
+      </h2>
+      <p className="mb-6 text-left text-sm text-muted-foreground">
+        The core Land Explorer tool is free, always. Organisations that
+        choose the Solidarity Tier help fund access for grassroots groups,
+        tenants&rsquo; unions and community projects.
+      </p>
       {registerErrors && (
         <div>
           {registerErrors.map((error) => (
