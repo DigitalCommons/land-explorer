@@ -12,14 +12,15 @@ import TopBar from "../components/top-bar/TopBar";
 import constants from "../constants";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { FieldError } from "@/components/ui/field";
 import { emailRegexp, ukPhoneRegexp, ukPostcodeRegexp } from "@/lib/validation";
 
 const registerSchema = z
   .object({
-    firstName: z.string().min(3).max(19),
-    lastName: z.string().min(3).max(19),
+    firstName: z.string().min(3, "Must be at least 3 characters").max(19, "Must be at most 19 characters"),
+    lastName: z.string().min(3, "Must be at least 3 characters").max(19, "Must be at most 19 characters"),
     email: z.string().regex(emailRegexp, "Invalid email address"),
-    password: z.string().min(6).max(29),
+    password: z.string().min(6, "Must be at least 6 characters").max(29, "Must be at most 29 characters"),
     confirmPassword: z.string(),
     phone: z.string().refine((v) => v === "" || ukPhoneRegexp.test(v), "Invalid UK phone number"),
     organisationNumber: z.string(),
@@ -204,176 +205,211 @@ const Register = ({ updateBgImage }: Props) => {
         </div>
       )}
       <form onSubmit={handleSubmit(onSubmit)}>
-        <Input
-          type="text"
-          className={`text-input text-input-half text-input-first-half ${fieldStateClass("firstName")}`}
-          placeholder="First name (Required)"
-          maxLength={101}
-          {...register("firstName")}
-        />
-        <Input
-          type="text"
-          className={`text-input text-input-half ${fieldStateClass("lastName")}`}
-          placeholder="Last name (Required)"
-          maxLength={101}
-          {...register("lastName")}
-        />
-        <Input
-          type="email"
-          className={`text-input ${fieldStateClass("email")}`}
-          placeholder="Email address (Required)"
-          autoComplete="username"
-          maxLength={101}
-          {...register("email")}
-        />
-        <Input
-          type="password"
-          className={`text-input text-input-half text-input-first-half ${fieldStateClass("password")}`}
-          placeholder="Password (Required)"
-          autoComplete="new-password"
-          style={{ marginRight: "2%" }}
-          minLength={4}
-          maxLength={101}
-          {...register("password")}
-        />
-        <Input
-          type="password"
-          className={`text-input text-input-half ${fieldStateClass("confirmPassword")}`}
-          placeholder="Confirm password (Required)"
-          autoComplete="new-password"
-          minLength={4}
-          maxLength={101}
-          {...register("confirmPassword")}
-        />
-        <Input
-          type="tel"
-          className={`text-input text-input-half text-input-first-half ${fieldStateClass("phone")}`}
-          placeholder="Tel"
-          maxLength={15}
-          {...register("phone")}
-        />
-        <Input
-          type="text"
-          className={`text-input text-input-half ${fieldStateClass("organisationNumber")}`}
-          placeholder="Organisation / Charity number"
-          maxLength={101}
-          {...register("organisationNumber")}
-        />
-        <Input
-          type="text"
-          className={`text-input ${fieldStateClass("address1")}`}
-          placeholder="Address 1"
-          maxLength={101}
-          {...register("address1")}
-        />
-        <Input
-          type="text"
-          className="text-input"
-          placeholder="Address 2"
-          maxLength={101}
-          {...register("address2")}
-        />
-        <Input
-          type="text"
-          className={`text-input text-input-half text-input-first-half ${fieldStateClass("city")}`}
-          placeholder="City"
-          maxLength={101}
-          {...register("city")}
-        />
-        <Input
-          type="text"
-          className={`text-input text-input-half ${fieldStateClass("postcode")}`}
-          placeholder="Postcode"
-          maxLength={7}
-          {...register("postcode")}
-        />
-        <Input
-          type="text"
-          className={`text-input ${fieldStateClass("organisation")}`}
-          placeholder="Organisation Name"
-          maxLength={101}
-          {...register("organisation")}
-        />
-        <Controller
-          control={control}
-          name="organisationType"
-          render={({ field }) => (
-            <Select
-              name="organisation-type"
-              value={field.value}
-              onValueChange={(value) => field.onChange(value ?? "")}
-            >
-              <SelectTrigger className="w-full">
-                <SelectValue placeholder="My organisation is..." />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="community-interest">Community Interest</SelectItem>
-                <SelectItem value="commercial">Commercial</SelectItem>
-              </SelectContent>
-            </Select>
-          )}
-        />
-        {organisationType === "community-interest" && (
-          <Controller
-            control={control}
-            name="organisationCommunityInterest"
-            render={({ field }) => (
-              <Select
-                name="community-interest"
-                value={field.value}
-                onValueChange={(value) => field.onChange(value ?? "")}
-              >
-                <SelectTrigger className="w-full" style={{ marginBottom: "6px" }}>
-                  <SelectValue placeholder="Community interest type" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="community-energy">Community Energy</SelectItem>
-                  <SelectItem value="community-growing">
-                    Community Growing or Rural Enterprise
-                  </SelectItem>
-                  <SelectItem value="community-group">Community Group (other)</SelectItem>
-                  <SelectItem value="coop">Co-op</SelectItem>
-                  <SelectItem value="neighbourhood-planning">
-                    Neighbourhood Planning
-                  </SelectItem>
-                  <SelectItem value="renters-union">Renters Union</SelectItem>
-                  <SelectItem value="woodland-enterprise">Woodland Enterprise</SelectItem>
-                </SelectContent>
-              </Select>
-            )}
-          />
-        )}
-        {organisationType === "commercial" && (
-          <Controller
-            control={control}
-            name="organisationCommercial"
-            render={({ field }) => (
-              <Select
-                name="community-interest"
-                value={field.value}
-                onValueChange={(value) => field.onChange(value ?? "")}
-              >
-                <SelectTrigger className="w-full" style={{ marginBottom: "6px" }}>
-                  <SelectValue placeholder="Commercial type" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="local-authority">Local Authority</SelectItem>
-                  <SelectItem value="power-network">Power Network</SelectItem>
-                  <SelectItem value="utility-company">Utility Company</SelectItem>
-                  <SelectItem value="other">Other (please specify)</SelectItem>
-                </SelectContent>
-              </Select>
-            )}
-          />
-        )}
-        {organisationType === "commercial" && organisationCommercial === "other" && (
+        <h3 className="mb-3 text-left text-sm font-medium text-foreground">Account details</h3>
+        <div className="mb-6 grid grid-cols-1 gap-4 md:grid-cols-2">
+          <div>
+            <Input
+              type="text"
+              className={`text-input ${fieldStateClass("firstName")}`}
+              placeholder="First name (Required)"
+              maxLength={101}
+              {...register("firstName")}
+            />
+            <FieldError errors={[errors.firstName]} />
+          </div>
+          <div>
+            <Input
+              type="text"
+              className={`text-input ${fieldStateClass("lastName")}`}
+              placeholder="Last name (Required)"
+              maxLength={101}
+              {...register("lastName")}
+            />
+            <FieldError errors={[errors.lastName]} />
+          </div>
+          <div>
+            <Input
+              type="email"
+              className={`text-input ${fieldStateClass("email")}`}
+              placeholder="Email address (Required)"
+              autoComplete="username"
+              maxLength={101}
+              {...register("email")}
+            />
+            <FieldError errors={[errors.email]} />
+          </div>
+          <div>
+            <Input
+              type="password"
+              className={`text-input ${fieldStateClass("password")}`}
+              placeholder="Password (Required)"
+              autoComplete="new-password"
+              minLength={4}
+              maxLength={101}
+              {...register("password")}
+            />
+            <FieldError errors={[errors.password]} />
+          </div>
+          <div>
+            <Input
+              type="tel"
+              className={`text-input ${fieldStateClass("phone")}`}
+              placeholder="Tel"
+              maxLength={15}
+              {...register("phone")}
+            />
+            <FieldError errors={[errors.phone]} />
+          </div>
+          <div>
+            <Input
+              type="password"
+              className={`text-input ${fieldStateClass("confirmPassword")}`}
+              placeholder="Confirm password (Required)"
+              autoComplete="new-password"
+              minLength={4}
+              maxLength={101}
+              {...register("confirmPassword")}
+            />
+            <FieldError errors={[errors.confirmPassword]} />
+          </div>
+        </div>
+
+        <h3 className="mb-3 text-left text-sm font-medium text-foreground">Organisation details</h3>
+        <div className="mb-6 grid grid-cols-1 gap-4 md:grid-cols-2">
           <Input
             type="text"
-            className={`text-input ${fieldStateClass("organisationCommercialOther")}`}
-            placeholder="Other"
-            {...register("organisationCommercialOther")}
+            className={`text-input ${fieldStateClass("organisation")}`}
+            placeholder="Organisation Name"
+            maxLength={101}
+            {...register("organisation")}
           />
-        )}
+          <Controller
+            control={control}
+            name="organisationType"
+            render={({ field }) => (
+              <Select
+                name="organisation-type"
+                value={field.value}
+                onValueChange={(value) => field.onChange(value ?? "")}
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="My organisation is..." />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="community-interest">Community Interest</SelectItem>
+                  <SelectItem value="commercial">Commercial</SelectItem>
+                </SelectContent>
+              </Select>
+            )}
+          />
+          {organisationType === "community-interest" && (
+            <div className="md:col-span-2">
+              <Controller
+                control={control}
+                name="organisationCommunityInterest"
+                render={({ field }) => (
+                  <Select
+                    name="community-interest"
+                    value={field.value}
+                    onValueChange={(value) => field.onChange(value ?? "")}
+                  >
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Community interest type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="community-energy">Community Energy</SelectItem>
+                      <SelectItem value="community-growing">
+                        Community Growing or Rural Enterprise
+                      </SelectItem>
+                      <SelectItem value="community-group">Community Group (other)</SelectItem>
+                      <SelectItem value="coop">Co-op</SelectItem>
+                      <SelectItem value="neighbourhood-planning">
+                        Neighbourhood Planning
+                      </SelectItem>
+                      <SelectItem value="renters-union">Renters Union</SelectItem>
+                      <SelectItem value="woodland-enterprise">Woodland Enterprise</SelectItem>
+                    </SelectContent>
+                  </Select>
+                )}
+              />
+            </div>
+          )}
+          {organisationType === "commercial" && (
+            <div className="md:col-span-2">
+              <Controller
+                control={control}
+                name="organisationCommercial"
+                render={({ field }) => (
+                  <Select
+                    name="community-interest"
+                    value={field.value}
+                    onValueChange={(value) => field.onChange(value ?? "")}
+                  >
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Commercial type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="local-authority">Local Authority</SelectItem>
+                      <SelectItem value="power-network">Power Network</SelectItem>
+                      <SelectItem value="utility-company">Utility Company</SelectItem>
+                      <SelectItem value="other">Other (please specify)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                )}
+              />
+            </div>
+          )}
+          {organisationType === "commercial" && organisationCommercial === "other" && (
+            <div className="md:col-span-2">
+              <Input
+                type="text"
+                className={`text-input ${fieldStateClass("organisationCommercialOther")}`}
+                placeholder="Other"
+                {...register("organisationCommercialOther")}
+              />
+            </div>
+          )}
+          <Input
+            type="text"
+            className={`text-input md:col-span-2 ${fieldStateClass("organisationNumber")}`}
+            placeholder="Organisation / Charity number"
+            maxLength={101}
+            {...register("organisationNumber")}
+          />
+          <Input
+            type="text"
+            className={`text-input ${fieldStateClass("address1")}`}
+            placeholder="Address 1"
+            maxLength={101}
+            {...register("address1")}
+          />
+          <Input
+            type="text"
+            className="text-input"
+            placeholder="Address 2"
+            maxLength={101}
+            {...register("address2")}
+          />
+          <Input
+            type="text"
+            className={`text-input ${fieldStateClass("city")}`}
+            placeholder="City"
+            maxLength={101}
+            {...register("city")}
+          />
+          <div>
+            <Input
+              type="text"
+              className={`text-input ${fieldStateClass("postcode")}`}
+              placeholder="Postcode"
+              maxLength={7}
+              {...register("postcode")}
+            />
+            <FieldError errors={[errors.postcode]} />
+          </div>
+        </div>
+
+        <h3 className="mb-3 text-left text-sm font-medium text-foreground">Access tiers</h3>
         <div className="account-type-container">
           <div
             className={`account-type-card ${accountType == "free" ? "active" : "inactive"
