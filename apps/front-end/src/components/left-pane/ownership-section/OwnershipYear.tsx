@@ -36,7 +36,6 @@ const OwnershipYear = ({ proprietorName }: OwnershipYearProps) => {
 
   const yearChangeCallback = useCallback(
     (year: number) => {
-      dispatch({ type: "SET_RELATED_PROPERTIES_YEAR", payload: year });
       abortControllerRef.current?.abort();
 
       const controller = new AbortController();
@@ -64,6 +63,11 @@ const OwnershipYear = ({ proprietorName }: OwnershipYearProps) => {
     [dispatchYearChange],
   );
 
+  const onYearChange = (value: number) => {
+    dispatch({ type: "SET_RELATED_PROPERTIES_YEAR", payload: value });
+    dispatchYearChange(value);
+  };
+
   return (
     <div className="flex flex-col gap-3 mt-2 mx-4">
       <div className="text-primary">{label}</div>
@@ -76,7 +80,7 @@ const OwnershipYear = ({ proprietorName }: OwnershipYearProps) => {
         step={1}
         tooltipContent={`${selectedYear}`}
         onValueChange={(value) =>
-          dispatchYearChange(Array.isArray(value) ? value[0] : value)
+          onYearChange(Array.isArray(value) ? value[0] : value)
         }
       />
       <div className="flex justify-between text-sm">
