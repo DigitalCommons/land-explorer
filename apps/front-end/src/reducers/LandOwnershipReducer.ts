@@ -58,7 +58,6 @@ type LandOwnershipState = {
   relatedPropertiesError: string | null;
   relatedPropertiesLoading: boolean;
   relatedPropertiesProprietorName: string | null;
-  historicOwnershipProperties: RelatedProperties | null;
 };
 
 const INITIAL_STATE: LandOwnershipState = {
@@ -71,7 +70,6 @@ const INITIAL_STATE: LandOwnershipState = {
   relatedPropertiesError: null,
   relatedPropertiesLoading: false,
   relatedPropertiesProprietorName: null,
-  historicOwnershipProperties: null,
 };
 
 type LoadMapPayload = {
@@ -109,13 +107,6 @@ export default (
       return {
         ...state,
         visibleProperties: action.payload as { [key: string]: Property },
-      };
-    case "SET_HISTORIC_OWNERSHIP_PROPERTIES":
-      return {
-        ...state,
-        historicOwnershipProperties: action.payload as {
-          [key: string]: Property;
-        },
       };
     case "HIGHLIGHT_PROPERTIES":
       return {
@@ -176,13 +167,6 @@ export default (
         ...state,
         relatedPropertiesLoading: true,
       };
-    case "FETCH_RELATED_PROPERTIES_EMPTY":
-      return {
-        ...state,
-        relatedProperties: {},
-        relatedPropertiesError: null,
-        relatedPropertiesLoading: false,
-      };
     case "SET_RELATED_PROPERTIES_PROPRIETOR_NAME":
       return {
         ...state,
@@ -193,7 +177,6 @@ export default (
         ...state,
         relatedProperties: {},
         relatedPropertiesProprietorName: null,
-        historicOwnershipProperties: null,
       };
     case "LOAD_MAP":
     case "RELOAD_MAP": {

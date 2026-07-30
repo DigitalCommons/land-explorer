@@ -22,7 +22,7 @@ const MapProperties = ({ center, map }: Props) => {
     loadingProperties,
     highlightedProperties,
     activePropertyTitleNo,
-    historicOwnershipProperties,
+    relatedProperties,
   } = useAppSelector((state) => state.landOwnership);
   const activeProperty =
     activePropertyTitleNo !== null
@@ -126,11 +126,11 @@ const MapProperties = ({ center, map }: Props) => {
     });
   }
 
-  // Properties owned in a past year, rendered from a single GeoJSON source instead of per-polygon
+  // Properties owned in a year, rendered from a single GeoJSON source instead of per-polygon
   // Features - this set can be large, and is replaced wholesale every time the ownership year slider
   // changes, so a bulk source update is much cheaper than diffing hundreds of Feature elements.
-  const historicOwnershipFeatures: GeoJSON.Feature[] = Object.values(
-    historicOwnershipProperties ?? {},
+  const relatedPropertiesFeatures: GeoJSON.Feature[] = Object.values(
+    relatedProperties ?? {},
   ).flatMap((property: any) =>
     property.polygons.map((polygon: any) => ({
       type: "Feature",
@@ -139,9 +139,9 @@ const MapProperties = ({ center, map }: Props) => {
     })),
   );
 
-  const onHistoricOwnershipFeatureClick = (e: any) => {
+  const onRelatedOwnershipFeatureClick = (e: any) => {
     const titleNo = e.features?.[0]?.properties?.title_no;
-    const property = titleNo && historicOwnershipProperties?.[titleNo];
+    const property = titleNo && relatedProperties?.[titleNo];
     if (property) {
       onClickProperty(property);
     }
@@ -219,12 +219,12 @@ const MapProperties = ({ center, map }: Props) => {
         {propertyWithOwnershipBorderFeatures}
       </Layer>
 
-      {/* Historic ownership properties - Fill + Border, from a single GeoJSON source */}
+      {/* Related ownership properties - Fill + Border, from a single GeoJSON source */}
       <GeoJSONLayer
-        id="historic-ownership"
+        id="related-ownership"
         data={{
           type: "FeatureCollection",
-          features: historicOwnershipFeatures,
+          features: relatedPropertiesFeatures,
         }}
         fillPaint={{
           "fill-opacity": 0.2,
@@ -235,7 +235,7 @@ const MapProperties = ({ center, map }: Props) => {
           "line-width": 2,
           "line-opacity": 1,
         }}
-        fillOnClick={onHistoricOwnershipFeatureClick}
+        fillOnClick={onRelatedOwnershipFeatureClick}
       />
 
       {/* Properties data private - Fill */}

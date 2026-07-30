@@ -145,7 +145,7 @@ export const fetchPropertyOwnershipByYear = (
   signal?: AbortSignal,
 ) => {
   return async (dispatch: any) => {
-      dispatch({ type: "SET_HISTORIC_OWNERSHIP_PROPERTIES", payload: {} });
+    dispatch({ type: "SET_HISTORIC_OWNERSHIP_PROPERTIES", payload: {} });
     dispatch({ type: "FETCH_RELATED_PROPERTIES_LOADING" });
 
     let url;
@@ -168,9 +168,10 @@ export const fetchPropertyOwnershipByYear = (
     }
 
     if (propertyOwnershipsForYear !== null) {
+      let payload;
       if (propertyOwnershipsForYear.ownerships.length > 0) {
         // map the results into a { [titleNo]: Property } map
-        const payload = propertyOwnershipsForYear.ownerships.reduce(
+        payload = propertyOwnershipsForYear.ownerships.reduce(
           (
             acc: { [titleNo: string]: Partial<Property> },
             x: ProprietorOwnership,
@@ -189,24 +190,17 @@ export const fetchPropertyOwnershipByYear = (
           },
           {},
         );
-
-        dispatch({
-          type: "FETCH_RELATED_PROPERTIES_SUCCESS",
-          payload: payload,
-        });
-
-        dispatch({
-          type: "SET_HISTORIC_OWNERSHIP_PROPERTIES",
-          payload: payload,
-        });
       } else {
-        dispatch({ type: "FETCH_RELATED_PROPERTIES_EMPTY" });
+        payload = {};
       }
-      // TODO need to handle no properties found
+      dispatch({
+        type: "FETCH_RELATED_PROPERTIES_SUCCESS",
+        payload: payload,
+      });
     } else {
       dispatch({
         type: "FETCH_RELATED_PROPERTIES_FAILURE",
-        payload: "Error fetching related properties",
+        payload: "Error fetching historic properties",
       });
     }
   };
