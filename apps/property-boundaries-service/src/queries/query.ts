@@ -1028,7 +1028,19 @@ export const getPolygonsByArea = async (searchArea: string) => {
  * @returns an array of polygons with ownership info for each polygon that matches the proprietor name
  */
 export const getPolygonsByProprietorName = async (name: string) => {
-  const query = `SELECT land_ownerships.*,
+  // A UNION of four single-column lookups, rather than one OR across all four columns, so each
+  // branch can use its own proprietor_name_N index - MySQL can't use an index for an OR condition
+  // spanning multiple columns. UNION (not UNION ALL) matches the OR's original behaviour of
+  // returning each polygon once, even if the name matches more than one proprietor slot on a title.
+  const proprietorColumns = [
+    "proprietor_name_1",
+    "proprietor_name_2",
+    "proprietor_name_3",
+    "proprietor_name_4",
+  ];
+  const query = proprietorColumns
+    .map(
+      (column) => `SELECT land_ownerships.*,
     land_ownership_polygons.poly_id AS poly_id,
     land_ownership_polygons.geom AS geom,
     land_ownership_polygons.createdAt AS polyCreatedAt,
@@ -1036,10 +1048,9 @@ export const getPolygonsByProprietorName = async (name: string) => {
   FROM land_ownerships
   INNER JOIN land_ownership_polygons
     ON land_ownerships.title_no = land_ownership_polygons.title_no
-  WHERE land_ownerships.proprietor_name_1 = ?
-     OR land_ownerships.proprietor_name_2 = ?
-     OR land_ownerships.proprietor_name_3 = ?
-     OR land_ownerships.proprietor_name_4 = ?;`;
+  WHERE land_ownerships.${column} = ?`,
+    )
+    .join("\n  UNION\n");
 
   const polygonsAndOwnerships = await sequelize.query(query, {
     replacements: [name, name, name, name],
