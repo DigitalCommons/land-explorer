@@ -13,6 +13,7 @@ import { Spinner } from "../ui/spinner";
 import { Button } from "../ui/button";
 import { Separator } from "../ui/separator";
 import OwnershipYear from "./ownership-section/OwnershipYear";
+import { RelatedProperties } from "@/reducers/LandOwnershipReducer";
 
 type LeftPaneRelatedPropertiesProps = {
   onClose: () => void;
@@ -25,10 +26,23 @@ const LeftPaneRelatedProperties = ({
   open,
   itemsPerPage,
 }: LeftPaneRelatedPropertiesProps) => {
+  const {
+    relatedProperties: properties,
+    relatedPropertiesProprietorName: proprietorName,
+  } = useAppSelector((state) => state.landOwnership);
+
+  if (!proprietorName) {
+    return;
+  }
+
   return (
     <LeftPaneTray title="Ownership Search" open={open} onClose={onClose}>
       <div className="flex flex-col grow">
-        <OwnershipSearch itemsPerPage={itemsPerPage} />
+        <OwnershipSearch
+          itemsPerPage={itemsPerPage}
+          properties={properties}
+          proprietorName={proprietorName}
+        />
       </div>
       <div className="p-5 text-sm">
         <p>
@@ -53,16 +67,17 @@ const LeftPaneRelatedProperties = ({
 
 type OwnershipSearchProps = {
   itemsPerPage: number;
+  properties: RelatedProperties;
+  proprietorName: string;
 };
 
-const OwnershipSearch = ({ itemsPerPage }: OwnershipSearchProps) => {
-  const {
-    relatedProperties: properties,
-    relatedPropertiesError: error,
-    relatedPropertiesProprietorName: proprietorName,
-    relatedPropertiesLoading: loading,
-  } = useAppSelector((state) => state.landOwnership);
-
+const OwnershipSearch = ({
+  itemsPerPage,
+  properties,
+  proprietorName,
+}: OwnershipSearchProps) => {
+  const { relatedPropertiesError: error, relatedPropertiesLoading: loading } =
+    useAppSelector((state) => state.landOwnership);
   const propertyCount = Object.keys(properties).length;
 
   // Chop up the properties into pages
@@ -155,11 +170,7 @@ const OwnershipSearch = ({ itemsPerPage }: OwnershipSearchProps) => {
   return (
     <div className="flex grow flex-col gap-4 border-b-primary">
       <div className="flex flex-col gap-2 px-4">
-        <div className="pt-4 text-primary">
-          {hasProperties
-            ? propertiesOnThisPage[0].proprietor_name_1
-            : proprietorName}
-        </div>
+        <div className="pt-4 text-primary">{proprietorName}</div>
         {hasProperties && (
           <div>
             <span className="text-primary">{propertyCount}</span> associated

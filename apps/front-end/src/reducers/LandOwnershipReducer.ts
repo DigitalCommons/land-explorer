@@ -39,7 +39,7 @@ type HighlightedProperties = {
   [titleNo: string]: Property;
 };
 
-type RelatedProperties = {
+export type RelatedProperties = {
   [titleNo: string]: Property;
 };
 
