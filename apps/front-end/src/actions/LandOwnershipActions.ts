@@ -107,6 +107,9 @@ export const fetchRelatedProperties = (
       type: "SET_RELATED_PROPERTIES_PROPRIETOR_NAME",
       payload: proprietorName,
     });
+    // A prior historic-year search may have left polygons on the map for a different proprietor
+    // or year - clear them out before this (current year / new proprietor) search runs.
+    dispatch({ type: "SET_HISTORIC_OWNERSHIP_PROPERTIES", payload: {} });
     dispatch({ type: "FETCH_RELATED_PROPERTIES_LOADING" });
 
     const relatedPropertiesTitleMap = await dispatch(
@@ -142,6 +145,7 @@ export const fetchPropertyOwnershipByYear = (
   signal?: AbortSignal,
 ) => {
   return async (dispatch: any) => {
+      dispatch({ type: "SET_HISTORIC_OWNERSHIP_PROPERTIES", payload: {} });
     dispatch({ type: "FETCH_RELATED_PROPERTIES_LOADING" });
 
     let url;
@@ -185,8 +189,14 @@ export const fetchPropertyOwnershipByYear = (
           },
           {},
         );
+
         dispatch({
           type: "FETCH_RELATED_PROPERTIES_SUCCESS",
+          payload: payload,
+        });
+
+        dispatch({
+          type: "SET_HISTORIC_OWNERSHIP_PROPERTIES",
           payload: payload,
         });
       } else {

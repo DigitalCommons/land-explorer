@@ -21,6 +21,10 @@ const OwnershipYear = ({ proprietorName }: OwnershipYearProps) => {
 
   const [selectedYear, setSelectedYear] = useState(currentYear);
 
+  useEffect(() => {
+    setSelectedYear(currentYear);
+  }, [proprietorName]);
+
   const label =
     selectedYear === currentYear
       ? `Viewing current ownership as of ${currentMonth} ${currentYear}`
