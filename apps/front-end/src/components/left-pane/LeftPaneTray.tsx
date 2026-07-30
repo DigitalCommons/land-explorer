@@ -15,14 +15,14 @@ const LeftPaneTray = ({ open, title, onClose, header, children }: Props) => {
   return (
     <div
       className={cn(
-        "fixed top-[68px] bottom-0 left-[72px] z-[100000] flex w-[calc(100vw-72px)] flex-col overflow-x-hidden bg-background transition-transform duration-500 ease-in-out md:w-[400px]",
+        "fixed top-17 bottom-0 left-18 z-100000 flex w-[calc(100vw-72px)] flex-col overflow-x-hidden bg-background transition-transform duration-500 ease-in-out md:w-100",
         open
           ? "translate-x-0 shadow-[3px_0_6px_0_rgba(0,0,0,0.16)]"
-          : "-translate-x-[200%]",
+          : "translate-x-[-200%]",
       )}
     >
       <div className="flex-none border-b border-border">
-        <div className="relative flex h-[58px] w-full items-center">
+        <div className="relative flex h-14.5 w-full items-center">
           <div className="ml-5 text-2xl text-primary">{title}</div>
           <Button
             aria-label="Close"
