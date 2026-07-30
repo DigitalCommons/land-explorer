@@ -1,5 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
-import { useDebounceCallback } from "usehooks-ts";
+import { useState } from "react";
 import LeftPaneTray from "./LeftPaneTray";
 import { useAppDispatch, useAppSelector } from "@/hooks/react-redux";
 import RelatedProperty from "./RelatedProperty";
@@ -22,7 +21,7 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from "../ui/empty";
-import { SearchAlert } from "lucide-react";
+import { SearchAlert, CircleX } from "lucide-react";
 
 type LeftPaneRelatedPropertiesProps = {
   onClose: () => void;
@@ -139,18 +138,22 @@ const OwnershipSearch = ({
     );
   } else if (error) {
     content = (
-      <>
-        <div className="mx-8 my-4 text-center">
-          We've experienced an error. Please try again.
-        </div>
-        {proprietorName && (
-          <div className="flex grow justify-center">
-            <Button size="lg" variant="secondary" onClick={handleRetrySearch}>
+      <div className="flex grow m-7">
+        <Empty>
+          <EmptyHeader>
+            <EmptyMedia>
+              <CircleX />
+            </EmptyMedia>
+            <EmptyHeader>We've experienced an error</EmptyHeader>
+            <EmptyDescription>Please try again.</EmptyDescription>
+          </EmptyHeader>
+          <EmptyContent>
+            <Button size="sm" variant="outline" onClick={handleRetrySearch}>
               Retry search
             </Button>
-          </div>
-        )}
-      </>
+          </EmptyContent>
+        </Empty>
+      </div>
     );
   } else if (!hasProperties) {
     let month = "December";
