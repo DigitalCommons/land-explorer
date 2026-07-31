@@ -64,7 +64,7 @@ const defaultValues: RegisterFormValues = {
   marketing: false,
 };
 
-// Preflight is disabled project-wide (see docs/front-end/Styling-with-shadcn-and-Tailwind.md).
+// Repeat className for inputs to avoid duplication and make it easier to change in the future
 const inputClassName =
   "box-border h-9 rounded-[7px]! border-2 border-[#D4D2D2] bg-[#F5F5F5] px-3 text-[#78838F] font-normal focus-visible:border-primary focus-visible:ring-0";
 
@@ -306,80 +306,74 @@ const Register = ({ updateBgImage }: Props) => {
               </Select>
             )}
           />
-          {organisationType === "community-interest" && (
-            <div className="md:col-span-2">
-              <Controller
-                control={control}
-                name="organisationCommunityInterest"
-                render={({ field }) => (
-                  <Select
-                    name="community-interest"
-                    value={field.value}
-                    onValueChange={(value) => field.onChange(value ?? "")}
-                  >
-                    <SelectTrigger className="w-full">
-                      <SelectValue placeholder="Community interest type" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="community-energy">Community Energy</SelectItem>
-                      <SelectItem value="community-growing">
-                        Community Growing or Rural Enterprise
-                      </SelectItem>
-                      <SelectItem value="community-group">Community Group (other)</SelectItem>
-                      <SelectItem value="coop">Co-op</SelectItem>
-                      <SelectItem value="neighbourhood-planning">
-                        Neighbourhood Planning
-                      </SelectItem>
-                      <SelectItem value="renters-union">Renters Union</SelectItem>
-                      <SelectItem value="woodland-enterprise">Woodland Enterprise</SelectItem>
-                    </SelectContent>
-                  </Select>
-                )}
-              />
-            </div>
-          )}
-          {organisationType === "commercial" && (
-            <div className="md:col-span-2">
-              <Controller
-                control={control}
-                name="organisationCommercial"
-                render={({ field }) => (
-                  <Select
-                    name="community-interest"
-                    value={field.value}
-                    onValueChange={(value) => field.onChange(value ?? "")}
-                  >
-                    <SelectTrigger className="w-full">
-                      <SelectValue placeholder="Commercial type" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="local-authority">Local Authority</SelectItem>
-                      <SelectItem value="power-network">Power Network</SelectItem>
-                      <SelectItem value="utility-company">Utility Company</SelectItem>
-                      <SelectItem value="other">Other (please specify)</SelectItem>
-                    </SelectContent>
-                  </Select>
-                )}
-              />
-            </div>
-          )}
-          {organisationType === "commercial" && organisationCommercial === "other" && (
-            <div className="md:col-span-2">
-              <Input
-                type="text"
-                className={`${inputClassName} ${fieldStateClass("organisationCommercialOther")}`}
-                placeholder="Other"
-                {...register("organisationCommercialOther")}
-              />
-            </div>
-          )}
           <Input
             type="text"
-            className={`${inputClassName} md:col-span-2 ${fieldStateClass("organisationNumber")}`}
+            className={`${inputClassName} ${fieldStateClass("organisationNumber")}`}
             placeholder="Organisation / Charity number"
             maxLength={101}
             {...register("organisationNumber")}
           />
+          {organisationType === "community-interest" && (
+            <Controller
+              control={control}
+              name="organisationCommunityInterest"
+              render={({ field }) => (
+                <Select
+                  name="community-interest"
+                  value={field.value}
+                  onValueChange={(value) => field.onChange(value ?? "")}
+                >
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Community interest type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="community-energy">Community Energy</SelectItem>
+                    <SelectItem value="community-growing">
+                      Community Growing or Rural Enterprise
+                    </SelectItem>
+                    <SelectItem value="community-group">Community Group (other)</SelectItem>
+                    <SelectItem value="coop">Co-op</SelectItem>
+                    <SelectItem value="neighbourhood-planning">
+                      Neighbourhood Planning
+                    </SelectItem>
+                    <SelectItem value="renters-union">Renters Union</SelectItem>
+                    <SelectItem value="woodland-enterprise">Woodland Enterprise</SelectItem>
+                  </SelectContent>
+                </Select>
+              )}
+            />
+          )}
+          {organisationType === "commercial" && (
+            <Controller
+              control={control}
+              name="organisationCommercial"
+              render={({ field }) => (
+                <Select
+                  name="community-interest"
+                  value={field.value}
+                  onValueChange={(value) => field.onChange(value ?? "")}
+                >
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Commercial type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="local-authority">Local Authority</SelectItem>
+                    <SelectItem value="power-network">Power Network</SelectItem>
+                    <SelectItem value="utility-company">Utility Company</SelectItem>
+                    <SelectItem value="other">Other (please specify)</SelectItem>
+                  </SelectContent>
+                </Select>
+              )}
+            />
+          )}
+          {organisationType === "commercial" && organisationCommercial === "other" && (
+            <Input
+              type="text"
+              className={`${inputClassName} ${fieldStateClass("organisationCommercialOther")}`}
+              placeholder="Other"
+              {...register("organisationCommercialOther")}
+            />
+          )}
           <Input
             type="text"
             className={`${inputClassName} ${fieldStateClass("address1")}`}
