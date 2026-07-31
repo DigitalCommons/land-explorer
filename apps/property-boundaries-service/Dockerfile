@@ -3,23 +3,25 @@
 # Multi-stage build for the Property Boundaries Service (Hapi, ESM, TypeScript
 # compiled to dist/ with tsc). Modelled on mykomap-monolith/apps/back-end.
 # See land-explorer-back-end/docs/containers.md for how to build and run this.
+#
+# Debian, instead of the other container's more slimline Alpine: the INSPIRE
+#   pipeline needs chromium
 
 # Node version must be supplied (e.g. 24). No sane default - fail loudly if unset.
 ARG NODE_VERSION=nonesuch
 
 # ---- build stage ----
-FROM node:${NODE_VERSION}-alpine AS build
+FROM node:${NODE_VERSION}-slim AS build
 WORKDIR /app
 
-# git: build/version metadata.
-RUN apk add --no-cache git
+# git: install git without the optional extras
+# first line gets the package index (list of all packages) and
+#   last line removes it to keep the image small
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends git \
+    && rm -rf /var/lib/apt/lists/*
 
-# Don't download the Playwright chromium browser during npm ci: it isn't built
-# for Alpine/musl and isn't needed to build or to run the API server.
-# This is an issue with the current setup that is part of the reason the
-#  INSPIRE pipeline isn't working - change to 0 to test a fix for this
-#  then remove it after the issue is fixed
-# See https://github.com/DigitalCommons/property-boundaries-service/issues/45
+# Don't get chromium during npm ci - runtime stage gets it instead
 ENV PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1
 
 COPY package.json package-lock.json ./
@@ -30,20 +32,37 @@ RUN npm run build
 # sequelize-cli available. The runtime stage prunes them.
 
 # ---- runtime stage ----
-FROM node:${NODE_VERSION}-alpine
+FROM node:${NODE_VERSION}-slim
 WORKDIR /app
 ENV NODE_ENV=production
-ENV PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1
 
-# ogr2ogr (GDAL) is required by the INSPIRE pipeline task to convert GML to
-# GeoJSON. gdal-tools provides it on Alpine.
-RUN apk add --no-cache gdal-tools
+# INSPIRE pipeline toolchain:
+# - gdal-bin: ogr2ogr/ogrinfo - for writing into MySQL
+# - default-mysql-client - gml script DELETE step uses mysql
+# - rsync + openssh-client - INSPIRE zip backup/restore to storage box
+# - (skipped unless REMOTE_BACKUP_DESTINATION_PATH is set)
+# - curl - Matrix failure notifications in scripts
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+       bash gdal-bin default-mysql-client rsync openssh-client curl \
+    && rm -rf /var/lib/apt/lists/*
 
 COPY --from=build /app/node_modules ./node_modules
+
+# Chromium for INSPIRE pipleline, in fixed path for all users
+ENV PLAYWRIGHT_BROWSERS_PATH=/ms-playwright
+RUN npx playwright install --with-deps chromium \
+    && rm -rf /var/lib/apt/lists/*
+
 COPY --from=build /app/dist ./dist
 COPY --from=build /app/package.json ./package.json
 COPY --from=build /app/package-lock.json ./package-lock.json
 COPY --from=build /app/config ./config
+
+# The pipeline's shell scripts, plus the OSTN15 projection grid installed
+# where PROJ looks for it (the legacy servers scp'd it to /usr/share/proj)
+COPY --from=build /app/scripts ./scripts
+COPY --from=build /app/scripts/OSTN15_NTv2_OSGBtoETRS.gsb /usr/share/proj/
 
 # DB migrations run at deploy time (e.g. Coolify's pre-deploy command:
 # `npx sequelize-cli db:migrate`, the same command scripts/deploy.sh uses).
@@ -57,6 +76,11 @@ COPY --from=build /app/seeders ./seeders
 # version in package.json.
 RUN npm prune --omit=dev \
     && npm install --no-save sequelize-cli@6
+
+# The pipeline writes downloads/ logs/ temp.sqlite to the work dir
+# Own the dirs and the workdir itself (for temp.sqlite)
+RUN mkdir -p downloads logs \
+    && chown node:node /app downloads logs
 
 USER node
 EXPOSE 4000

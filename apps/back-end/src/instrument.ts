@@ -4,10 +4,11 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
-// For Glitchtip error reporting
+// For Glitchtip error reporting. NODE_ENV is "production" in every deployed
+// container, so GLITCHTIP_ENVIRONMENT distinguishes dev/staging/production.
 Sentry.init({
   dsn: `https://${process.env.GLITCHTIP_KEY}@app.glitchtip.com/10892`,
-  environment: process.env.NODE_ENV,
+  environment: process.env.GLITCHTIP_ENVIRONMENT || process.env.NODE_ENV,
 });
 
 // For Mixpanel user analytics
