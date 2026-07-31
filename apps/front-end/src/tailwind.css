@@ -119,32 +119,29 @@
   --sidebar-ring: oklch(0.556 0 0);
 }
 
+/*
+ * Tailwind preflight resets browser defaults (headings, links, lists,
+ * buttons, etc.) that the rest of the app relies on. Rather than enabling
+ * it globally, it's imported here inside an `@scope`, so it only matches
+ * `.shadcn-scope` and its descendants — the rest of the (non-shadcn) app
+ * is untouched. The build pipeline inlines the `@import` at build time
+ * (even nested inside `@scope`), so this stays in sync with whatever
+ * `tailwindcss` version is installed with no manual copying.
+ *
+ * See src/components/ui/README.md for where `.shadcn-scope` needs to be
+ * added when adding new shadcn components.
+ */
+@scope (.shadcn-scope) {
+  @import "tailwindcss/preflight.css" layer(base);
+}
+
 @layer base {
-  *:not(p, h1, h2, h3, h4, h5),
-  ::after,
-  ::before,
-  ::backdrop,
-  ::file-selector-button {
-    margin: 0;
-    padding: 0;
-  }
-
-  *,
-  ::after,
-  ::before,
-  ::backdrop,
-  ::file-selector-button {
-    box-sizing: border-box;
-    border: 0 solid;
-  }
-
-  * {
+  .shadcn-scope,
+  .shadcn-scope * {
     @apply border-border outline-ring/50;
   }
-  body {
-    @apply bg-background text-foreground;
-  }
-  html {
-    @apply font-sans;
+
+  .shadcn-scope {
+    @apply bg-background text-foreground font-sans;
   }
 }

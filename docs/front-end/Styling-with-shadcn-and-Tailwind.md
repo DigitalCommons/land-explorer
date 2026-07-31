@@ -35,20 +35,23 @@ See `src/components/ui/button.tsx` for a worked example of this pattern.
 
 Configuration for the CLI lives in `apps/front-end/components.json` - this is where the style variant (`base-nova`), base colour, icon library (`lucide`), and import aliases (`@/components`, `@/lib`, `@/hooks`, etc.) are set.
 
-### Preflight is turned off
+### Preflight is scoped to shadcn components
 
 A stock Tailwind v4 setup imports everything with a single `@import "tailwindcss";`, which pulls in Tailwind's [Preflight](https://tailwindcss.com/docs/preflight) reset along with the theme and utility layers. Preflight strips browsers' default styling from built-in HTML elements (headings, lists, buttons, form controls, etc.) so components look the same everywhere before any classes are applied.
 
-We can't use it here: the existing app already has SCSS rules (`src/assets/styles/*.scss`) that target those same built-in elements directly (e.g. bare `button`, `input`, `a` selectors), relying on the browser defaults Preflight would remove. Turning Preflight on reset styling across the whole app, not just the new shadcn components, breaking everything we haven't migrated yet.
+We can't turn it on globally: the existing app already has SCSS rules (`src/assets/styles/*.scss`) that target those same built-in elements directly (e.g. bare `button`, `input`, `a` selectors), relying on the browser defaults Preflight would remove. Turning Preflight on would reset styling across the whole app, not just the new shadcn components, breaking everything we haven't migrated yet.
 
-So in `src/tailwind.css` we import the theme and utilities layers individually and skip `tailwindcss/preflight.css`:
+Instead, `src/tailwind.css` imports Preflight inside a CSS [`@scope`](https://developer.mozilla.org/en-US/docs/Web/CSS/@scope) block, so the reset only applies within elements carrying a `shadcn-scope` class:
 
 ```css
-@import "tailwindcss/theme.css" layer(theme);
-@import "tailwindcss/utilities.css" layer(utilities);
+@scope (.shadcn-scope) {
+  @import "tailwindcss/preflight.css" layer(base);
+}
 ```
 
-This should be revisited once the legacy SCSS is fully migrated (see [Migrating old files](#migrating-old-files)) - at that point there should be no more hand-styled built-in elements for Preflight to conflict with, and it can be turned back on.
+shadcn/ui primitives are responsible for carrying that class on their own root element(s) - see [`src/components/ui/README.md`](../../apps/front-end/src/components/ui/README.md) for where it needs to be added when generating a new component.
+
+This should be revisited once the legacy SCSS is fully migrated (see [Migrating old files](#migrating-old-files)) - at that point there should be no more hand-styled built-in elements for Preflight to conflict with, and `@scope` (and the `shadcn-scope` class) can be dropped in favour of enabling Preflight globally.
 
 ### Adding a new shadcn component
 
