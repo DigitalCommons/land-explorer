@@ -897,9 +897,7 @@ async function downloadShapefile(
 
   const fs = require("fs");
 
-  fs.mkdir(shapeFileDirectory, { recursive: true }, (error: any) => {
-    if (error) throw error;
-  });
+  await fs.promises.mkdir(shapeFileDirectory, { recursive: true });
 
   const { convert } = require("geojson2shp");
   // geojson2shp writing to file path isn't working so create our own write stream
@@ -918,7 +916,7 @@ async function downloadShapefile(
 
   const deleteFile = () => {
     fs.unlink(shapeFileLocation, (error: any) => {
-      if (error) throw error;
+      if (error) console.error(`Failed to delete ${shapeFileLocation}`, error);
     });
   };
 
