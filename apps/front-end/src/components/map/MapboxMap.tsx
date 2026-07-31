@@ -73,9 +73,8 @@ const MapboxMap = () => {
   const propertiesDisplay = useAppSelector(
     (state) => state.landOwnership.activeDisplay,
   );
-  const { visibleProperties, relatedProperties } = useAppSelector(
-    (state) => state.landOwnership,
-  );
+  const { visibleProperties, relatedProperties, displayRelatedProperties } =
+    useAppSelector((state) => state.landOwnership);
 
   const showZoomWarning =
     (landDataLayers.length > 0 &&
@@ -443,7 +442,8 @@ const MapboxMap = () => {
             propertiesDisplay ||
             Object.keys(visibleProperties).length > 0 ||
             landDataLayers.length > 0 ||
-            Object.keys(relatedProperties).length > 0
+            (Object.keys(relatedProperties).length > 0 &&
+              displayRelatedProperties)
               ? "block"
               : "none",
         }}

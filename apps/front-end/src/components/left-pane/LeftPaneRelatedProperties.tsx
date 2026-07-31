@@ -22,6 +22,8 @@ import {
   EmptyTitle,
 } from "../ui/empty";
 import { SearchAlert, CircleX } from "lucide-react";
+import { Label } from "../ui/label";
+import { Switch } from "../ui/switch";
 
 type LeftPaneRelatedPropertiesProps = {
   onClose: () => void;
@@ -88,6 +90,7 @@ const OwnershipSearch = ({
     relatedPropertiesError: error,
     relatedPropertiesLoading: loading,
     relatedPropertiesYear: selectedYear,
+    displayRelatedProperties,
   } = useAppSelector((state) => state.landOwnership);
   const propertyCount = Object.keys(properties).length;
 
@@ -190,6 +193,20 @@ const OwnershipSearch = ({
               Clear all
             </Button>
           )}
+          <div className="flex-1" />
+          <div className="flex items-center space-x-2">
+            <Label htmlFor="show-properties">Highlight All Properties</Label>
+            <Switch
+              id="show-properties"
+              checked={displayRelatedProperties}
+              onCheckedChange={(value) =>
+                dispatch({
+                  type: "SET_DISPLAY_RELATED_PROPERTIES",
+                  payload: value,
+                })
+              }
+            />
+          </div>
         </div>
         {propertiesOnThisPage.map((property) => (
           <div className="px-4" key={property.title_no}>

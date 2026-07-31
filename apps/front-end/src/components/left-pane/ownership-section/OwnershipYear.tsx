@@ -1,12 +1,8 @@
-import {
-  fetchPropertyOwnershipByYear,
-  fetchPropertyOwnerships,
-  fetchRelatedProperties,
-} from "@/actions/LandOwnershipActions";
+import { fetchPropertyOwnerships } from "@/actions/LandOwnershipActions";
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
 import { useAppDispatch, useAppSelector } from "@/hooks/react-redux";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import { useDebounceCallback } from "usehooks-ts";
 
 type OwnershipYearProps = {

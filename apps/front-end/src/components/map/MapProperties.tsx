@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useMemo } from "react";
 import { useAppDispatch, useAppSelector } from "@/hooks/react-redux";
 import * as turf from "@turf/turf";
 import { Layer, Feature, GeoJSONLayer } from "react-mapbox-gl";
@@ -23,6 +23,7 @@ const MapProperties = ({ center, map }: Props) => {
     highlightedProperties,
     activePropertyTitleNo,
     relatedProperties,
+    displayRelatedProperties,
   } = useAppSelector((state) => state.landOwnership);
   const activeProperty =
     activePropertyTitleNo !== null
@@ -129,14 +130,23 @@ const MapProperties = ({ center, map }: Props) => {
   // Properties owned in a year, rendered from a single GeoJSON source instead of per-polygon
   // Features - this set can be large, and is replaced wholesale every time the ownership year slider
   // changes, so a bulk source update is much cheaper than diffing hundreds of Feature elements.
-  const relatedPropertiesFeatures: GeoJSON.Feature[] = Object.values(
-    relatedProperties ?? {},
-  ).flatMap((property: any) =>
-    property.polygons.map((polygon: any) => ({
-      type: "Feature",
-      geometry: polygon.geom,
-      properties: { title_no: property.title_no },
-    })),
+  // Memoized so the `data` object passed to GeoJSONLayer keeps a stable reference (and so doesn't
+  // trigger a source.setData() call) across re-renders that don't touch these two values, e.g. zoom
+  // or highlighted-property changes.
+  const relatedPropertiesData = useMemo(
+    () => ({
+      type: "FeatureCollection" as const,
+      features: displayRelatedProperties
+        ? Object.values(relatedProperties ?? {}).flatMap((property: any) =>
+            property.polygons.map((polygon: any) => ({
+              type: "Feature" as const,
+              geometry: polygon.geom,
+              properties: { title_no: property.title_no },
+            })),
+          )
+        : [],
+    }),
+    [displayRelatedProperties, relatedProperties],
   );
 
   const onRelatedOwnershipFeatureClick = (e: any) => {
@@ -222,10 +232,7 @@ const MapProperties = ({ center, map }: Props) => {
       {/* Related ownership properties - Fill + Border, from a single GeoJSON source */}
       <GeoJSONLayer
         id="related-ownership"
-        data={{
-          type: "FeatureCollection",
-          features: relatedPropertiesFeatures,
-        }}
+        data={relatedPropertiesData}
         fillPaint={{
           "fill-opacity": 0.2,
           "fill-color": "#BE4A97",
