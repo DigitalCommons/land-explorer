@@ -13,13 +13,13 @@ import constants from "../constants";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { FieldError } from "@/components/ui/field";
-import { emailRegexp, ukPhoneRegexp, ukPostcodeRegexp } from "@/lib/validation";
+import { ukPhoneRegexp, ukPostcodeRegexp } from "@/lib/validation";
 
 const registerSchema = z
   .object({
     firstName: z.string().min(3, "Must be at least 3 characters").max(19, "Must be at most 19 characters"),
     lastName: z.string().min(3, "Must be at least 3 characters").max(19, "Must be at most 19 characters"),
-    email: z.string().regex(emailRegexp, "Invalid email address"),
+    email: z.email("Invalid email address"),
     password: z.string().min(6, "Must be at least 6 characters").max(29, "Must be at most 29 characters"),
     confirmPassword: z.string(),
     phone: z.string().refine((v) => v === "" || ukPhoneRegexp.test(v), "Invalid UK phone number"),
@@ -63,10 +63,6 @@ const defaultValues: RegisterFormValues = {
   agree: false,
   marketing: false,
 };
-
-// Repeat className for inputs to avoid duplication and make it easier to change in the future
-const inputClassName =
-  "box-border h-9 rounded-[7px]! border-2 border-[#D4D2D2] bg-[#F5F5F5] px-3 text-[#78838F] font-normal focus-visible:border-primary focus-visible:ring-0";
 
 type Props = { updateBgImage: (n: number) => void };
 
@@ -214,7 +210,7 @@ const Register = ({ updateBgImage }: Props) => {
           <div>
             <Input
               type="text"
-              className={`${inputClassName} ${fieldStateClass("firstName")}`}
+              className={`${fieldStateClass("firstName")}`}
               placeholder="First name (Required)"
               maxLength={101}
               {...register("firstName")}
@@ -224,7 +220,7 @@ const Register = ({ updateBgImage }: Props) => {
           <div>
             <Input
               type="text"
-              className={`${inputClassName} ${fieldStateClass("lastName")}`}
+              className={`${fieldStateClass("lastName")}`}
               placeholder="Last name (Required)"
               maxLength={101}
               {...register("lastName")}
@@ -234,7 +230,7 @@ const Register = ({ updateBgImage }: Props) => {
           <div>
             <Input
               type="email"
-              className={`${inputClassName} ${fieldStateClass("email")}`}
+              className={`${fieldStateClass("email")}`}
               placeholder="Email address (Required)"
               autoComplete="username"
               maxLength={101}
@@ -245,7 +241,7 @@ const Register = ({ updateBgImage }: Props) => {
           <div>
             <Input
               type="password"
-              className={`${inputClassName} ${fieldStateClass("password")}`}
+              className={`${fieldStateClass("password")}`}
               placeholder="Password (Required)"
               autoComplete="new-password"
               minLength={4}
@@ -257,7 +253,7 @@ const Register = ({ updateBgImage }: Props) => {
           <div>
             <Input
               type="tel"
-              className={`${inputClassName} ${fieldStateClass("phone")}`}
+              className={`${fieldStateClass("phone")}`}
               placeholder="Telephone"
               maxLength={15}
               {...register("phone")}
@@ -267,7 +263,7 @@ const Register = ({ updateBgImage }: Props) => {
           <div>
             <Input
               type="password"
-              className={`${inputClassName} ${fieldStateClass("confirmPassword")}`}
+              className={`${fieldStateClass("confirmPassword")}`}
               placeholder="Confirm password (Required)"
               autoComplete="new-password"
               minLength={4}
@@ -282,7 +278,7 @@ const Register = ({ updateBgImage }: Props) => {
         <div className="mb-6 grid grid-cols-1 gap-x-4 gap-y-3 md:grid-cols-2">
           <Input
             type="text"
-            className={`${inputClassName} ${fieldStateClass("organisation")}`}
+            className={`${fieldStateClass("organisation")}`}
             placeholder="Organisation Name"
             maxLength={101}
             {...register("organisation")}
@@ -308,7 +304,7 @@ const Register = ({ updateBgImage }: Props) => {
           />
           <Input
             type="text"
-            className={`${inputClassName} ${fieldStateClass("organisationNumber")}`}
+            className={`${fieldStateClass("organisationNumber")}`}
             placeholder="Organisation / Charity number"
             maxLength={101}
             {...register("organisationNumber")}
@@ -369,28 +365,27 @@ const Register = ({ updateBgImage }: Props) => {
           {organisationType === "commercial" && organisationCommercial === "other" && (
             <Input
               type="text"
-              className={`${inputClassName} ${fieldStateClass("organisationCommercialOther")}`}
+              className={`${fieldStateClass("organisationCommercialOther")}`}
               placeholder="Other"
               {...register("organisationCommercialOther")}
             />
           )}
           <Input
             type="text"
-            className={`${inputClassName} ${fieldStateClass("address1")}`}
+            className={`${fieldStateClass("address1")}`}
             placeholder="Address 1"
             maxLength={101}
             {...register("address1")}
           />
           <Input
             type="text"
-            className={`${inputClassName}`}
             placeholder="Address 2"
             maxLength={101}
             {...register("address2")}
           />
           <Input
             type="text"
-            className={`${inputClassName} ${fieldStateClass("city")}`}
+            className={`${fieldStateClass("city")}`}
             placeholder="City"
             maxLength={101}
             {...register("city")}
@@ -398,7 +393,7 @@ const Register = ({ updateBgImage }: Props) => {
           <div>
             <Input
               type="text"
-              className={`${inputClassName} ${fieldStateClass("postcode")}`}
+              className={`${fieldStateClass("postcode")}`}
               placeholder="Postcode"
               maxLength={7}
               {...register("postcode")}
