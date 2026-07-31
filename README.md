@@ -38,3 +38,15 @@ docker compose --env-file docker.env -f docker-compose.local.yml up --build
 ```
 
 Now up at http://localhost:28080
+
+### Changing an app's dependencies
+
+Each app keeps its own package-lock.json, which Docker and CI build from, but npm workspaces only updates the root package-lock.json. After any dependency change, sync the app's own lockfile so for example to add a package to the front end do this:
+
+```
+npm install -w apps/front-end <package>
+cd apps/front-end
+npm install --package-lock-only --workspaces=false --legacy-peer-deps
+```
+
+Commit both lockfiles. If you forget, npm ci fails in Docker and CI with a package.json / package-lock.json out of sync error.
