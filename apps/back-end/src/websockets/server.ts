@@ -34,8 +34,12 @@ export const setupWebsockets = (server: HapiServer): void => {
       // The client cannot see or edit socket.data so it is safe to just store this on connection
       socket.data.userId = Number(user_id);
     } catch (err) {
+      // Reject the connection but never throw - an uncaught error here kills
+      // the whole process, so one client with a stale/invalid token would
+      // crash-loop the server
       console.log("Failed authentication", err);
-      throw err;
+      socket.disconnect(true);
+      return;
     }
 
     console.log("User websocket connected");

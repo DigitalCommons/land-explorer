@@ -120,6 +120,24 @@
 }
 
 @layer base {
+  *:not(p, h1, h2, h3, h4, h5),
+  ::after,
+  ::before,
+  ::backdrop,
+  ::file-selector-button {
+    margin: 0;
+    padding: 0;
+  }
+
+  *,
+  ::after,
+  ::before,
+  ::backdrop,
+  ::file-selector-button {
+    box-sizing: border-box;
+    border: 0 solid;
+  }
+
   * {
     @apply border-border outline-ring/50;
   }
