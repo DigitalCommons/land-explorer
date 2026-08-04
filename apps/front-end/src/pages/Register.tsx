@@ -80,15 +80,12 @@ const Register = ({ updateBgImage }: Props) => {
     control,
     handleSubmit,
     getValues,
-    formState: { errors, dirtyFields },
+    formState: { errors },
   } = useForm<RegisterFormValues>({
     resolver: zodResolver(registerSchema),
     mode: "onChange",
     defaultValues,
   });
-
-  const fieldStateClass = (name: keyof RegisterFormValues) =>
-    errors[name] ? "invalid" : dirtyFields[name] ? "valid" : "";
 
   const [organisationType, organisationCommercial, agree] = useWatch({
     control,
@@ -210,65 +207,65 @@ const Register = ({ updateBgImage }: Props) => {
           <div>
             <Input
               type="text"
-              className={`${fieldStateClass("firstName")}`}
               placeholder="First name (Required)"
               maxLength={101}
               {...register("firstName")}
+              aria-invalid={!!errors.firstName}
             />
             <FieldError errors={[errors.firstName]} className="mt-1.25 text-left" />
           </div>
           <div>
             <Input
               type="text"
-              className={`${fieldStateClass("lastName")}`}
               placeholder="Last name (Required)"
               maxLength={101}
               {...register("lastName")}
+              aria-invalid={!!errors.lastName}
             />
             <FieldError errors={[errors.lastName]} className="mt-1.25 text-left" />
           </div>
           <div>
             <Input
               type="email"
-              className={`${fieldStateClass("email")}`}
               placeholder="Email address (Required)"
               autoComplete="username"
               maxLength={101}
               {...register("email")}
+              aria-invalid={!!errors.email}
             />
             <FieldError errors={[errors.email]} className="mt-1.25 text-left" />
           </div>
           <div>
             <Input
               type="password"
-              className={`${fieldStateClass("password")}`}
               placeholder="Password (Required)"
               autoComplete="new-password"
               minLength={4}
               maxLength={101}
               {...register("password")}
+              aria-invalid={!!errors.password}
             />
             <FieldError errors={[errors.password]} className="mt-1.25 text-left" />
           </div>
           <div>
             <Input
               type="tel"
-              className={`${fieldStateClass("phone")}`}
               placeholder="Telephone"
               maxLength={15}
               {...register("phone")}
+              aria-invalid={!!errors.phone}
             />
             <FieldError errors={[errors.phone]} className="mt-1.25 text-left" />
           </div>
           <div>
             <Input
               type="password"
-              className={`${fieldStateClass("confirmPassword")}`}
               placeholder="Confirm password (Required)"
               autoComplete="new-password"
               minLength={4}
               maxLength={101}
               {...register("confirmPassword")}
+              aria-invalid={!!errors.confirmPassword}
             />
             <FieldError errors={[errors.confirmPassword]} className="mt-1.25 text-left" />
           </div>
@@ -278,10 +275,10 @@ const Register = ({ updateBgImage }: Props) => {
         <div className="mb-6 grid grid-cols-1 gap-x-4 gap-y-3 md:grid-cols-2">
           <Input
             type="text"
-            className={`${fieldStateClass("organisation")}`}
             placeholder="Organisation Name"
             maxLength={101}
             {...register("organisation")}
+            aria-invalid={!!errors.organisation}
           />
           <Controller
             control={control}
@@ -304,10 +301,10 @@ const Register = ({ updateBgImage }: Props) => {
           />
           <Input
             type="text"
-            className={`${fieldStateClass("organisationNumber")}`}
             placeholder="Organisation / Charity number"
             maxLength={101}
             {...register("organisationNumber")}
+            aria-invalid={!!errors.organisationNumber}
           />
           {organisationType === "community-interest" && (
             <Controller
@@ -365,17 +362,17 @@ const Register = ({ updateBgImage }: Props) => {
           {organisationType === "commercial" && organisationCommercial === "other" && (
             <Input
               type="text"
-              className={`${fieldStateClass("organisationCommercialOther")}`}
               placeholder="Other"
               {...register("organisationCommercialOther")}
+              aria-invalid={!!errors.organisationCommercialOther}
             />
           )}
           <Input
             type="text"
-            className={`${fieldStateClass("address1")}`}
             placeholder="Address 1"
             maxLength={101}
             {...register("address1")}
+            aria-invalid={!!errors.address1}
           />
           <Input
             type="text"
@@ -385,18 +382,18 @@ const Register = ({ updateBgImage }: Props) => {
           />
           <Input
             type="text"
-            className={`${fieldStateClass("city")}`}
             placeholder="City"
             maxLength={101}
             {...register("city")}
+            aria-invalid={!!errors.city}
           />
           <div>
             <Input
               type="text"
-              className={`${fieldStateClass("postcode")}`}
               placeholder="Postcode"
               maxLength={7}
               {...register("postcode")}
+              aria-invalid={!!errors.postcode}
             />
             <FieldError errors={[errors.postcode]} className="mt-1.25 text-left" />
           </div>
