@@ -1,11 +1,15 @@
 import { expect } from "chai";
 import sinon from "sinon";
 import esmock from "esmock";
+import { LandOwnershipSnapshotRow } from "../pipeline/ownership-snapshots/land-ownership-snapshot-mapper";
 
 describe("bulkCreateLandOwnershipSnapshots", () => {
   let sandbox: sinon.SinonSandbox;
   let bulkCreateStub: sinon.SinonStub;
-  let bulkCreateLandOwnershipSnapshots: (typeof import("./land-ownership-snapshot-query.js"))["bulkCreateLandOwnershipSnapshots"];
+  let bulkCreateLandOwnershipSnapshots: (
+    rows: LandOwnershipSnapshotRow[],
+    logging?: boolean,
+  ) => void;
 
   beforeEach(async () => {
     sandbox = sinon.createSandbox();
