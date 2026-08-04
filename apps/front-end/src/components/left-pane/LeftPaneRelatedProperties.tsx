@@ -209,7 +209,7 @@ const OwnershipSearch = ({
           </div>
         </div>
         {propertiesOnThisPage.map((property) => (
-          <div className="px-4" key={property.title_no}>
+          <div className="grow px-4" key={property.title_no}>
             <RelatedProperty property={property} />
           </div>
         ))}
