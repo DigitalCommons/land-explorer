@@ -1,12 +1,18 @@
 import { expect } from "chai";
 import sinon from "sinon";
 import esmock from "esmock";
+
+import { LandOwnershipSnapshotRow } from "./land-ownership-snapshot-mapper.js";
 import { RawOwnership } from "../../clients/gov-api/datasets.types.js";
 
 describe("mapRawOwnershipsToSnapshotRows", () => {
   let sandbox: sinon.SinonSandbox;
   let loggerErrorStub: sinon.SinonStub;
-  let mapRawOwnershipsToSnapshotRows: (typeof import("./land-ownership-snapshot-mapper.js"))["mapRawOwnershipsToSnapshotRows"];
+  let mapRawOwnershipsToSnapshotRows: (
+    ownerships: RawOwnership[],
+    snapshotDate: Date,
+    overseas: boolean,
+  ) => LandOwnershipSnapshotRow[];
 
   const snapshotDate = new Date(2020, 11, 31);
 
@@ -55,7 +61,7 @@ describe("mapRawOwnershipsToSnapshotRows", () => {
       title_no: "TITLE1",
       snapshot_date: snapshotDate,
       proprietor_name: "Alice",
-      company_registration_no: "111",
+      company_registration_no: "00000111",
       proprietor_uk_based: true,
     });
     expect(rows[1]).to.include({
