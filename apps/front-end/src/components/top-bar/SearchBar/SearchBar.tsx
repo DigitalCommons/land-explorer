@@ -102,6 +102,7 @@ const SearchBar = ({ expanded, setExpanded }: Props) => {
     dispatch(clearSearchResults());
     dispatch(setSearchFilter(null));
     dispatch({ type: "CLEAR_RELATED_PROPERTIES_AND_PROPRIETOR_NAME" });
+    dispatch({ type: "CLOSE_OWNERSHIP_SEARCH" });
     setLocationResults([]);
   }, [dispatch]);
 

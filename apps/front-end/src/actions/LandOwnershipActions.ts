@@ -6,6 +6,7 @@ import {
   Property,
   PropertyDisplayType,
 } from "@/reducers/LandOwnershipReducer";
+import { LEFT_PANE_TRAY } from "@/reducers/LeftPaneReducer";
 
 type OwnershipPolygon = { polyId: number; geom: unknown };
 
@@ -89,7 +90,7 @@ export const setActiveProperty = (titleNo: string) => {
     });
     dispatch({
       type: "SET_ACTIVE",
-      payload: "Land Information",
+      payload: LEFT_PANE_TRAY.LAND_INFORMATION,
     });
     console.log(
       "setActiveProperty",

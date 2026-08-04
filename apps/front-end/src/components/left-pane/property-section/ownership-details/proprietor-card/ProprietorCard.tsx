@@ -1,6 +1,7 @@
 import { fetchRelatedProperties } from "../../../../../actions/LandOwnershipActions";
 import Button from "../../../../common/Button";
 import { useAppDispatch } from "@/hooks/react-redux";
+import { LEFT_PANE_TRAY } from "../../../../../reducers/LeftPaneReducer";
 
 type Props = {
   name: string;
@@ -15,7 +16,7 @@ const ProprietorCard = ({ name, address, category, number }: Props) => {
   const handleSearch = () => {
     dispatch({ type: "CLEAR_RELATED_PROPERTIES_AND_PROPRIETOR_NAME" });
     dispatch(fetchRelatedProperties(name));
-    dispatch({ type: "SET_ACTIVE", payload: "Ownership Search" });
+    dispatch({ type: "SET_ACTIVE", payload: LEFT_PANE_TRAY.OWNERSHIP_SEARCH });
   };
 
   return (

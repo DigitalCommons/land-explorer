@@ -6,6 +6,7 @@ import { Cluster, Marker } from "react-mapbox-gl";
 import { autoSave } from "../../actions/MapActions";
 import iconMarkerRed from "../../assets/img/icon-marker-new--red.svg";
 import iconCurrentLocationBlue from "../../assets/img/icon-current-location--blue.svg";
+import { LEFT_PANE_TRAY } from "../../reducers/LeftPaneReducer";
 
 const ClusterMarker = (coordinates: any, pointCount: number, getLeaves: any) => {
   const containsActiveMarker = getLeaves(Infinity).some(
@@ -93,7 +94,7 @@ const Markers = ({ map, popupVisible, setPopupVisible }: Props) => {
       dispatch({ type: "OPEN_LEFT_PANE" });
       dispatch({
         type: "SET_ACTIVE",
-        payload: "Land Information",
+        payload: LEFT_PANE_TRAY.LAND_INFORMATION,
       });
     }
   };

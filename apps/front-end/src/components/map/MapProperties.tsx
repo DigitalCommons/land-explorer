@@ -9,6 +9,7 @@ import {
   highlightProperties,
   setActiveProperty,
 } from "../../actions/LandOwnershipActions";
+import { LEFT_PANE_TRAY } from "../../reducers/LeftPaneReducer";
 
 type Props = {
   center: any;
@@ -50,7 +51,7 @@ const MapProperties = ({ center, map }: Props) => {
   }, [center, zooming, activeDisplay]);
 
   const onClickProperty = (property: any) => {
-    if (activePanel !== "Drawing Tools") {
+    if (activePanel !== LEFT_PANE_TRAY.DRAWING_TOOLS) {
       dispatch(highlightProperties({ [property.title_no]: property }));
       dispatch(setActiveProperty(property.title_no));
     }
