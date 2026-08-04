@@ -60,7 +60,7 @@ export const mapRawOwnershipsToSnapshotRows = (
           region: ownership.Region || null,
           postcode: ownership.Postcode || null,
           proprietor_name: proprietorName || "",
-          company_registration_no: companyRegNo || "",
+          company_registration_no: padCompanyRegNo(companyRegNo),
           proprietor_uk_based: !overseas,
           date_proprietor_added: convertDate(
             ownership["Date Proprietor Added"],
@@ -82,3 +82,14 @@ export const mapRawOwnershipsToSnapshotRows = (
 
 const convertDate = (date?: string) =>
   date ? date.split("-").reverse().join("-") : null;
+
+/**
+ * Companies House numbers are 8 characters: either 8 digits, or 2 letters
+ * (jurisdiction/type prefix, e.g. SC/NI/OC) followed by 6 digits. Land
+ * Registry data sometimes drops leading zeros from the numeric form, so pad
+ * back up to 8. Leave already-8-character and prefixed values untouched.
+ */
+const padCompanyRegNo = (regNo?: string): string => {
+  if (!regNo) return "";
+  return /^\d+$/.test(regNo) ? regNo.padStart(8, "0") : regNo;
+};
