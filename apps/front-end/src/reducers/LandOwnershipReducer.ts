@@ -196,6 +196,7 @@ export default (
         ...state,
         relatedProperties: {},
         relatedPropertiesProprietorName: null,
+        displayRelatedProperties: true,
       };
     case "LOAD_MAP":
     case "RELOAD_MAP": {

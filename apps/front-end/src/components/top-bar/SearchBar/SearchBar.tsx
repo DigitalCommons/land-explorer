@@ -101,6 +101,7 @@ const SearchBar = ({ expanded, setExpanded }: Props) => {
     dispatch(setSearchQuery(""));
     dispatch(clearSearchResults());
     dispatch(setSearchFilter(null));
+    dispatch({ type: "CLEAR_RELATED_PROPERTIES_AND_PROPRIETOR_NAME" });
     setLocationResults([]);
   }, [dispatch]);
 
@@ -193,7 +194,9 @@ const SearchBar = ({ expanded, setExpanded }: Props) => {
   return (
     <div ref={ref} className="search-bar-container" onClick={expand}>
       <div
-        className={`mapboxgl-ctrl-geocoder ${expanded ? "geocoder-expanded" : "geocoder-collapsed"}`}
+        className={`mapboxgl-ctrl-geocoder ${
+          expanded ? "geocoder-expanded" : "geocoder-collapsed"
+        }`}
       >
         <input
           className="mapboxgl-ctrl-geocoder--input"
@@ -231,7 +234,9 @@ const SearchBar = ({ expanded, setExpanded }: Props) => {
 
         <button
           type="button"
-          className={`search-filter-icon-button ${activeFilter === "proprietor" ? "is-active" : ""}`}
+          className={`search-filter-icon-button ${
+            activeFilter === "proprietor" ? "is-active" : ""
+          }`}
           onMouseDown={(e) => e.preventDefault()}
           onClick={(e) => {
             e.stopPropagation();
@@ -244,7 +249,9 @@ const SearchBar = ({ expanded, setExpanded }: Props) => {
 
         <button
           type="button"
-          className={`search-filter-icon-button ${activeFilter === "location" ? "is-active" : ""}`}
+          className={`search-filter-icon-button ${
+            activeFilter === "location" ? "is-active" : ""
+          }`}
           onMouseDown={(e) => e.preventDefault()}
           onClick={(e) => {
             e.stopPropagation();
