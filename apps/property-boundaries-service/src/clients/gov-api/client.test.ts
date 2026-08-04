@@ -1,22 +1,26 @@
 import { expect } from "chai";
 import sinon from "sinon";
 import esmock from "esmock";
+import { DataSet } from "./response.types.js";
 
 describe("gov-api client", () => {
   let sandbox: sinon.SinonSandbox;
   let getStub: sinon.SinonStub;
-  let getFullUKDataset: (typeof import("./client.js"))["getFullUKDataset"];
-  let getFullOverseasDataset: (typeof import("./client.js"))["getFullOverseasDataset"];
+  let getFullUKDataset: (month: number, year: number) => Promise<DataSet>;
+  let getFullOverseasDataset: (month: number, year: number) => Promise<DataSet>;
 
   beforeEach(async () => {
     sandbox = sinon.createSandbox();
     getStub = sandbox.stub();
 
-    ({ getFullUKDataset, getFullOverseasDataset } = await esmock("./client.js", {
-      axios: {
-        default: { create: sandbox.stub().returns({ get: getStub }) },
+    ({ getFullUKDataset, getFullOverseasDataset } = await esmock(
+      "./client.js",
+      {
+        axios: {
+          default: { create: sandbox.stub().returns({ get: getStub }) },
+        },
       },
-    }));
+    ));
   });
 
   afterEach(() => {
@@ -32,9 +36,8 @@ describe("gov-api client", () => {
       await getFullUKDataset(1, 2020);
 
       // Assert
-      expect(
-        getStub.calledWith("/datasets/history/ccod/CCOD_FULL_2020_01.zip"),
-      ).to.be.true;
+      expect(getStub.calledWith("/datasets/history/ccod/CCOD_FULL_2020_01.zip"))
+        .to.be.true;
     });
 
     it("returns the download url on success", async () => {
@@ -72,9 +75,8 @@ describe("gov-api client", () => {
       await getFullOverseasDataset(1, 2020);
 
       // Assert
-      expect(
-        getStub.calledWith("/datasets/history/ocod/OCOD_FULL_2020_01.zip"),
-      ).to.be.true;
+      expect(getStub.calledWith("/datasets/history/ocod/OCOD_FULL_2020_01.zip"))
+        .to.be.true;
     });
 
     it("returns the download url on success", async () => {

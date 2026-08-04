@@ -1,4 +1,4 @@
-import { addYears, eachYearOfInterval, endOfYear } from "date-fns";
+import { addYears, eachYearOfInterval, endOfYear, format } from "date-fns";
 import {
   getFullOverseasDataset,
   getFullUKDataset,
@@ -24,9 +24,6 @@ const EARLIEST_DATE_TO_PROCESS = new Date(2017, 11, 31); // The earliest end of 
 export const updateOwnershipSnapshots = async () => {
   let latestOwnershipSnapshotDataDate =
     await getLatestOwnershipSnapshotDataDate();
-  logger.info(
-    `Latest ownership snapshot data is from ${latestOwnershipSnapshotDataDate}`,
-  );
 
   let dateToProcessFrom: Date = await getDateToProcessFrom(
     latestOwnershipSnapshotDataDate,
@@ -75,16 +72,23 @@ const getDateToProcessFrom = async (
   latestOwnershipSnapshotDataDate: Date | null,
 ): Promise<Date> => {
   let dateToProcessFrom: Date;
+  const endOfLastYearStr = format(
+    endOfYear(addYears(new Date(), -1)),
+    "yyyy-MM-dd",
+  );
   if (!latestOwnershipSnapshotDataDate) {
     logger.info(
-      "No ownership snapshot data found, so we will process all years from 2017 to the end of last year",
+      `No ownership snapshot data found, so we will process all years from 2017 to the end of last year ${endOfLastYearStr}`,
     );
     dateToProcessFrom = EARLIEST_DATE_TO_PROCESS;
   } else {
-    logger.info(
-      `We will process ownership snapshot data from ${latestOwnershipSnapshotDataDate} to the end of last year`,
-    );
     dateToProcessFrom = addYears(latestOwnershipSnapshotDataDate, 1);
+    logger.info(
+      `Processing ownership snapshot data from ${format(
+        dateToProcessFrom,
+        "yyyy-MM-dd",
+      )} to the end of last year (${endOfLastYearStr})`,
+    );
   }
   return dateToProcessFrom;
 };
