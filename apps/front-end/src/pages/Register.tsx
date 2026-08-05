@@ -13,6 +13,7 @@ import constants from "../constants";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { FieldError } from "@/components/ui/field";
+import { Card, CardHeader, CardTitle, CardDescription, CardAction, CardContent } from "@/components/ui/card";
 import { ukPhoneRegexp, ukPostcodeRegexp } from "@/lib/validation";
 
 const registerSchema = z
@@ -180,28 +181,33 @@ const Register = ({ updateBgImage }: Props) => {
 
   let formDisplay = (
     <Fragment>
-      <Link
-        to="/auth"
-        className="absolute top-4 right-4 flex size-8 items-center justify-center rounded-full bg-muted text-muted-foreground hover:bg-muted/80"
-      >
-        <X className="size-4" />
-      </Link>
-      <h2 className="mb-2.5 text-left text-2xl font-semibold text-primary!">
-        For everyone. Funded by those who can.
-      </h2>
-      <p className="mt-0 mb-6 text-left text-sm text-muted-foreground">
-        The core Land Explorer tool is free, always. Organisations that
-        choose the Solidarity Tier help fund access for grassroots groups,
-        tenants&rsquo; unions and community projects.
-      </p>
-      {registerErrors && (
-        <div>
-          {registerErrors.map((error) => (
-            <p key={error}>{error}</p>
-          ))}{" "}
-        </div>
-      )}
-      <form onSubmit={handleSubmit(onSubmit)}>
+      <CardHeader className="gap-2.5 px-6">
+        <CardTitle className="text-left text-2xl font-semibold text-primary">
+          For everyone. Funded by those who can.
+        </CardTitle>
+        <CardDescription className="text-left text-sm">
+          The core Land Explorer tool is free, always. Organisations that
+          choose the Solidarity Tier help fund access for grassroots groups,
+          tenants&rsquo; unions and community projects.
+        </CardDescription>
+        <CardAction>
+          <Link
+            to="/auth"
+            className="flex size-8 items-center justify-center rounded-full bg-muted text-muted-foreground hover:bg-muted/80"
+          >
+            <X className="size-4" />
+          </Link>
+        </CardAction>
+      </CardHeader>
+      <CardContent className="px-6">
+        {registerErrors && (
+          <div>
+            {registerErrors.map((error) => (
+              <p key={error}>{error}</p>
+            ))}{" "}
+          </div>
+        )}
+        <form onSubmit={handleSubmit(onSubmit)}>
         <h3 className="mb-1.25! text-left text-sm font-medium! text-foreground">Account details</h3>
         <div className="mb-6 grid grid-cols-1 gap-x-4 gap-y-3 md:grid-cols-2">
           <div>
@@ -497,6 +503,7 @@ const Register = ({ updateBgImage }: Props) => {
           />
         </div>
       </form>
+      </CardContent>
     </Fragment>
   );
 
@@ -598,19 +605,10 @@ const Register = ({ updateBgImage }: Props) => {
           </Link>
         </div>
       </div>
-      <div
-        className="registration"
-        style={{
-          maxWidth: "100vw",
-          background: "white",
-          textAlign: "center",
-          paddingLeft: "24px",
-          paddingRight: "24px",
-          marginBottom: "200px",
-          display: registering ? "none" : "block",
-        }}
-      >
-        {formDisplay}
+      <div style={{ marginBottom: "200px", display: registering ? "none" : "block" }}>
+        <Card className="relative mx-auto mt-24 w-[calc(100vw-40px)] gap-6 rounded-[8px] text-center shadow-[0_20px_60px_rgba(0,0,0,0.25)] md:w-190">
+          {formDisplay}
+        </Card>
       </div>
     </div>
   );
