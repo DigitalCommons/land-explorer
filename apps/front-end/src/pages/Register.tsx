@@ -339,66 +339,108 @@ const Register = ({ updateBgImage }: Props) => {
 
         <h3 className="mb-1.25! text-left text-sm font-medium! text-foreground">Organisation details</h3>
         <div className="mb-6 grid grid-cols-1 gap-x-4 gap-y-3 md:grid-cols-2">
-          <Input
-            type="text"
-            placeholder="Organisation Name"
-            maxLength={101}
-            {...register("organisation")}
-            aria-invalid={!!errors.organisation}
+          <Controller
+            control={control}
+            name="organisation"
+            render={({ field, fieldState }) => (
+              <Field data-invalid={fieldState.invalid} className="gap-1.25">
+                <FieldLabel htmlFor="organisation" className="sr-only">
+                  Organisation name
+                </FieldLabel>
+                <Input
+                  {...field}
+                  id="organisation"
+                  type="text"
+                  placeholder="Organisation Name"
+                  maxLength={101}
+                  aria-invalid={fieldState.invalid}
+                />
+                {fieldState.invalid && <FieldError errors={[fieldState.error]} className="text-left" />}
+              </Field>
+            )}
           />
           <Controller
             control={control}
             name="organisationType"
-            render={({ field }) => (
-              <Select
-                name="organisation-type"
-                value={field.value}
-                onValueChange={(value) => field.onChange(value ?? "")}
-              >
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="My organisation is..." />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="community-interest">Community Interest</SelectItem>
-                  <SelectItem value="commercial">Commercial</SelectItem>
-                </SelectContent>
-              </Select>
+            render={({ field, fieldState }) => (
+              <Field data-invalid={fieldState.invalid} className="gap-1.25">
+                <FieldLabel htmlFor="organisationType" className="sr-only">
+                  Organisation type
+                </FieldLabel>
+                <Select
+                  name="organisation-type"
+                  value={field.value}
+                  onValueChange={(value) => field.onChange(value ?? "")}
+                >
+                  <SelectTrigger id="organisationType" className="w-full" aria-invalid={fieldState.invalid}>
+                    <SelectValue placeholder="My organisation is..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="community-interest">Community Interest</SelectItem>
+                    <SelectItem value="commercial">Commercial</SelectItem>
+                  </SelectContent>
+                </Select>
+                {fieldState.invalid && <FieldError errors={[fieldState.error]} className="text-left" />}
+              </Field>
             )}
           />
-          <Input
-            type="text"
-            placeholder="Organisation / Charity number"
-            maxLength={101}
-            {...register("organisationNumber")}
-            aria-invalid={!!errors.organisationNumber}
+          <Controller
+            control={control}
+            name="organisationNumber"
+            render={({ field, fieldState }) => (
+              <Field data-invalid={fieldState.invalid} className="gap-1.25">
+                <FieldLabel htmlFor="organisationNumber" className="sr-only">
+                  Organisation or charity number
+                </FieldLabel>
+                <Input
+                  {...field}
+                  id="organisationNumber"
+                  type="text"
+                  placeholder="Organisation / Charity number"
+                  maxLength={101}
+                  aria-invalid={fieldState.invalid}
+                />
+                {fieldState.invalid && <FieldError errors={[fieldState.error]} className="text-left" />}
+              </Field>
+            )}
           />
           {organisationType === "community-interest" && (
             <Controller
               control={control}
               name="organisationCommunityInterest"
-              render={({ field }) => (
-                <Select
-                  name="community-interest"
-                  value={field.value}
-                  onValueChange={(value) => field.onChange(value ?? "")}
-                >
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Community interest type" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="community-energy">Community Energy</SelectItem>
-                    <SelectItem value="community-growing">
-                      Community Growing or Rural Enterprise
-                    </SelectItem>
-                    <SelectItem value="community-group">Community Group (other)</SelectItem>
-                    <SelectItem value="coop">Co-op</SelectItem>
-                    <SelectItem value="neighbourhood-planning">
-                      Neighbourhood Planning
-                    </SelectItem>
-                    <SelectItem value="renters-union">Renters Union</SelectItem>
-                    <SelectItem value="woodland-enterprise">Woodland Enterprise</SelectItem>
-                  </SelectContent>
-                </Select>
+              render={({ field, fieldState }) => (
+                <Field data-invalid={fieldState.invalid} className="gap-1.25">
+                  <FieldLabel htmlFor="organisationCommunityInterest" className="sr-only">
+                    Community interest type
+                  </FieldLabel>
+                  <Select
+                    name="community-interest"
+                    value={field.value}
+                    onValueChange={(value) => field.onChange(value ?? "")}
+                  >
+                    <SelectTrigger
+                      id="organisationCommunityInterest"
+                      className="w-full"
+                      aria-invalid={fieldState.invalid}
+                    >
+                      <SelectValue placeholder="Community interest type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="community-energy">Community Energy</SelectItem>
+                      <SelectItem value="community-growing">
+                        Community Growing or Rural Enterprise
+                      </SelectItem>
+                      <SelectItem value="community-group">Community Group (other)</SelectItem>
+                      <SelectItem value="coop">Co-op</SelectItem>
+                      <SelectItem value="neighbourhood-planning">
+                        Neighbourhood Planning
+                      </SelectItem>
+                      <SelectItem value="renters-union">Renters Union</SelectItem>
+                      <SelectItem value="woodland-enterprise">Woodland Enterprise</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  {fieldState.invalid && <FieldError errors={[fieldState.error]} className="text-left" />}
+                </Field>
               )}
             />
           )}
@@ -406,63 +448,125 @@ const Register = ({ updateBgImage }: Props) => {
             <Controller
               control={control}
               name="organisationCommercial"
-              render={({ field }) => (
-                <Select
-                  name="community-interest"
-                  value={field.value}
-                  onValueChange={(value) => field.onChange(value ?? "")}
-                >
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Commercial type" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="local-authority">Local Authority</SelectItem>
-                    <SelectItem value="power-network">Power Network</SelectItem>
-                    <SelectItem value="utility-company">Utility Company</SelectItem>
-                    <SelectItem value="other">Other (please specify)</SelectItem>
-                  </SelectContent>
-                </Select>
+              render={({ field, fieldState }) => (
+                <Field data-invalid={fieldState.invalid} className="gap-1.25">
+                  <FieldLabel htmlFor="organisationCommercial" className="sr-only">
+                    Commercial type
+                  </FieldLabel>
+                  <Select
+                    name="community-interest"
+                    value={field.value}
+                    onValueChange={(value) => field.onChange(value ?? "")}
+                  >
+                    <SelectTrigger id="organisationCommercial" className="w-full" aria-invalid={fieldState.invalid}>
+                      <SelectValue placeholder="Commercial type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="local-authority">Local Authority</SelectItem>
+                      <SelectItem value="power-network">Power Network</SelectItem>
+                      <SelectItem value="utility-company">Utility Company</SelectItem>
+                      <SelectItem value="other">Other (please specify)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  {fieldState.invalid && <FieldError errors={[fieldState.error]} className="text-left" />}
+                </Field>
               )}
             />
           )}
           {organisationType === "commercial" && organisationCommercial === "other" && (
-            <Input
-              type="text"
-              placeholder="Other"
-              {...register("organisationCommercialOther")}
-              aria-invalid={!!errors.organisationCommercialOther}
+            <Controller
+              control={control}
+              name="organisationCommercialOther"
+              render={({ field, fieldState }) => (
+                <Field data-invalid={fieldState.invalid} className="gap-1.25">
+                  <FieldLabel htmlFor="organisationCommercialOther" className="sr-only">
+                    Other organisation type
+                  </FieldLabel>
+                  <Input
+                    {...field}
+                    id="organisationCommercialOther"
+                    type="text"
+                    placeholder="Other"
+                    aria-invalid={fieldState.invalid}
+                  />
+                  {fieldState.invalid && <FieldError errors={[fieldState.error]} className="text-left" />}
+                </Field>
+              )}
             />
           )}
-          <Input
-            type="text"
-            placeholder="Address 1"
-            maxLength={101}
-            {...register("address1")}
-            aria-invalid={!!errors.address1}
+          <Controller
+            control={control}
+            name="address1"
+            render={({ field, fieldState }) => (
+              <Field data-invalid={fieldState.invalid} className="gap-1.25">
+                <FieldLabel htmlFor="address1" className="sr-only">
+                  Address line 1
+                </FieldLabel>
+                <Input
+                  {...field}
+                  id="address1"
+                  type="text"
+                  placeholder="Address 1"
+                  maxLength={101}
+                  aria-invalid={fieldState.invalid}
+                />
+                {fieldState.invalid && <FieldError errors={[fieldState.error]} className="text-left" />}
+              </Field>
+            )}
           />
-          <Input
-            type="text"
-            placeholder="Address 2"
-            maxLength={101}
-            {...register("address2")}
+          <Controller
+            control={control}
+            name="address2"
+            render={({ field, fieldState }) => (
+              <Field data-invalid={fieldState.invalid} className="gap-1.25">
+                <FieldLabel htmlFor="address2" className="sr-only">
+                  Address line 2
+                </FieldLabel>
+                <Input {...field} id="address2" type="text" placeholder="Address 2" maxLength={101} />
+                {fieldState.invalid && <FieldError errors={[fieldState.error]} className="text-left" />}
+              </Field>
+            )}
           />
-          <Input
-            type="text"
-            placeholder="City"
-            maxLength={101}
-            {...register("city")}
-            aria-invalid={!!errors.city}
+          <Controller
+            control={control}
+            name="city"
+            render={({ field, fieldState }) => (
+              <Field data-invalid={fieldState.invalid} className="gap-1.25">
+                <FieldLabel htmlFor="city" className="sr-only">
+                  City
+                </FieldLabel>
+                <Input
+                  {...field}
+                  id="city"
+                  type="text"
+                  placeholder="City"
+                  maxLength={101}
+                  aria-invalid={fieldState.invalid}
+                />
+                {fieldState.invalid && <FieldError errors={[fieldState.error]} className="text-left" />}
+              </Field>
+            )}
           />
-          <div>
-            <Input
-              type="text"
-              placeholder="Postcode"
-              maxLength={7}
-              {...register("postcode")}
-              aria-invalid={!!errors.postcode}
-            />
-            <FieldError errors={[errors.postcode]} className="mt-1.25 text-left" />
-          </div>
+          <Controller
+            control={control}
+            name="postcode"
+            render={({ field, fieldState }) => (
+              <Field data-invalid={fieldState.invalid} className="gap-1.25">
+                <FieldLabel htmlFor="postcode" className="sr-only">
+                  Postcode
+                </FieldLabel>
+                <Input
+                  {...field}
+                  id="postcode"
+                  type="text"
+                  placeholder="Postcode"
+                  maxLength={7}
+                  aria-invalid={fieldState.invalid}
+                />
+                {fieldState.invalid && <FieldError errors={[fieldState.error]} className="text-left" />}
+              </Field>
+            )}
+          />
         </div>
 
         <h3 className="mb-1.25! text-left text-sm font-medium! text-foreground">Access tiers</h3>
