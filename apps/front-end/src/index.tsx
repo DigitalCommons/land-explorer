@@ -12,6 +12,7 @@ import store from "./store";
 import { initializeMixpanel } from "./analytics";
 
 // Styles
+import "./tailwind.css";
 import "./index.css";
 import "./assets/styles/style.scss";
 
@@ -30,5 +31,5 @@ createRoot(document.getElementById("root")!).render(
         </Routes>
       </ErrorBoundary>
     </BrowserRouter>
-  </Provider>
+  </Provider>,
 );
