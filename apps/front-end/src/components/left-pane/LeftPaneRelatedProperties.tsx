@@ -186,7 +186,7 @@ const OwnershipSearch = ({
   } else {
     content = (
       <>
-        <div className="flex items-center gap-2 px-4">
+        <div className="flex items-center gap-2 px-4 pb-4">
           <Button onClick={selectAll}>Select all</Button>
           {hasHighlightedProperties && (
             <Button variant="secondary" onClick={clearAll}>
@@ -209,10 +209,11 @@ const OwnershipSearch = ({
           </div>
         </div>
         {propertiesOnThisPage.map((property) => (
-          <div className="grow px-4" key={property.title_no}>
+          <div className="px-4" key={property.title_no}>
             <RelatedProperty property={property} />
           </div>
         ))}
+        <div className="flex-1" />
         {noOfPages > 1 && (
           <Pagination
             pagesDisplayed={5}
@@ -237,7 +238,7 @@ const OwnershipSearch = ({
           </div>
         )}
       </div>
-      <OwnershipYear proprietorName={proprietorName!} />
+      {false ? <OwnershipYear proprietorName={proprietorName!} /> : null}
       <Separator />
       {content}
     </div>
