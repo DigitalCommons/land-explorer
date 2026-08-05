@@ -12,7 +12,7 @@ import TopBar from "../components/top-bar/TopBar";
 import constants from "../constants";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { FieldError } from "@/components/ui/field";
+import { Field, FieldLabel, FieldError } from "@/components/ui/field";
 import { Card, CardHeader, CardTitle, CardDescription, CardAction, CardContent } from "@/components/ui/card";
 import { ukPhoneRegexp, ukPostcodeRegexp } from "@/lib/validation";
 
@@ -210,71 +210,131 @@ const Register = ({ updateBgImage }: Props) => {
         <form onSubmit={handleSubmit(onSubmit)}>
         <h3 className="mb-1.25! text-left text-sm font-medium! text-foreground">Account details</h3>
         <div className="mb-6 grid grid-cols-1 gap-x-4 gap-y-3 md:grid-cols-2">
-          <div>
-            <Input
-              type="text"
-              placeholder="First name (Required)"
-              maxLength={101}
-              {...register("firstName")}
-              aria-invalid={!!errors.firstName}
-            />
-            <FieldError errors={[errors.firstName]} className="mt-1.25 text-left" />
-          </div>
-          <div>
-            <Input
-              type="text"
-              placeholder="Last name (Required)"
-              maxLength={101}
-              {...register("lastName")}
-              aria-invalid={!!errors.lastName}
-            />
-            <FieldError errors={[errors.lastName]} className="mt-1.25 text-left" />
-          </div>
-          <div>
-            <Input
-              type="email"
-              placeholder="Email address (Required)"
-              autoComplete="username"
-              maxLength={101}
-              {...register("email")}
-              aria-invalid={!!errors.email}
-            />
-            <FieldError errors={[errors.email]} className="mt-1.25 text-left" />
-          </div>
-          <div>
-            <Input
-              type="password"
-              placeholder="Password (Required)"
-              autoComplete="new-password"
-              minLength={4}
-              maxLength={101}
-              {...register("password")}
-              aria-invalid={!!errors.password}
-            />
-            <FieldError errors={[errors.password]} className="mt-1.25 text-left" />
-          </div>
-          <div>
-            <Input
-              type="tel"
-              placeholder="Telephone"
-              maxLength={15}
-              {...register("phone")}
-              aria-invalid={!!errors.phone}
-            />
-            <FieldError errors={[errors.phone]} className="mt-1.25 text-left" />
-          </div>
-          <div>
-            <Input
-              type="password"
-              placeholder="Confirm password (Required)"
-              autoComplete="new-password"
-              minLength={4}
-              maxLength={101}
-              {...register("confirmPassword")}
-              aria-invalid={!!errors.confirmPassword}
-            />
-            <FieldError errors={[errors.confirmPassword]} className="mt-1.25 text-left" />
-          </div>
+          <Controller
+            control={control}
+            name="firstName"
+            render={({ field, fieldState }) => (
+              <Field data-invalid={fieldState.invalid} className="gap-1.25">
+                <FieldLabel htmlFor="firstName" className="sr-only">
+                  First name
+                </FieldLabel>
+                <Input
+                  {...field}
+                  id="firstName"
+                  type="text"
+                  placeholder="First name (Required)"
+                  maxLength={101}
+                  aria-invalid={fieldState.invalid}
+                />
+                {fieldState.invalid && <FieldError errors={[fieldState.error]} className="text-left" />}
+              </Field>
+            )}
+          />
+          <Controller
+            control={control}
+            name="lastName"
+            render={({ field, fieldState }) => (
+              <Field data-invalid={fieldState.invalid} className="gap-1.25">
+                <FieldLabel htmlFor="lastName" className="sr-only">
+                  Last name
+                </FieldLabel>
+                <Input
+                  {...field}
+                  id="lastName"
+                  type="text"
+                  placeholder="Last name (Required)"
+                  maxLength={101}
+                  aria-invalid={fieldState.invalid}
+                />
+                {fieldState.invalid && <FieldError errors={[fieldState.error]} className="text-left" />}
+              </Field>
+            )}
+          />
+          <Controller
+            control={control}
+            name="email"
+            render={({ field, fieldState }) => (
+              <Field data-invalid={fieldState.invalid} className="gap-1.25">
+                <FieldLabel htmlFor="email" className="sr-only">
+                  Email address
+                </FieldLabel>
+                <Input
+                  {...field}
+                  id="email"
+                  type="email"
+                  placeholder="Email address (Required)"
+                  autoComplete="username"
+                  maxLength={101}
+                  aria-invalid={fieldState.invalid}
+                />
+                {fieldState.invalid && <FieldError errors={[fieldState.error]} className="text-left" />}
+              </Field>
+            )}
+          />
+          <Controller
+            control={control}
+            name="password"
+            render={({ field, fieldState }) => (
+              <Field data-invalid={fieldState.invalid} className="gap-1.25">
+                <FieldLabel htmlFor="password" className="sr-only">
+                  Password
+                </FieldLabel>
+                <Input
+                  {...field}
+                  id="password"
+                  type="password"
+                  placeholder="Password (Required)"
+                  autoComplete="new-password"
+                  minLength={4}
+                  maxLength={101}
+                  aria-invalid={fieldState.invalid}
+                />
+                {fieldState.invalid && <FieldError errors={[fieldState.error]} className="text-left" />}
+              </Field>
+            )}
+          />
+          <Controller
+            control={control}
+            name="phone"
+            render={({ field, fieldState }) => (
+              <Field data-invalid={fieldState.invalid} className="gap-1.25">
+                <FieldLabel htmlFor="phone" className="sr-only">
+                  Telephone
+                </FieldLabel>
+                <Input
+                  {...field}
+                  id="phone"
+                  type="tel"
+                  placeholder="Telephone"
+                  maxLength={15}
+                  aria-invalid={fieldState.invalid}
+                />
+                {fieldState.invalid && <FieldError errors={[fieldState.error]} className="text-left" />}
+              </Field>
+            )}
+          />
+          <Controller
+            control={control}
+            name="confirmPassword"
+            render={({ field, fieldState }) => (
+              <Field data-invalid={fieldState.invalid} className="gap-1.25">
+                <FieldLabel htmlFor="confirmPassword" className="sr-only">
+                  Confirm password
+                </FieldLabel>
+                <Input
+                  {...field}
+                  id="confirmPassword"
+                  type="password"
+                  placeholder="Confirm password (Required)"
+                  autoComplete="new-password"
+                  minLength={4}
+                  maxLength={101}
+                  aria-invalid={fieldState.invalid}
+                />
+                {fieldState.invalid && <FieldError errors={[fieldState.error]} className="text-left" />}
+              </Field>
+            )}
+          />
         </div>
 
         <h3 className="mb-1.25! text-left text-sm font-medium! text-foreground">Organisation details</h3>
@@ -606,7 +666,7 @@ const Register = ({ updateBgImage }: Props) => {
         </div>
       </div>
       <div style={{ marginBottom: "200px", display: registering ? "none" : "block" }}>
-        <Card className="relative mx-auto mt-24 w-[calc(100vw-40px)] gap-6 rounded-[8px] text-center shadow-[0_20px_60px_rgba(0,0,0,0.25)] md:w-190">
+        <Card className="relative mx-auto mt-24 w-[calc(100vw-40px)] gap-6 rounded-sm text-center shadow-[0_20px_60px_rgba(0,0,0,0.25)] md:w-190">
           {formDisplay}
         </Card>
       </div>
