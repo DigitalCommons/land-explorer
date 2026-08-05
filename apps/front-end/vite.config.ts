@@ -1,13 +1,14 @@
-import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react'
-import { fileURLToPath, URL } from 'node:url'
+import { defineConfig } from "vite";
+import react from "@vitejs/plugin-react";
+import { fileURLToPath, URL } from "node:url";
+import tailwindcss from "@tailwindcss/vite";
 
 // Dev server only: proxy /api and the websocket - DEV_API_PROXY is set
 // by docker-compose.dev.yml for hot reloading
 const devApiProxy = process.env.DEV_API_PROXY ?? "http://localhost:4000";
 
 export default defineConfig({
-  plugins: [react()],
+  plugins: [react(), tailwindcss()],
   base: "/",
   resolve: {
     alias: [
