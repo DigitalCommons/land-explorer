@@ -7,13 +7,17 @@ import { z } from "zod";
 import { X } from "lucide-react";
 import Swal from "sweetalert2";
 import Spinner from "../components/common/Spinner";
+import TierCard from "../components/common/TierCard/TierCard";
 import GoCardlessModal from "../components/modals/GoCardlessModal";
 import TopBar from "../components/top-bar/TopBar";
 import constants from "../constants";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Field, FieldLabel, FieldError } from "@/components/ui/field";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Field, FieldGroup, FieldLabel, FieldError } from "@/components/ui/field";
 import { Card, CardHeader, CardTitle, CardDescription, CardAction, CardContent } from "@/components/ui/card";
+import { Button, buttonVariants } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import { ukPhoneRegexp, ukPostcodeRegexp } from "@/lib/validation";
 
 const registerSchema = z
@@ -77,11 +81,9 @@ const Register = ({ updateBgImage }: Props) => {
   const [goCardlessVisible, setGoCardLessVisible] = useState(false);
 
   const {
-    register,
     control,
     handleSubmit,
     getValues,
-    formState: { errors },
   } = useForm<RegisterFormValues>({
     resolver: zodResolver(registerSchema),
     mode: "onChange",
@@ -208,7 +210,7 @@ const Register = ({ updateBgImage }: Props) => {
           </div>
         )}
         <form onSubmit={handleSubmit(onSubmit)}>
-        <h3 className="mb-1.25! text-left text-sm font-medium! text-foreground">Account details</h3>
+        <h3 className="mb-1.25! text-left text-sm font-medium! text-foreground!">Account details</h3>
         <div className="mb-6 grid grid-cols-1 gap-x-4 gap-y-3 md:grid-cols-2">
           <Controller
             control={control}
@@ -337,7 +339,7 @@ const Register = ({ updateBgImage }: Props) => {
           />
         </div>
 
-        <h3 className="mb-1.25! text-left text-sm font-medium! text-foreground">Organisation details</h3>
+        <h3 className="mb-1.25! text-left text-sm font-medium! text-foreground!">Organisation details</h3>
         <div className="mb-6 grid grid-cols-1 gap-x-4 gap-y-3 md:grid-cols-2">
           <Controller
             control={control}
@@ -569,102 +571,85 @@ const Register = ({ updateBgImage }: Props) => {
           />
         </div>
 
-        <h3 className="mb-1.25! text-left text-sm font-medium! text-foreground">Access tiers</h3>
-        <div className="account-type-container">
-          <div
-            className={`account-type-card ${accountType == "free" ? "active" : "inactive"
-              }`}
-            onClick={() => {
-              setAccountType("free");
-            }}
-          >
-            <div className="card-inner">
-              <p className="account-type-title">Free</p>
-              <p className="account-type-text">
-                Land Explorer is currently free for everyone!
-              </p>
-            </div>
-          </div>
-          <div
-            className={`account-type-card ${accountType == "paid" ? "active" : "inactive"
-              }`}
-            onClick={() => {
-              /* disable the payment flow
-            this.setState({
-              accountType: "paid"
-            })
-            */
-            }}
-          >
-            <div className="card-inner">
-              <p className="account-type-title">Solidarity Supporter</p>
-              <p className="account-type-text">Coming soon</p>
-            </div>
-          </div>
+        <h3 className="mb-1.25! text-left text-sm font-medium! text-foreground!">Access tiers</h3>
+        <div className="mb-6 flex flex-col gap-3 md:flex-row">
+          <TierCard
+            eyebrow="Free"
+            name="Community Tier"
+            price="Always free"
+            description="Core Land Explorer access."
+            selected={accountType == "free"}
+            detailsHref="https://landexplorer.coop/#PB2L8SM7jqBqJSzQ"
+            onSelect={() => setAccountType("free")}
+          />
+          <TierCard
+            eyebrow="Paid"
+            name="Solidarity Tier"
+            price="£600 (incl VAT) per year"
+            description="Helps fund free access for others."
+            selected={accountType == "paid"}
+            detailsHref="https://landexplorer.coop/#PB2L8SM7jqBqJSzQ"
+            onSelect={() => setAccountType("paid")}
+          />
         </div>
 
-        <div className="privacy-policy">
-          <label
-            className="control control-checkbox"
-            style={{ textAlign: "left", fontSize: "14px" }}
-          >
-            I agree to the{" "}
-            <a
-              target="_blank"
-              className="link-underline"
-              href="/privacy-policy.pdf"
-            >
-              privacy policy
-            </a>{" "}and{" "}
-            <a
-              target="_blank"
-              className="link-underline"
-              href="https://digitalcommons.coop/terms-of-use/"
-            >
-              terms of use
-            </a>.
-            <input
-              type="checkbox"
-              style={{ display: "inline" }}
-              {...register("agree")}
-            />
-            <div className="control_indicator"></div>
-          </label>
-          <label
-            className="control control-checkbox"
-            style={{ textAlign: "left", fontSize: "14px" }}
-          >
-            Keep me up to date with Land Explorer and Digital Commons
-            developments
-            <input
-              type="checkbox"
-              style={{ display: "inline" }}
-              {...register("marketing")}
-            />
-            <div className="control_indicator"></div>
-          </label>
-        </div>
-        <div className="FormControlButtons" style={{ padding: "10px" }}>
-          <Link to="/auth">
-            <div
-              className="button button-cancel button-medium"
-              style={{ display: "inline-block" }}
-            >
-              Cancel
-            </div>
-          </Link>
-          <input
-            type="submit"
-            value={accountType == "free" ? "Register" : "Next"}
-            className="button button-medium"
-            disabled={!agree}
-            style={{
-              paddingTop: 0,
-              marginLeft: "10px",
-              display: "inline-block",
-              opacity: agree ? 1 : 0.5,
-            }}
+        <FieldGroup className="mb-4 gap-1.25">
+          <Controller
+            control={control}
+            name="agree"
+            render={({ field, fieldState }) => (
+              <Field orientation="horizontal" data-invalid={fieldState.invalid}>
+                <Checkbox
+                  id="agree"
+                  checked={field.value}
+                  onCheckedChange={(checked) => field.onChange(checked === true)}
+                  aria-invalid={fieldState.invalid}
+                />
+                <FieldLabel htmlFor="agree" className="block text-left text-sm font-normal">
+                  I agree to the{" "}
+                  <a target="_blank" className="link-underline" href="/privacy-policy.pdf">
+                    privacy policy
+                  </a>{" "}
+                  and{" "}
+                  <a
+                    target="_blank"
+                    className="link-underline"
+                    href="https://digitalcommons.coop/terms-of-use/"
+                  >
+                    terms of use
+                  </a>.
+                </FieldLabel>
+              </Field>
+            )}
           />
+          <Controller
+            control={control}
+            name="marketing"
+            render={({ field, fieldState }) => (
+              <Field orientation="horizontal" data-invalid={fieldState.invalid}>
+                <Checkbox
+                  id="marketing"
+                  checked={field.value}
+                  onCheckedChange={(checked) => field.onChange(checked === true)}
+                  aria-invalid={fieldState.invalid}
+                />
+                <FieldLabel htmlFor="marketing" className="text-left text-sm font-normal">
+                  Keep me up to date with Land Explorer and Digital Commons developments
+                </FieldLabel>
+              </Field>
+            )}
+          />
+        </FieldGroup>
+        <div className="p-2.5">
+          <Link
+            to="/auth"
+            className={cn(buttonVariants({ variant: "outline" }), "rounded-full md:min-w-50")}
+          >
+            Cancel
+          </Link>
+          <Button type="submit" disabled={!agree} className="ml-2.5 rounded-full md:min-w-50">
+            {accountType == "free" ? "Register" : "Next"}
+          </Button>
         </div>
       </form>
       </CardContent>
