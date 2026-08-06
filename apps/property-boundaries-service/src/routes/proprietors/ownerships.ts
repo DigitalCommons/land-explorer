@@ -8,7 +8,7 @@ import Joi from "joi";
 import { logger } from "../../pipeline/logger.js";
 import { getOwnershipRecordsByProprietor } from "../../services/ownership/ownership-service.js";
 
-const MINUMUM_YEAR = 2017;
+const MINIMUM_YEAR = 2017;
 
 type GetProprietorOwnershipsRequest = Request & {
   query: {
@@ -61,8 +61,15 @@ export const querySchema = Joi.object({
   companyRegistrationNo: Joi.string().trim().min(1).max(8).optional(),
   year: Joi.number()
     .integer()
-    .min(MINUMUM_YEAR)
-    .max(new Date().getFullYear() - 1)
+    .min(MINIMUM_YEAR)
+    .custom((value, helpers) => {
+      // Computed per-validation (not baked into the schema at import time) so the bound stays
+      // correct across a New Year's Eve without requiring a server restart.
+      const maxYear = new Date().getFullYear() - 1;
+      return value > maxYear
+        ? helpers.error("number.max", { limit: maxYear })
+        : value;
+    })
     .required(),
   secret: Joi.string().required(),
 }).or("proprietorName", "companyRegistrationNo");
