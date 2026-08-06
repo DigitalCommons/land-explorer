@@ -17,12 +17,12 @@ export type ProprietorOwnershipsResponse = {
 };
 
 /**
- * Get the properties a proprietor held title to at the end of a given year (i.e. on 31 December),
+ * Get the properties a proprietor held at the end of a given year (i.e. on 31 December),
  * from the Property Boundaries Service.
  *
  * @param year the year to find ownerships for
  * @param proprietorName proprietor name to match (ignored if companyRegNo is given)
- * @param companyRegNo company registration number to match; used on its own since it's the stable
+ * @param companyRegNo company registration number to match. Used to match first as it's the stable
  * unique key for a company, unlike proprietor name spelling
  * @param signal optional AbortSignal to cancel the request
  */

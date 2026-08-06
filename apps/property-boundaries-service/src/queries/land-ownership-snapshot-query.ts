@@ -32,25 +32,31 @@ export type ProprietorOwnershipRecord = {
   property_address: string | null;
   proprietor_name: string;
   company_registration_no: string;
-  poly_id: number;
+  poly_id: number | null;
   geom: unknown;
 };
 
 /**
  * Find land ownership snapshot rows, joined with their polygon geometry, for a proprietor that
- * held title on 31 December of the given year. When a company registration number is given, it's
- * used on its own to match, since it's the stable unique key for a company; proprietor name
+ * held a title on 31 December of the given year. When a company registration number is given, it's
+ * used on its own to match, since it's the stable unique key for a company - the proprietor name
  * spelling can vary slightly between title records. Otherwise, matches are made on proprietor
  * name.
  *
  * Titles are joined to their polygons on title_no, so a title with multiple polygons produces one
- * row per polygon. Titles with no matched polygon are not returned, since there'd be nothing to
- * highlight on the map. There's no pagination: the frontend needs the full set of a proprietor's
+ * row per polygon. Titles with no matched polygon are still returned - there'll be nothing to
+ * highlight on the map but the property will display in the list.
+ * There's no pagination because the frontend needs the full set of a proprietor's
  * properties at once, both to list them and to highlight all of them on the map together.
  *
- * Geometry is returned as GeoJSON truncated to 6 decimal places (~11cm), since full double
- * precision vastly inflates response size for no visible benefit at map scale or land registry
+ * Geometry is returned as GeoJSON truncated to 6 decimal places, which correlates to ~11cm on the map -
+ * keeping full double precision vastly inflates the response size for no visible benefit at map scale or land registry
  * source accuracy.
+ *
+ * Note a limitation of this function is that we only have the latest title polygons to match to, not
+ * the polygons that were actually in place on 31 December of the given year.
+ * So if a title's polygon has changed since then, the geometry returned may not be accurate
+ * for that year.
  * @param proprietorName proprietor name to match (ignored if companyRegistrationNo is given)
  * @param companyRegistrationNo company registration number to match
  * @param year the year to find ownerships for (matches the snapshot taken on 31 December)
@@ -73,7 +79,7 @@ export const getOwnershipsForProprietorAndYear = async (
       land_ownership_polygons.poly_id AS poly_id,
       ST_AsGeoJSON(land_ownership_polygons.geom, 6) AS geom
     FROM land_ownership_snapshots
-    INNER JOIN land_ownership_polygons
+    LEFT JOIN land_ownership_polygons
       ON land_ownership_snapshots.title_no = land_ownership_polygons.title_no
     WHERE land_ownership_snapshots.snapshot_date = ?
       AND land_ownership_snapshots.${matchColumn} = ?;`;

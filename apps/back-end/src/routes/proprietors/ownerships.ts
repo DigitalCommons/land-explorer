@@ -60,8 +60,8 @@ export const proprietorOwnershipsRoute: ServerRoute = {
   options: {
     validate: {
       query: Joi.object({
-        proprietorName: Joi.string().trim().min(1).max(255).optional(),
-        companyRegNo: Joi.string().trim().min(1).max(255).optional(),
+        proprietorName: Joi.string().trim().min(1).max(400).optional(),
+        companyRegNo: Joi.string().trim().min(1).max(8).optional(),
         year: Joi.number()
           .integer()
           .min(MINIMUM_OWNERSHIPS_YEAR)
