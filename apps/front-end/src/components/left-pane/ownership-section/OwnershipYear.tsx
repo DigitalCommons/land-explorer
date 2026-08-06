@@ -3,7 +3,6 @@ import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
 import { useAppDispatch, useAppSelector } from "@/hooks/react-redux";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { useDebounceCallback } from "usehooks-ts";
 
 const OwnershipYear = () => {
   const dispatch = useAppDispatch();
@@ -17,9 +16,8 @@ const OwnershipYear = () => {
   const currentYear = new Date().getFullYear();
   const currentMonth = new Date().toLocaleString("default", { month: "long" });
 
-  // This is an immediately-updated copy of the slider value so dragging feels responsive. Because of
-  // the debounce, the Redux value for the year and the properties fetch are only updated once dragging of the slider stops.
-  // This is to avoid dispatching to Redux on every drag tick which re-renders unrelated components (e.g. the map) and makes the slider laggy
+  // This is an immediately updated copy of the slider value so dragging feels responsive
+  // and the labels update immediately instead of after the user has stopped dragging
   const [displayYear, setDisplayYear] = useState(selectedYear);
   useEffect(() => {
     setDisplayYear(selectedYear);
@@ -36,7 +34,7 @@ const OwnershipYear = () => {
 
   const abortControllerRef = useRef<AbortController | null>(null);
 
-  const yearChangeCallback = useCallback(
+  const commitYearChange = useCallback(
     (year: number) => {
       abortControllerRef.current?.abort();
 
@@ -59,20 +57,12 @@ const OwnershipYear = () => {
     [currentYear, dispatch, proprietorName],
   );
 
-  const dispatchYearChange = useDebounceCallback(yearChangeCallback, 400);
-
-  //abort any inflight requests and cancel any debounced calls when component unmounted or the proprietor/year is changed
+  //abort any inflight request when component unmounted or the proprietor is changed
   useEffect(() => {
     return () => {
-      dispatchYearChange.cancel();
       abortControllerRef.current?.abort();
     };
-  }, [dispatchYearChange]);
-
-  const onYearChange = (value: number) => {
-    setDisplayYear(value);
-    dispatchYearChange(value);
-  };
+  }, [proprietorName]);
 
   return (
     <div className="flex flex-col gap-3 mt-2 mx-4">
@@ -86,7 +76,10 @@ const OwnershipYear = () => {
         step={1}
         tooltipContent={`${displayYear}`}
         onValueChange={(value) =>
-          onYearChange(Array.isArray(value) ? value[0] : value)
+          setDisplayYear(Array.isArray(value) ? value[0] : value)
+        }
+        onValueCommitted={(value) =>
+          commitYearChange(Array.isArray(value) ? value[0] : value)
         }
       />
       <div className="flex justify-between text-sm">
