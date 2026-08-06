@@ -5,16 +5,12 @@ import { useAppDispatch, useAppSelector } from "@/hooks/react-redux";
 import { useCallback, useEffect, useRef } from "react";
 import { useDebounceCallback } from "usehooks-ts";
 
-type OwnershipYearProps = {
-  proprietorName: string;
-};
-
-const OwnershipYear = ({ proprietorName }: OwnershipYearProps) => {
+const OwnershipYear = () => {
   const dispatch = useAppDispatch();
-
-  const { relatedPropertiesYear: selectedYear } = useAppSelector(
-    (state) => state.landOwnership,
-  );
+  const {
+    relatedPropertiesYear: selectedYear,
+    relatedPropertiesProprietorName: proprietorName,
+  } = useAppSelector((state) => state.landOwnership);
   const minimumYear = 2017;
   const currentYear = new Date().getFullYear();
   const currentMonth = new Date().toLocaleString("default", { month: "long" });
@@ -37,27 +33,29 @@ const OwnershipYear = ({ proprietorName }: OwnershipYearProps) => {
       const controller = new AbortController();
       abortControllerRef.current = controller;
 
-      dispatch(
-        fetchPropertyOwnerships(
-          year,
-          currentYear,
-          proprietorName,
-          controller.signal,
-        ),
-      );
+      if (proprietorName !== null) {
+        dispatch(
+          fetchPropertyOwnerships(
+            year,
+            currentYear,
+            proprietorName,
+            controller.signal,
+          ),
+        );
+      }
     },
     [currentYear, dispatch, proprietorName],
   );
 
   const dispatchYearChange = useDebounceCallback(yearChangeCallback, 400);
 
-  useEffect(
-    () => () => {
+  //abort any inflight requests and cancel any debounced calls when component unmounted or the proprietor/year is changed
+  useEffect(() => {
+    return () => {
       dispatchYearChange.cancel();
       abortControllerRef.current?.abort();
-    },
-    [dispatchYearChange],
-  );
+    };
+  }, [dispatchYearChange]);
 
   const onYearChange = (value: number) => {
     dispatch({ type: "SET_RELATED_PROPERTIES_YEAR", payload: value });

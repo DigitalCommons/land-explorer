@@ -239,7 +239,7 @@ const OwnershipSearch = ({
         )}
       </div>
       {import.meta.env.VITE_FEATURE_HISTORIC_OWNERSHIP === "true" ? (
-        <OwnershipYear proprietorName={proprietorName!} />
+        <OwnershipYear />
       ) : null}
       <Separator />
       {content}

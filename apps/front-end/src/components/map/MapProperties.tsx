@@ -131,24 +131,26 @@ const MapProperties = ({ center, map }: Props) => {
   // Properties owned in a year, rendered from a single GeoJSON source instead of per-polygon
   // Features - this set can be large, and is replaced wholesale every time the ownership year slider
   // changes, so a bulk source update is much cheaper than diffing hundreds of Feature elements.
-  // Memoized so the `data` object passed to GeoJSONLayer keeps a stable reference (and so doesn't
-  // trigger a source.setData() call) across re-renders that don't touch these two values, e.g. zoom
-  // or highlighted-property changes.
-  const relatedPropertiesData = useMemo(
-    () => ({
+  // Memoized so the `data` object passed to GeoJSONLayer doesn't recompute
+  // across re-renders that don't touch these two values, e.g. zoom or highlighted-property changes.
+  const relatedPropertiesData = useMemo(() => {
+    const properties = relatedProperties ?? {};
+    let features = [];
+    if (displayRelatedProperties) {
+      features = Object.values(properties).flatMap((property: any) =>
+        property.polygons.map((polygon: any) => ({
+          type: "Feature" as const,
+          geometry: polygon.geom,
+          properties: { title_no: property.title_no },
+        })),
+      );
+    }
+
+    return {
       type: "FeatureCollection" as const,
-      features: displayRelatedProperties
-        ? Object.values(relatedProperties ?? {}).flatMap((property: any) =>
-            property.polygons.map((polygon: any) => ({
-              type: "Feature" as const,
-              geometry: polygon.geom,
-              properties: { title_no: property.title_no },
-            })),
-          )
-        : [],
-    }),
-    [displayRelatedProperties, relatedProperties],
-  );
+      features: features,
+    };
+  }, [displayRelatedProperties, relatedProperties]);
 
   const onRelatedOwnershipFeatureClick = (e: any) => {
     const titleNo = e.features?.[0]?.properties?.title_no;
