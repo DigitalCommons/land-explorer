@@ -6,8 +6,12 @@ import layers from "../../data/mapLayerKeyConfig";
 
 const MapLayerKey = () => {
   const { landDataLayers } = useAppSelector((state) => state.landDataLayers);
-  const { activeDisplay, highlightedProperties, relatedProperties } =
-    useAppSelector((state) => state.landOwnership);
+  const {
+    activeDisplay,
+    highlightedProperties,
+    relatedProperties,
+    displayRelatedProperties,
+  } = useAppSelector((state) => state.landOwnership);
 
   const [expanded, setExpanded] = useState(!isMobile);
   const [prevActiveDisplay, setPrevActiveDisplay] = useState(activeDisplay);
@@ -17,8 +21,9 @@ const MapLayerKey = () => {
   const hasHighlightedProperties =
     Object.keys(highlightedProperties).length > 0;
 
-  // Check if there are related properties
-  const hasRelatedProperties = Object.keys(relatedProperties).length > 0;
+  // Check if there are related properties currently shown on the map
+  const hasRelatedProperties =
+    displayRelatedProperties && Object.keys(relatedProperties).length > 0;
 
   // Auto-expand on desktop when an ownership/land data layer is toggled ON after all were OFF
   useEffect(() => {
