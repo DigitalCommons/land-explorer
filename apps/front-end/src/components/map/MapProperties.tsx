@@ -26,6 +26,7 @@ const MapProperties = ({ center, map }: Props) => {
     relatedProperties,
     displayRelatedProperties,
   } = useAppSelector((state) => state.landOwnership);
+
   const activeProperty =
     activePropertyTitleNo !== null
       ? highlightedProperties[activePropertyTitleNo] || null

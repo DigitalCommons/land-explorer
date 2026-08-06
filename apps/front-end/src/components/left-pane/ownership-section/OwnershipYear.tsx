@@ -2,27 +2,37 @@ import { fetchPropertyOwnerships } from "@/actions/LandOwnershipActions";
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
 import { useAppDispatch, useAppSelector } from "@/hooks/react-redux";
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useDebounceCallback } from "usehooks-ts";
 
 const OwnershipYear = () => {
   const dispatch = useAppDispatch();
-  const {
-    relatedPropertiesYear: selectedYear,
-    relatedPropertiesProprietorName: proprietorName,
-  } = useAppSelector((state) => state.landOwnership);
+  const proprietorName = useAppSelector(
+    (state) => state.landOwnership.relatedPropertiesProprietorName,
+  );
+  const selectedYear = useAppSelector(
+    (state) => state.landOwnership.relatedPropertiesYear,
+  );
   const minimumYear = 2017;
   const currentYear = new Date().getFullYear();
   const currentMonth = new Date().toLocaleString("default", { month: "long" });
+
+  // This is an immediately-updated copy of the slider value so dragging feels responsive. Because of
+  // the debounce, the Redux value for the year and the properties fetch are only updated once dragging of the slider stops.
+  // This is to avoid dispatching to Redux on every drag tick which re-renders unrelated components (e.g. the map) and makes the slider laggy
+  const [displayYear, setDisplayYear] = useState(selectedYear);
+  useEffect(() => {
+    setDisplayYear(selectedYear);
+  }, [selectedYear]);
 
   useEffect(() => {
     dispatch({ type: "SET_RELATED_PROPERTIES_YEAR", payload: currentYear });
   }, [proprietorName]);
 
   const label =
-    selectedYear === currentYear
+    displayYear === currentYear
       ? `Viewing current ownership as of ${currentMonth} ${currentYear}`
-      : `Viewing properties owned in December ${selectedYear}`;
+      : `Viewing properties owned in December ${displayYear}`;
 
   const abortControllerRef = useRef<AbortController | null>(null);
 
@@ -32,6 +42,8 @@ const OwnershipYear = () => {
 
       const controller = new AbortController();
       abortControllerRef.current = controller;
+
+      dispatch({ type: "SET_RELATED_PROPERTIES_YEAR", payload: year });
 
       if (proprietorName !== null) {
         dispatch(
@@ -58,7 +70,7 @@ const OwnershipYear = () => {
   }, [dispatchYearChange]);
 
   const onYearChange = (value: number) => {
-    dispatch({ type: "SET_RELATED_PROPERTIES_YEAR", payload: value });
+    setDisplayYear(value);
     dispatchYearChange(value);
   };
 
@@ -68,11 +80,11 @@ const OwnershipYear = () => {
       <Label htmlFor="slider-ownership-year">Ownership Year</Label>
       <Slider
         id="slider-ownership-year"
-        value={[selectedYear]}
+        value={[displayYear]}
         max={currentYear}
         min={minimumYear}
         step={1}
-        tooltipContent={`${selectedYear}`}
+        tooltipContent={`${displayYear}`}
         onValueChange={(value) =>
           onYearChange(Array.isArray(value) ? value[0] : value)
         }

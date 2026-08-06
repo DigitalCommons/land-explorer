@@ -36,10 +36,12 @@ const LeftPaneRelatedProperties = ({
   open,
   itemsPerPage,
 }: LeftPaneRelatedPropertiesProps) => {
-  const {
-    relatedProperties: properties,
-    relatedPropertiesProprietorName: proprietorName,
-  } = useAppSelector((state) => state.landOwnership);
+  const proprietorName = useAppSelector(
+    (state) => state.landOwnership.relatedPropertiesProprietorName,
+  );
+  const properties = useAppSelector(
+    (state) => state.landOwnership.relatedProperties,
+  );
 
   if (!proprietorName) {
     return;
@@ -86,12 +88,19 @@ const OwnershipSearch = ({
   properties,
   proprietorName,
 }: OwnershipSearchProps) => {
-  const {
-    relatedPropertiesError: error,
-    relatedPropertiesLoading: loading,
-    relatedPropertiesYear: selectedYear,
-    displayRelatedProperties,
-  } = useAppSelector((state) => state.landOwnership);
+  const error = useAppSelector(
+    (state) => state.landOwnership.relatedPropertiesError,
+  );
+  const loading = useAppSelector(
+    (state) => state.landOwnership.relatedPropertiesLoading,
+  );
+  const selectedYear = useAppSelector(
+    (state) => state.landOwnership.relatedPropertiesYear,
+  );
+  const displayRelatedProperties = useAppSelector(
+    (state) => state.landOwnership.displayRelatedProperties,
+  );
+
   const propertyCount = Object.keys(properties).length;
 
   // Chop up the properties into pages
