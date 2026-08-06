@@ -34,9 +34,11 @@ export const getOwnershipRecordsByProprietor = async (
         polygons: [],
       });
     }
-    titles
-      .get(row.title_no)!
-      .polygons.push({ polyId: row.poly_id, geom: row.geom });
+    if (row.poly_id !== null) {
+      titles
+        .get(row.title_no)!
+        .polygons.push({ polyId: row.poly_id, geom: row.geom });
+    }
   }
 
   return {

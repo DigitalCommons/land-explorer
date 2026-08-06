@@ -57,8 +57,8 @@ export const getProprietorOwnerships = async (
 };
 
 export const querySchema = Joi.object({
-  proprietorName: Joi.string().trim().min(1).max(255).optional(),
-  companyRegistrationNo: Joi.string().trim().min(1).max(255).optional(),
+  proprietorName: Joi.string().trim().min(1).max(400).optional(),
+  companyRegistrationNo: Joi.string().trim().min(1).max(8).optional(),
   year: Joi.number()
     .integer()
     .min(MINUMUM_YEAR)

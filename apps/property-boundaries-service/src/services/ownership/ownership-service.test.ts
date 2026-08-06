@@ -5,7 +5,11 @@ import esmock from "esmock";
 describe("getOwnershipRecordsByProprietor", () => {
   let sandbox: sinon.SinonSandbox;
   let getOwnershipsForProprietorAndYearStub: sinon.SinonStub;
-  let getOwnershipRecordsByProprietor: (typeof import("./ownership-service.js"))["getOwnershipRecordsByProprietor"];
+  let getOwnershipRecordsByProprietor: (
+    year: number,
+    proprietorName?: string,
+    companyRegistrationNo?: string,
+  ) => Promise<void>;
 
   beforeEach(async () => {
     sandbox = sinon.createSandbox();
@@ -95,6 +99,38 @@ describe("getOwnershipRecordsByProprietor", () => {
         },
       ],
       totalResults: 2,
+    });
+  });
+
+  it("does not include a polygon entry for a title with no matched polygon", async () => {
+    // Arrange
+    getOwnershipsForProprietorAndYearStub.resolves([
+      {
+        title_no: "T1",
+        property_address: "1 Main St",
+        proprietor_name: "Alice",
+        company_registration_no: "",
+        poly_id: null,
+        geom: null,
+      },
+    ]);
+
+    // Act
+    const result = await getOwnershipRecordsByProprietor(2019, "Alice");
+
+    // Assert
+    expect(result).to.deep.equal({
+      proprietorName: "Alice",
+      companyRegNumber: "",
+      year: 2019,
+      ownerships: [
+        {
+          titleNumber: "T1",
+          address: "1 Main St",
+          polygons: [],
+        },
+      ],
+      totalResults: 1,
     });
   });
 

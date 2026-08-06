@@ -1029,7 +1029,7 @@ export const getPolygonsByArea = async (searchArea: string) => {
  */
 export const getPolygonsByProprietorName = async (name: string) => {
   // A UNION of four single-column lookups, rather than one OR across all four columns, so each
-  // branch can use its own proprietor_name_N index - MySQL can't use an index for an OR condition
+  // branch can use its own proprietor_name_N index. MySQL can't use an index for an OR condition
   // spanning multiple columns. UNION (not UNION ALL) matches the OR's original behaviour of
   // returning each polygon once, even if the name matches more than one proprietor slot on a title.
   const proprietorColumns = [

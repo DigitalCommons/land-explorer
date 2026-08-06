@@ -2,6 +2,7 @@ import { expect } from "chai";
 import sinon from "sinon";
 import esmock from "esmock";
 import { LandOwnershipSnapshotRow } from "../pipeline/ownership-snapshots/land-ownership-snapshot-mapper";
+import { ProprietorOwnershipRecord } from "./land-ownership-snapshot-query";
 
 describe("bulkCreateLandOwnershipSnapshots", () => {
   let sandbox: sinon.SinonSandbox;
@@ -67,7 +68,11 @@ describe("bulkCreateLandOwnershipSnapshots", () => {
 describe("getOwnershipsForProprietorAndYear", () => {
   let sandbox: sinon.SinonSandbox;
   let queryStub: sinon.SinonStub;
-  let getOwnershipsForProprietorAndYear: (typeof import("./land-ownership-snapshot-query.js"))["getOwnershipsForProprietorAndYear"];
+  let getOwnershipsForProprietorAndYear: (
+    proprietorName: string | undefined,
+    companyRegistrationNo: string | undefined,
+    year: number,
+  ) => Promise<ProprietorOwnershipRecord[]>;
 
   beforeEach(async () => {
     sandbox = sinon.createSandbox();
@@ -120,7 +125,7 @@ describe("getOwnershipsForProprietorAndYear", () => {
     // Assert
     const [sql] = queryStub.firstCall.args;
     expect(sql).to.include(
-      "INNER JOIN land_ownership_polygons\n      ON land_ownership_snapshots.title_no = land_ownership_polygons.title_no",
+      "LEFT JOIN land_ownership_polygons\n      ON land_ownership_snapshots.title_no = land_ownership_polygons.title_no",
     );
   });
 
