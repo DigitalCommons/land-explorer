@@ -65,7 +65,14 @@ export const proprietorOwnershipsRoute: ServerRoute = {
         year: Joi.number()
           .integer()
           .min(MINIMUM_OWNERSHIPS_YEAR)
-          .max(new Date().getFullYear() - 1)
+          .custom((value, helpers) => {
+            // Computed per-validation (not baked into the schema at import time) so the bound
+            // stays correct across a New Year's Eve without requiring a server restart.
+            const maxYear = new Date().getFullYear() - 1;
+            return value > maxYear
+              ? helpers.error("number.max", { limit: maxYear })
+              : value;
+          })
           .required(),
       }).or("proprietorName", "companyRegNo"),
       failAction: (request, h, err) =>
