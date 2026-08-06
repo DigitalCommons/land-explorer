@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import LeftPaneTray from "./LeftPaneTray";
 import { useAppDispatch, useAppSelector } from "@/hooks/react-redux";
 import RelatedProperty from "./RelatedProperty";
@@ -96,6 +96,11 @@ const OwnershipSearch = ({
 
   // Chop up the properties into pages
   const [currentPage, setCurrentPage] = useState(1);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [proprietorName, selectedYear]);
+
   const noOfPages = Math.ceil(propertyCount / itemsPerPage);
   const indexOfLastProperty = currentPage * itemsPerPage;
   const indexOfFirstProperty = indexOfLastProperty - itemsPerPage;
