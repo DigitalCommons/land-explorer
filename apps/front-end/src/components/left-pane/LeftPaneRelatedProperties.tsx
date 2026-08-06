@@ -238,7 +238,7 @@ const OwnershipSearch = ({
           </div>
         )}
       </div>
-      {false ? <OwnershipYear proprietorName={proprietorName!} /> : null}
+      <OwnershipYear proprietorName={proprietorName!} />
       <Separator />
       {content}
     </div>
