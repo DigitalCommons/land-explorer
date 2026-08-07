@@ -184,7 +184,7 @@ const Register = ({ updateBgImage }: Props) => {
   let formDisplay = (
     <Fragment>
       <CardHeader className="gap-2.5 px-6">
-        <CardTitle className="text-left text-2xl font-semibold text-primary">
+        <CardTitle className="text-left text-2xl font-medium text-primary">
           For everyone. Funded by those who can.
         </CardTitle>
         <CardDescription className="text-left text-sm">
@@ -574,7 +574,7 @@ const Register = ({ updateBgImage }: Props) => {
         <h3 className="mb-1.25! text-left text-sm font-medium! text-foreground!">Access tiers</h3>
         <div className="mb-6 flex flex-col gap-3 md:flex-row">
           <TierCard
-            eyebrow="Free"
+            tierType="Free"
             name="Community Tier"
             price="Always free"
             description="Core Land Explorer access."
@@ -583,7 +583,7 @@ const Register = ({ updateBgImage }: Props) => {
             onSelect={() => setAccountType("free")}
           />
           <TierCard
-            eyebrow="Paid"
+            tierType="Paid"
             name="Solidarity Tier"
             price="£600 (incl VAT) per year"
             description="Helps fund free access for others."
@@ -755,7 +755,7 @@ const Register = ({ updateBgImage }: Props) => {
         </div>
       </div>
       <div style={{ marginBottom: "200px", display: registering ? "none" : "block" }}>
-        <Card className="relative mx-auto mt-24 w-[calc(100vw-40px)] gap-6 rounded-sm text-center shadow-[0_20px_60px_rgba(0,0,0,0.25)] md:w-190">
+        <Card className="relative mx-auto mt-24 w-[calc(100vw-40px)] gap-6 text-center shadow-[0_20px_60px_rgba(0,0,0,0.25)] md:w-190">
           {formDisplay}
         </Card>
       </div>
