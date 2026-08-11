@@ -63,6 +63,7 @@ export const getLatestDatasets = async (overseas: boolean) => {
 
 /**
  * Fetch zipped CSV file from URL and pipe chunks of multiple rows of the data into a function.
+ * Note this method only supports processing a zip file containing one CSV file.
  */
 export const pipeZippedCsvFromUrlIntoFun = async (
   downloadUrl: string,
@@ -75,73 +76,90 @@ export const pipeZippedCsvFromUrlIntoFun = async (
     responseType: "stream",
   });
 
-  await new Promise<void>((resolve, reject) => {
-    response.data.on("error", reject);
+  let currentEntry: unzip.Entry | undefined;
+  let currentCsvPipe: CsvParser | undefined;
+  let foundCsvEntry = false;
+  const unzipStream = response.data.pipe(unzip.Parse());
 
-    response.data.pipe(unzip.Parse()).on("entry", (entry: unzip.Entry) => {
-      var filePath = entry.path;
-      logger.info(`Reading ${filePath}`);
+  try {
+    await new Promise<void>((resolve, reject) => {
+      response.data.on("error", reject);
+      unzipStream.on("error", reject);
 
-      if (filePath.substr(filePath.lastIndexOf(".") + 1) === "csv") {
-        const csvPipe: CsvParser = entry.pipe(csvParser());
+      unzipStream.on("entry", (entry: unzip.Entry) => {
+        currentEntry = entry;
+        var filePath = entry.path;
+        logger.info(`Reading ${filePath}`);
 
-        const destroyStreams = () => {
-          csvPipe.destroy();
-          entry.destroy();
-          response.data.destroy();
-        };
+        if (filePath.substr(filePath.lastIndexOf(".") + 1) === "csv") {
+          if (foundCsvEntry) {
+            reject(
+              new Error(
+                `Zip archive contained more than one CSV entry (found second at ${filePath}), expected exactly one`,
+              ),
+            );
+            return;
+          }
+          foundCsvEntry = true;
 
-        let rowCount = 0;
-        const rowsToSend: any[] = [];
-        let sendingChunk = false;
+          const csvPipe: CsvParser = entry.pipe(csvParser());
+          currentCsvPipe = csvPipe;
 
-        csvPipe.on("data", async (row: any) => {
-          rowCount++;
+          let rowCount = 0;
+          const rowsToSend: any[] = [];
+          let sendingChunk = false;
 
-          // Check if we need send a chunk
-          if (rowsToSend.length >= chunkSize && !sendingChunk) {
-            sendingChunk = true;
-            csvPipe.pause(); // pause the stream to avoid OOM error
-            if (logProgress) {
-              logger.debug(
-                `Row ${rowCount} of ${filePath}, processing chunk of size ${chunkSize}`,
-              );
+          csvPipe.on("data", async (row: any) => {
+            rowCount++;
+
+            // Check if we need send a chunk
+            if (rowsToSend.length >= chunkSize && !sendingChunk) {
+              sendingChunk = true;
+              csvPipe.pause(); // pause the stream to avoid OOM error
+              if (logProgress) {
+                logger.debug(
+                  `Row ${rowCount} of ${filePath}, processing chunk of size ${chunkSize}`,
+                );
+              }
+              const chunk = rowsToSend.splice(0, chunkSize);
+              try {
+                await processChunkOfRowsFunc(chunk);
+              } catch (error) {
+                reject(error);
+                return;
+              }
+              sendingChunk = false;
+              csvPipe.resume();
             }
-            const chunk = rowsToSend.splice(0, chunkSize);
+
+            if (Object.keys(row).length === 2) {
+              // This is the last row of the CSV, which we can ignore
+              return;
+            }
+            rowsToSend.push(row);
+          });
+
+          csvPipe.on("end", async () => {
+            // Final chunk
             try {
-              await processChunkOfRowsFunc(chunk);
+              await processChunkOfRowsFunc(rowsToSend);
             } catch (error) {
-              destroyStreams();
               reject(error);
               return;
             }
-            sendingChunk = false;
-            csvPipe.resume();
-          }
-
-          if (Object.keys(row).length === 2) {
-            // This is the last row of the CSV, which we can ignore
-            return;
-          }
-          rowsToSend.push(row);
-        });
-
-        csvPipe.on("end", async () => {
-          // Final chunk
-          try {
-            await processChunkOfRowsFunc(rowsToSend);
-          } catch (error) {
-            destroyStreams();
-            reject(error);
-            return;
-          }
-          logger.debug(`Finished processing ${rowCount} rows of ${filePath}`);
-          resolve();
-        });
-        csvPipe.on("error", reject);
-      } else {
-        entry.autodrain();
-      }
+            logger.debug(`Finished processing ${rowCount} rows of ${filePath}`);
+            resolve();
+          });
+          csvPipe.on("error", reject);
+        } else {
+          entry.autodrain();
+        }
+      });
     });
-  });
+  } finally {
+    currentCsvPipe?.destroy();
+    currentEntry?.destroy();
+    unzipStream.destroy();
+    response.data.destroy();
+  }
 };
