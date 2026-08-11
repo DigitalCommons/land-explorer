@@ -76,17 +76,26 @@ export const pipeZippedCsvFromUrlIntoFun = async (
   });
 
   await new Promise<void>((resolve, reject) => {
-    response.data.pipe(unzip.Parse()).on("entry", (entry) => {
+    response.data.on("error", reject);
+
+    response.data.pipe(unzip.Parse()).on("entry", (entry: unzip.Entry) => {
       var filePath = entry.path;
       logger.info(`Reading ${filePath}`);
 
       if (filePath.substr(filePath.lastIndexOf(".") + 1) === "csv") {
         const csvPipe: CsvParser = entry.pipe(csvParser());
+
+        const destroyStreams = () => {
+          csvPipe.destroy();
+          entry.destroy();
+          response.data.destroy();
+        };
+
         let rowCount = 0;
-        const rowsToSend = [];
+        const rowsToSend: any[] = [];
         let sendingChunk = false;
 
-        csvPipe.on("data", async (row) => {
+        csvPipe.on("data", async (row: any) => {
           rowCount++;
 
           // Check if we need send a chunk
@@ -102,6 +111,7 @@ export const pipeZippedCsvFromUrlIntoFun = async (
             try {
               await processChunkOfRowsFunc(chunk);
             } catch (error) {
+              destroyStreams();
               reject(error);
               return;
             }
@@ -121,6 +131,7 @@ export const pipeZippedCsvFromUrlIntoFun = async (
           try {
             await processChunkOfRowsFunc(rowsToSend);
           } catch (error) {
+            destroyStreams();
             reject(error);
             return;
           }
