@@ -4,7 +4,8 @@ import { Link } from "react-router-dom";
 import { useForm, useWatch, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { X } from "lucide-react";
+import { faXmark, faEye, faEyeSlash } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import Swal from "sweetalert2";
 import Spinner from "../components/common/Spinner";
 import TierCard from "../components/common/TierCard/TierCard";
@@ -97,6 +98,8 @@ const Register = ({ updateBgImage }: Props) => {
   const [registerSuccess, setRegisterSuccess] = useState(false);
   const [registerErrors, setRegisterErrors] = useState<string[]>([]);
   const [accountType, setAccountType] = useState("free");
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const {
     control,
@@ -121,8 +124,8 @@ const Register = ({ updateBgImage }: Props) => {
     submitRegistration(data);
   };
 
-  // No payment gateway is wired in yet. Paid-tier signups still register immediately;
-  // `accountType` on the submitted request is how they're followed up with about payment.
+  // No payment gateway is wired in yet. Paid-tier signups still register
+  // `accountType` added to the submitted request to allow follow up.
   const submitRegistration = (data: RegisterFormValues) => {
     const organisationSubType =
       data.organisationType === "community-interest"
@@ -170,7 +173,7 @@ const Register = ({ updateBgImage }: Props) => {
 
   let formDisplay = (
     <Fragment>
-      <CardHeader className="gap-2.5 px-6">
+      <CardHeader className="grid-cols-1! gap-2.5 px-6">
         <CardTitle className="text-left text-2xl font-medium text-primary">
           For everyone. Funded by those who can.
         </CardTitle>
@@ -179,12 +182,12 @@ const Register = ({ updateBgImage }: Props) => {
           choose the Solidarity Tier help fund access for grassroots groups,
           tenants&rsquo; unions and community projects.
         </CardDescription>
-        <CardAction>
+        <CardAction className="absolute top-2.5 right-2.5">
           <Link
             to="/auth"
-            className="flex size-8 items-center justify-center rounded-full bg-muted text-muted-foreground hover:bg-muted/80"
+            className="flex size-8 items-center justify-center rounded-full bg-[#D8D8D8] text-white hover:bg-[#D8D8D8]/80"
           >
-            <X className="size-4" />
+            <FontAwesomeIcon icon={faXmark} className="size-4" />
           </Link>
         </CardAction>
       </CardHeader>
@@ -268,16 +271,27 @@ const Register = ({ updateBgImage }: Props) => {
                 <FieldLabel htmlFor="password" className="sr-only">
                   Password
                 </FieldLabel>
-                <Input
-                  {...field}
-                  id="password"
-                  type="password"
-                  placeholder="Password (Required)"
-                  autoComplete="new-password"
-                  minLength={4}
-                  maxLength={101}
-                  aria-invalid={fieldState.invalid}
-                />
+                <div className="relative">
+                  <Input
+                    {...field}
+                    id="password"
+                    type={showPassword ? "text" : "password"}
+                    placeholder="Password (Required)"
+                    autoComplete="new-password"
+                    minLength={4}
+                    maxLength={101}
+                    aria-invalid={fieldState.invalid}
+                    className="pr-10"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword((value) => !value)}
+                    aria-label={showPassword ? "Hide password" : "Show password"}
+                    className="absolute top-1/2 right-3 -translate-y-1/2 text-muted-foreground"
+                  >
+                    <FontAwesomeIcon icon={showPassword ? faEyeSlash : faEye} />
+                  </button>
+                </div>
                 {fieldState.invalid && <FieldError errors={[fieldState.error]} className="text-left" />}
               </Field>
             )}
@@ -310,16 +324,27 @@ const Register = ({ updateBgImage }: Props) => {
                 <FieldLabel htmlFor="confirmPassword" className="sr-only">
                   Confirm password
                 </FieldLabel>
-                <Input
-                  {...field}
-                  id="confirmPassword"
-                  type="password"
-                  placeholder="Confirm password (Required)"
-                  autoComplete="new-password"
-                  minLength={4}
-                  maxLength={101}
-                  aria-invalid={fieldState.invalid}
-                />
+                <div className="relative">
+                  <Input
+                    {...field}
+                    id="confirmPassword"
+                    type={showConfirmPassword ? "text" : "password"}
+                    placeholder="Confirm password (Required)"
+                    autoComplete="new-password"
+                    minLength={4}
+                    maxLength={101}
+                    aria-invalid={fieldState.invalid}
+                    className="pr-10"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirmPassword((value) => !value)}
+                    aria-label={showConfirmPassword ? "Hide password" : "Show password"}
+                    className="absolute top-1/2 right-3 -translate-y-1/2 text-muted-foreground"
+                  >
+                    <FontAwesomeIcon icon={showConfirmPassword ? faEyeSlash : faEye} />
+                  </button>
+                </div>
                 {fieldState.invalid && <FieldError errors={[fieldState.error]} className="text-left" />}
               </Field>
             )}

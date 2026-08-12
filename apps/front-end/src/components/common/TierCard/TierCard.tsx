@@ -1,4 +1,5 @@
-import { Check } from "lucide-react";
+import { faCheck } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 import { cn } from "@/lib/utils";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
@@ -24,7 +25,7 @@ const TierCard = ({ tierType, name, price, description, selected, detailsHref, o
     >
       {selected && (
         <span className="pointer-events-none absolute top-4 right-4 z-10 flex size-5 items-center justify-center rounded-full bg-primary text-primary-foreground">
-          <Check className="size-3" />
+          <FontAwesomeIcon icon={faCheck} className="size-3" />
         </span>
       )}
       <button
