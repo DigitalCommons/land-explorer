@@ -99,33 +99,38 @@ export const setActiveProperty = (titleNo: string) => {
   };
 };
 
+// Tracks the AbortController for the most recent related-properties request, shared by every
+// caller below (slider year change, proprietor selection, retry). This guarantees a slower,
+// superseded request can never overwrite the state written by a request started after it,
+// regardless of which call site triggered either request.
+let latestOwnershipRequestController: AbortController | null = null;
+
+const startOwnershipRequest = (): AbortController => {
+  latestOwnershipRequestController?.abort();
+  const controller = new AbortController();
+  latestOwnershipRequestController = controller;
+  return controller;
+};
+
 export const fetchPropertyOwnerships = (
   selectedYear: number,
   currentYear: number,
   proprietorName: string,
-  signal?: AbortSignal,
 ) => {
   return async (dispatch: any) => {
     if (selectedYear === currentYear) {
-      dispatch(fetchRelatedProperties(proprietorName, signal));
+      dispatch(fetchRelatedProperties(proprietorName));
     } else {
-      dispatch(
-        fetchPropertyOwnershipByYear(
-          selectedYear,
-          proprietorName,
-          undefined,
-          signal,
-        ),
-      );
+      dispatch(fetchPropertyOwnershipByYear(selectedYear, proprietorName));
     }
   };
 };
 
-export const fetchRelatedProperties = (
-  proprietorName: string,
-  signal?: AbortSignal,
-) => {
+// This method fetches related properties for the current year
+export const fetchRelatedProperties = (proprietorName: string) => {
   return async (dispatch: any) => {
+    const controller = startOwnershipRequest();
+
     dispatch({
       type: "SET_RELATED_PROPERTIES_YEAR",
       payload: new Date().getFullYear(),
@@ -143,12 +148,12 @@ export const fetchRelatedProperties = (
     const relatedPropertiesTitleMap = await dispatch(
       getRequest(
         `/api/search?proprietorName=${encodeURIComponent(proprietorName)}`,
-        signal,
+        controller.signal,
       ),
     );
 
     // A newer request has superseded this one - let it own the state update.
-    if (signal?.aborted) {
+    if (controller !== latestOwnershipRequestController) {
       return;
     }
 
@@ -170,9 +175,10 @@ export const fetchPropertyOwnershipByYear = (
   year: number,
   proprietorName: string,
   companyRegNum?: string,
-  signal?: AbortSignal,
 ) => {
   return async (dispatch: any) => {
+    const controller = startOwnershipRequest();
+
     // A prior search may have left polygons on the map for a different proprietor or year - clear
     // them out immediately, rather than leaving them up until this search resolves.
     dispatch({ type: "CLEAR_RELATED_PROPERTIES" });
@@ -190,10 +196,10 @@ export const fetchPropertyOwnershipByYear = (
     }
 
     const propertyOwnershipsForYear: ProprietorOwnershipsResponse | null =
-      await dispatch(getRequest(url, signal));
+      await dispatch(getRequest(url, controller.signal));
 
     // A newer request has superseded this one - let it own the state update.
-    if (signal?.aborted) {
+    if (controller !== latestOwnershipRequestController) {
       return;
     }
 

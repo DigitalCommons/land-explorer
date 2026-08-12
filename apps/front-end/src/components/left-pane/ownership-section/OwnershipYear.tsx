@@ -2,7 +2,7 @@ import { fetchPropertyOwnerships } from "@/actions/LandOwnershipActions";
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
 import { useAppDispatch, useAppSelector } from "@/hooks/react-redux";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 const OwnershipYear = () => {
   const dispatch = useAppDispatch();
@@ -32,37 +32,16 @@ const OwnershipYear = () => {
       ? `Viewing current ownership as of ${currentMonth} ${currentYear}`
       : `Viewing properties owned in December ${displayYear}`;
 
-  const abortControllerRef = useRef<AbortController | null>(null);
-
   const commitYearChange = useCallback(
     (year: number) => {
-      abortControllerRef.current?.abort();
-
-      const controller = new AbortController();
-      abortControllerRef.current = controller;
-
       dispatch({ type: "SET_RELATED_PROPERTIES_YEAR", payload: year });
 
       if (proprietorName !== null) {
-        dispatch(
-          fetchPropertyOwnerships(
-            year,
-            currentYear,
-            proprietorName,
-            controller.signal,
-          ),
-        );
+        dispatch(fetchPropertyOwnerships(year, currentYear, proprietorName));
       }
     },
     [currentYear, dispatch, proprietorName],
   );
-
-  //abort any inflight request when component unmounted or the proprietor is changed
-  useEffect(() => {
-    return () => {
-      abortControllerRef.current?.abort();
-    };
-  }, [proprietorName]);
 
   return (
     <div className="flex flex-col gap-3 mt-2 mx-4">
