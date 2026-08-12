@@ -127,6 +127,11 @@ export const fetchRelatedProperties = (
 ) => {
   return async (dispatch: any) => {
     dispatch({
+      type: "SET_RELATED_PROPERTIES_YEAR",
+      payload: new Date().getFullYear(),
+    }); // set the date back to the current year
+
+    dispatch({
       type: "SET_RELATED_PROPERTIES_PROPRIETOR_NAME",
       payload: proprietorName,
     });
