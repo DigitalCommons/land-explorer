@@ -21,19 +21,28 @@ export const notifyMatrix = async (
   isHtml: boolean = false
 ) => {
   const matrixWebhookUrl = process.env.MATRIX_WEBHOOK_URL;
+  // Use FRONT_END_HOSTNAME to display the Coolify target server
+  const prefix = `[${
+    process.env.FRONT_END_HOSTNAME || hostname()
+  }] [property_boundaries]`;
   if (matrixWebhookUrl) {
-    if (isHtml) {
-      await axios.post(matrixWebhookUrl, {
-        msgtype: "m.text",
-        body: "",
-        format: "org.matrix.custom.html",
-        formatted_body: `<p>[${hostname()}] [property_boundaries]</p> ${message}`,
-      });
-    } else {
-      await axios.post(matrixWebhookUrl, {
-        msgtype: "m.text",
-        body: `[${hostname()}] [property_boundaries] ${message}`,
-      });
+    try {
+      if (isHtml) {
+        await axios.post(matrixWebhookUrl, {
+          msgtype: "m.text",
+          body: "",
+          format: "org.matrix.custom.html",
+          formatted_body: `<p>${prefix}</p> ${message}`,
+        });
+      } else {
+        await axios.post(matrixWebhookUrl, {
+          msgtype: "m.text",
+          body: `${prefix} ${message}`,
+        });
+      }
+    } catch (err) {
+      // Catch instead of throw which kills the pipeline
+      console.error(`Matrix notification failed: ${err?.message}`);
     }
   }
 };
