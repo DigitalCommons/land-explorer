@@ -18,10 +18,17 @@ const RelatedProperty = ({ property }: { property: Property }) => {
     state.landOwnership.highlightedProperties.hasOwnProperty(property.title_no),
   );
 
-  const center = turf.pointOnFeature(property.polygons[0].geom).geometry
-    .coordinates;
-  const lng = center[0];
-  const lat = center[1];
+  let lng: number;
+  let lat: number;
+  if (
+    property.polygons.length > 0 &&
+    property.polygons[0]?.geom !== undefined
+  ) {
+    const center = turf.pointOnFeature(property.polygons[0].geom).geometry
+      .coordinates;
+    lng = center[0];
+    lat = center[1];
+  }
 
   const handlePropertyClick = () => {
     if (highlighted) {
@@ -32,9 +39,14 @@ const RelatedProperty = ({ property }: { property: Property }) => {
   };
 
   const gotoProperty = () => {
-    dispatch(setLngLat(lng, lat));
-    dispatch(setZoom([17]));
-    dispatch(highlightProperties({ [property.title_no]: property }));
+    if (
+      property.polygons.length > 0 &&
+      property.polygons[0]?.geom !== undefined
+    ) {
+      dispatch(setLngLat(lng, lat));
+      dispatch(setZoom([17]));
+      dispatch(highlightProperties({ [property.title_no]: property }));
+    }
   };
 
   return (

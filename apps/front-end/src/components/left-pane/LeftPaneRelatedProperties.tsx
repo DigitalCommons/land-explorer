@@ -161,7 +161,7 @@ const OwnershipSearch = ({
             <EmptyMedia>
               <CircleX />
             </EmptyMedia>
-            <EmptyHeader>We've experienced an error</EmptyHeader>
+            <EmptyTitle>We've experienced an error</EmptyTitle>
             <EmptyDescription>Please try again.</EmptyDescription>
           </EmptyHeader>
           <EmptyContent>
