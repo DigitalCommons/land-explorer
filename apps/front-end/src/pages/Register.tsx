@@ -69,6 +69,28 @@ const defaultValues: RegisterFormValues = {
   marketing: false,
 };
 
+const organisationTypeItems = {
+  "community-interest": "Community Interest",
+  commercial: "Commercial",
+};
+
+const organisationCommunityInterestItems = {
+  "community-energy": "Community Energy",
+  "community-growing": "Community Growing or Rural Enterprise",
+  "community-group": "Community Group (other)",
+  coop: "Co-op",
+  "neighbourhood-planning": "Neighbourhood Planning",
+  "renters-union": "Renters Union",
+  "woodland-enterprise": "Woodland Enterprise",
+};
+
+const organisationCommercialItems = {
+  "local-authority": "Local Authority",
+  "power-network": "Power Network",
+  "utility-company": "Utility Company",
+  other: "Other (please specify)",
+};
+
 type Props = { updateBgImage: (n: number) => void };
 
 const Register = ({ updateBgImage }: Props) => {
@@ -345,7 +367,7 @@ const Register = ({ updateBgImage }: Props) => {
             control={control}
             name="organisation"
             render={({ field, fieldState }) => (
-              <Field data-invalid={fieldState.invalid} className="gap-1.25">
+              <Field data-invalid={fieldState.invalid} className="gap-1.25 md:order-1">
                 <FieldLabel htmlFor="organisation" className="sr-only">
                   Organisation name
                 </FieldLabel>
@@ -365,12 +387,13 @@ const Register = ({ updateBgImage }: Props) => {
             control={control}
             name="organisationType"
             render={({ field, fieldState }) => (
-              <Field data-invalid={fieldState.invalid} className="gap-1.25">
+              <Field data-invalid={fieldState.invalid} className="gap-1.25 md:order-2">
                 <FieldLabel htmlFor="organisationType" className="sr-only">
                   Organisation type
                 </FieldLabel>
                 <Select
                   name="organisation-type"
+                  items={organisationTypeItems}
                   value={field.value}
                   onValueChange={(value) => field.onChange(value ?? "")}
                 >
@@ -386,37 +409,18 @@ const Register = ({ updateBgImage }: Props) => {
               </Field>
             )}
           />
-          <Controller
-            control={control}
-            name="organisationNumber"
-            render={({ field, fieldState }) => (
-              <Field data-invalid={fieldState.invalid} className="gap-1.25">
-                <FieldLabel htmlFor="organisationNumber" className="sr-only">
-                  Organisation or charity number
-                </FieldLabel>
-                <Input
-                  {...field}
-                  id="organisationNumber"
-                  type="text"
-                  placeholder="Organisation / Charity number"
-                  maxLength={101}
-                  aria-invalid={fieldState.invalid}
-                />
-                {fieldState.invalid && <FieldError errors={[fieldState.error]} className="text-left" />}
-              </Field>
-            )}
-          />
           {organisationType === "community-interest" && (
             <Controller
               control={control}
               name="organisationCommunityInterest"
               render={({ field, fieldState }) => (
-                <Field data-invalid={fieldState.invalid} className="gap-1.25">
+                <Field data-invalid={fieldState.invalid} className="gap-1.25 md:order-4">
                   <FieldLabel htmlFor="organisationCommunityInterest" className="sr-only">
                     Community interest type
                   </FieldLabel>
                   <Select
                     name="community-interest"
+                    items={organisationCommunityInterestItems}
                     value={field.value}
                     onValueChange={(value) => field.onChange(value ?? "")}
                   >
@@ -451,12 +455,13 @@ const Register = ({ updateBgImage }: Props) => {
               control={control}
               name="organisationCommercial"
               render={({ field, fieldState }) => (
-                <Field data-invalid={fieldState.invalid} className="gap-1.25">
+                <Field data-invalid={fieldState.invalid} className="gap-1.25 md:order-4">
                   <FieldLabel htmlFor="organisationCommercial" className="sr-only">
                     Commercial type
                   </FieldLabel>
                   <Select
                     name="community-interest"
+                    items={organisationCommercialItems}
                     value={field.value}
                     onValueChange={(value) => field.onChange(value ?? "")}
                   >
@@ -480,7 +485,7 @@ const Register = ({ updateBgImage }: Props) => {
               control={control}
               name="organisationCommercialOther"
               render={({ field, fieldState }) => (
-                <Field data-invalid={fieldState.invalid} className="gap-1.25">
+                <Field data-invalid={fieldState.invalid} className="gap-1.25 md:order-5">
                   <FieldLabel htmlFor="organisationCommercialOther" className="sr-only">
                     Other organisation type
                   </FieldLabel>
@@ -498,9 +503,29 @@ const Register = ({ updateBgImage }: Props) => {
           )}
           <Controller
             control={control}
+            name="organisationNumber"
+            render={({ field, fieldState }) => (
+              <Field data-invalid={fieldState.invalid} className="gap-1.25 md:order-3">
+                <FieldLabel htmlFor="organisationNumber" className="sr-only">
+                  Organisation or charity number
+                </FieldLabel>
+                <Input
+                  {...field}
+                  id="organisationNumber"
+                  type="text"
+                  placeholder="Organisation / Charity number"
+                  maxLength={101}
+                  aria-invalid={fieldState.invalid}
+                />
+                {fieldState.invalid && <FieldError errors={[fieldState.error]} className="text-left" />}
+              </Field>
+            )}
+          />
+          <Controller
+            control={control}
             name="address1"
             render={({ field, fieldState }) => (
-              <Field data-invalid={fieldState.invalid} className="gap-1.25">
+              <Field data-invalid={fieldState.invalid} className="gap-1.25 md:order-6">
                 <FieldLabel htmlFor="address1" className="sr-only">
                   Address line 1
                 </FieldLabel>
@@ -520,7 +545,7 @@ const Register = ({ updateBgImage }: Props) => {
             control={control}
             name="address2"
             render={({ field, fieldState }) => (
-              <Field data-invalid={fieldState.invalid} className="gap-1.25">
+              <Field data-invalid={fieldState.invalid} className="gap-1.25 md:order-7">
                 <FieldLabel htmlFor="address2" className="sr-only">
                   Address line 2
                 </FieldLabel>
@@ -533,7 +558,7 @@ const Register = ({ updateBgImage }: Props) => {
             control={control}
             name="city"
             render={({ field, fieldState }) => (
-              <Field data-invalid={fieldState.invalid} className="gap-1.25">
+              <Field data-invalid={fieldState.invalid} className="gap-1.25 md:order-8">
                 <FieldLabel htmlFor="city" className="sr-only">
                   City
                 </FieldLabel>
@@ -553,7 +578,7 @@ const Register = ({ updateBgImage }: Props) => {
             control={control}
             name="postcode"
             render={({ field, fieldState }) => (
-              <Field data-invalid={fieldState.invalid} className="gap-1.25">
+              <Field data-invalid={fieldState.invalid} className="gap-1.25 md:order-9">
                 <FieldLabel htmlFor="postcode" className="sr-only">
                   Postcode
                 </FieldLabel>
