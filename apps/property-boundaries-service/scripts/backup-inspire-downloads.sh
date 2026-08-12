@@ -18,7 +18,8 @@ catch() {
   fi
 }
 
-HOSTNAME=$(hostname)
+# Coolify injects FRONT_END_HOSTNAME; hostname is the bare container ID
+HOSTNAME=${FRONT_END_HOSTNAME:-$(hostname)}
 
 # Upload only the zip files (i.e. the raw files downloaded from the INSPIRE website)
 rsync -e "ssh -p${REMOTE_BACKUP_SSH_PORT:-22} -o StrictHostKeyChecking=no" --recursive --prune-empty-dirs --include="*/" --include="*.zip" --exclude="*" downloads/ $REMOTE_BACKUP_DESTINATION_PATH

@@ -18,7 +18,9 @@
 set -euo pipefail
 
 DB=${1:?usage: backup-databases.sh <land_explorer|property_boundaries>}
-HOSTNAME=$(hostname)
+# Coolify injects FRONT_END_HOSTNAME which allows us to show the if it is
+#  running on staging-3 or prod-3 - hostname is the docker container ID
+HOSTNAME=${FRONT_END_HOSTNAME:-$(hostname)}
 
 notify() {
   if [ -n "${MATRIX_WEBHOOK_URL:-}" ]; then
