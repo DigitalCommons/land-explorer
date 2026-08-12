@@ -8,7 +8,6 @@ import { X } from "lucide-react";
 import Swal from "sweetalert2";
 import Spinner from "../components/common/Spinner";
 import TierCard from "../components/common/TierCard/TierCard";
-import GoCardlessModal from "../components/modals/GoCardlessModal";
 import TopBar from "../components/top-bar/TopBar";
 import constants from "../constants";
 import { Input } from "@/components/ui/input";
@@ -98,14 +97,10 @@ const Register = ({ updateBgImage }: Props) => {
   const [registerSuccess, setRegisterSuccess] = useState(false);
   const [registerErrors, setRegisterErrors] = useState<string[]>([]);
   const [accountType, setAccountType] = useState("free");
-  const [formStage, setFormStage] = useState("personal");
-  const [mandate, setMandate] = useState<string | undefined>();
-  const [goCardlessVisible, setGoCardLessVisible] = useState(false);
 
   const {
     control,
     handleSubmit,
-    getValues,
   } = useForm<RegisterFormValues>({
     resolver: zodResolver(registerSchema),
     mode: "onChange",
@@ -121,44 +116,13 @@ const Register = ({ updateBgImage }: Props) => {
     updateBgImage(1);
   }, []);
 
-  const onSubmit = async (data: RegisterFormValues) => {
-    if (accountType === "free") {
-      setRegistering(true);
-      submitRegistration(data);
-    } else {
-      if (formStage === "personal") {
-        const response = await axios.post(
-          `${constants.PAYMENTS_URL}/gocardless/billing/flow`
-        );
-        const { success, billingRequestFlowID } = response.data;
-        if (success) {
-          setFormStage("payment");
-          // @ts-ignore - setBillingRequestFlowID is not declared (pre-existing bug)
-          setBillingRequestFlowID(billingRequestFlowID);
-        }
-      }
-    }
+  const onSubmit = (data: RegisterFormValues) => {
+    setRegistering(true);
+    submitRegistration(data);
   };
 
-  const handlePaymentSubmit = async () => {
-    const { email, firstName, lastName } = getValues();
-    const requestData = {
-      mandate,
-      email,
-      firstName,
-      lastName,
-      subscriptionTypeId: 1,
-    };
-    const response = await axios.post(
-      `${constants.PAYMENTS_URL}/subscription`,
-      requestData
-    );
-    const { success } = response.data;
-    if (success) {
-      submitRegistration(getValues());
-    }
-  };
-
+  // No payment gateway is wired in yet. Paid-tier signups still register immediately;
+  // `accountType` on the submitted request is how they're followed up with about payment.
   const submitRegistration = (data: RegisterFormValues) => {
     const organisationSubType =
       data.organisationType === "community-interest"
@@ -168,6 +132,7 @@ const Register = ({ updateBgImage }: Props) => {
         : data.organisationCommercial;
 
     const request = {
+      accountType,
       address: data.address1,
       firstName: data.firstName,
       lastName: data.lastName,
@@ -673,60 +638,13 @@ const Register = ({ updateBgImage }: Props) => {
             Cancel
           </Link>
           <Button type="submit" disabled={!agree} className="ml-2.5 rounded-full md:min-w-50">
-            {accountType == "free" ? "Register" : "Next"}
+            Register
           </Button>
         </div>
       </form>
       </CardContent>
     </Fragment>
   );
-
-  if (formStage == "payment")
-    formDisplay = (
-      <Fragment>
-        <h2>Payment</h2>
-        <p>
-          Click the GoCardless button below to set up a direct debit. After the
-          direct debit has been set up, please close the gocardless modals and
-          press Register to complete registration for Land Explorer.
-        </p>
-        {
-          // @ts-ignore - billingRequestFlowID is not in scope here (pre-existing bug)
-          billingRequestFlowID && goCardlessVisible && (
-            <GoCardlessModal
-              billingRequestFlowID={
-                // @ts-ignore
-                billingRequestFlowID
-              }
-              setMandate={(mandate) => setMandate(mandate)}
-              closeModal={() => setGoCardLessVisible(false)}
-            />
-          )
-        }
-        {mandate ? (
-          <p>GoCardless Success!</p>
-        ) : (
-          <button onClick={() => setGoCardLessVisible(true)}>
-            Open GoCardless
-          </button>
-        )}
-        <button
-          onClick={handlePaymentSubmit}
-          disabled={!mandate}
-          type="submit"
-          className={
-            "button button-medium" + (mandate ? "" : " button-reg-disabled")
-          }
-          style={{
-            paddingTop: 0,
-            marginLeft: "10px",
-            display: "inline-block",
-          }}
-        >
-          Register
-        </button>
-      </Fragment>
-    );
 
   return (
     <div
