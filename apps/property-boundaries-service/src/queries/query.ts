@@ -18,6 +18,10 @@ import {
   PolygonModel,
   UnregisteredLandModel,
 } from "./models.js";
+import {
+  getLatestPipelineDataDate,
+  setPipelineLatestData,
+} from "./pipeline-query.js";
 
 /** Used to generate pipeline unique keys */
 const nanoid = customAlphabet("1234567890abcdefghijklmnopqrstuvwxyz", 10);
@@ -1096,43 +1100,22 @@ export const isPipelineRunning = async (): Promise<boolean> => {
  * Set latest ownership data date for a pipeline run.
  * @param date in YYYY-MM-DD format
  */
-export const setPipelineLatestOwnershipData = async (date: string) => {
-  await PipelineRunModel.update(
-    { latest_ownership_data: date },
-    {
-      where: {
-        unique_key: getRunningPipelineKey(),
-      },
-    },
-  );
-};
+export const setPipelineLatestOwnershipData = (date: string) =>
+  setPipelineLatestData("latest_ownership_data", date);
 
 /**
  * Return the date of the latest ownership data that was processed by the latest pipeline run, or
  * null if no pipeline has completed yet.
  */
-export const getLatestOwnershipDataDate = async () => {
-  const latestRun: any = await PipelineRunModel.findOne({
-    where: { latest_ownership_data: { [Op.ne]: null } },
-    order: [["startedAt", "DESC"]],
-  });
-  return latestRun ? new Date(latestRun.latest_ownership_data) : null;
-};
+export const getLatestOwnershipDataDate = () =>
+  getLatestPipelineDataDate("latest_ownership_data");
 
 /**
  * Set latest INSPIRE polygon data date for a pipeline run.
  * @param date in YYYY-MM-DD format
  */
-export const setPipelineLatestInspireData = async (date: string) => {
-  await PipelineRunModel.update(
-    { latest_inspire_data: date },
-    {
-      where: {
-        unique_key: getRunningPipelineKey(),
-      },
-    },
-  );
-};
+export const setPipelineLatestInspireData = (date: string) =>
+  setPipelineLatestData("latest_inspire_data", date);
 
 /**
  * Get the previous pipeline run, or null if no pipeline has completed yet.
