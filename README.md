@@ -38,3 +38,29 @@ docker compose --env-file docker.env -f docker-compose.local.yml up --build
 ```
 
 Now up at http://localhost:28080
+
+### Hot reload while developing
+
+Or add the docker-compose.dev.yml overlay to run everything with hot reloading while you work:
+
+```
+docker compose --env-file docker.env -f docker-compose.local.yml -f docker-compose.dev.yml up --build
+```
+
+Now up at http://localhost:28080 and any edits reload without a rebuild. You only need to rebuild (kill the docker compose then run the command above again) if dependencies or Dockerfiles change.
+
+PBS lacks the full toolchain so for pipline work use the npm steps above.
+
+Use the docker compose without the .dev overlay for smoke testing big changes as that one mirrors the production Coolify setup with Caddy.
+
+### Changing an app's dependencies
+
+Each app keeps its own package-lock.json, which Docker and CI build from, but npm workspaces only updates the root package-lock.json. After any dependency change, sync the app's own lockfile so for example to add a package to the front end do this:
+
+```
+npm install -w apps/front-end <package>
+cd apps/front-end
+npm install --package-lock-only --workspaces=false --legacy-peer-deps
+```
+
+Commit both lockfiles. If you forget, npm ci fails in Docker and CI with a package.json / package-lock.json out of sync error.

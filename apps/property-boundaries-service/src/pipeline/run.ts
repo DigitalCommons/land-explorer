@@ -193,7 +193,11 @@ const runPipeline = async (options: PipelineOptions) => {
     logger.error(err, "Pipeline failed");
     console.error(`Pipeline ${pipelineKey} failed:`, err?.message);
 
-    await notifyMatrix(`🔴 Failed ownership + INSPIRE pipeline ${pipelineKey}`);
+    await notifyMatrix(
+      `🔴 Failed ownership + INSPIRE pipeline ${pipelineKey}: ${
+        err?.message?.split("\n")[0]
+      }`,
+    );
 
     // Don't re-throw error since this is an async process and the API route has already returned
   }
