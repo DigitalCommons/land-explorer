@@ -24,8 +24,8 @@ const TierCard = ({ tierType, name, price, description, selected, detailsHref, o
       )}
     >
       {selected && (
-        <span className="pointer-events-none absolute top-4 right-4 z-10 flex size-5 items-center justify-center rounded-full bg-primary text-primary-foreground">
-          <FontAwesomeIcon icon={faCheck} className="size-3" />
+        <span className="pointer-events-none absolute top-4 right-4 z-10 flex size-4 items-center justify-center rounded-full bg-primary text-primary-foreground">
+          <FontAwesomeIcon icon={faCheck} className="size-2.5!" />
         </span>
       )}
       <button

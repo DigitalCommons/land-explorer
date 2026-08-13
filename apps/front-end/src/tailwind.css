@@ -147,4 +147,9 @@
   .shadcn-scope {
     @apply bg-background text-foreground font-sans;
   }
+
+  /* Example of how to apply a global style to match your app's theme */
+  .shadcn-scope h3 {
+    @apply mb-1.25! text-left text-sm font-medium! text-foreground!;
+  }
 }

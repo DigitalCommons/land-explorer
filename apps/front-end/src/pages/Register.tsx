@@ -4,7 +4,8 @@ import { Link } from "react-router-dom";
 import { useForm, useWatch, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { faXmark, faEye, faEyeSlash } from "@fortawesome/free-solid-svg-icons";
+import { faXmark } from "@fortawesome/free-solid-svg-icons";
+import { faEye, faEyeSlash } from "@fortawesome/free-regular-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import Swal from "sweetalert2";
 import Spinner from "../components/common/Spinner";
@@ -185,9 +186,9 @@ const Register = ({ updateBgImage }: Props) => {
         <CardAction className="absolute top-2.5 right-2.5">
           <Link
             to="/auth"
-            className="flex size-8 items-center justify-center rounded-full bg-[#D8D8D8] text-white hover:bg-[#D8D8D8]/80"
+            className="flex size-[25px] items-center justify-center rounded-full bg-[#D8D8D8] text-white hover:bg-[#D8D8D8]/80"
           >
-            <FontAwesomeIcon icon={faXmark} className="size-4" />
+            <FontAwesomeIcon icon={faXmark} className="size-3!" />
           </Link>
         </CardAction>
       </CardHeader>
@@ -200,7 +201,7 @@ const Register = ({ updateBgImage }: Props) => {
           </div>
         )}
         <form onSubmit={handleSubmit(onSubmit)}>
-        <h3 className="mb-1.25! text-left text-sm font-medium! text-foreground!">Account details</h3>
+        <h3>Account details</h3>
         <div className="mb-6 grid grid-cols-1 gap-x-4 gap-y-3 md:grid-cols-2">
           <Controller
             control={control}
@@ -351,7 +352,7 @@ const Register = ({ updateBgImage }: Props) => {
           />
         </div>
 
-        <h3 className="mb-1.25! text-left text-sm font-medium! text-foreground!">Organisation details</h3>
+        <h3>Organisation details</h3>
         <div className="mb-6 grid grid-cols-1 gap-x-4 gap-y-3 md:grid-cols-2">
           <Controller
             control={control}
@@ -586,7 +587,7 @@ const Register = ({ updateBgImage }: Props) => {
           />
         </div>
 
-        <h3 className="mb-1.25! text-left text-sm font-medium! text-foreground!">Access tiers</h3>
+        <h3>Access tiers</h3>
         <div className="mb-6 flex flex-col gap-3 md:flex-row">
           <TierCard
             tierType="Free"
