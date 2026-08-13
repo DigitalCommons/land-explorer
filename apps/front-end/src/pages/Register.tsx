@@ -287,7 +287,7 @@ const Register = ({ updateBgImage }: Props) => {
                     type="button"
                     onClick={() => setShowPassword((value) => !value)}
                     aria-label={showPassword ? "Hide password" : "Show password"}
-                    className="absolute top-1/2 right-3 -translate-y-1/2 text-muted-foreground"
+                    className="absolute top-1/2 right-3 -translate-y-1/2 cursor-pointer text-muted-foreground"
                   >
                     <FontAwesomeIcon icon={showPassword ? faEyeSlash : faEye} />
                   </button>
@@ -340,7 +340,7 @@ const Register = ({ updateBgImage }: Props) => {
                     type="button"
                     onClick={() => setShowConfirmPassword((value) => !value)}
                     aria-label={showConfirmPassword ? "Hide password" : "Show password"}
-                    className="absolute top-1/2 right-3 -translate-y-1/2 text-muted-foreground"
+                    className="absolute top-1/2 right-3 -translate-y-1/2 cursor-pointer text-muted-foreground"
                   >
                     <FontAwesomeIcon icon={showConfirmPassword ? faEyeSlash : faEye} />
                   </button>

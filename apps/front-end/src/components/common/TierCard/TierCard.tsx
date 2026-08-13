@@ -34,7 +34,10 @@ const TierCard = ({ tierType, name, price, description, selected, detailsHref, o
         aria-label={`Select ${name}`}
         className="absolute inset-0 z-0 w-full rounded-[inherit] outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
       />
-      <CardHeader className="pointer-events-none gap-0 px-4 pt-3 pb-2.5 text-left">
+      <CardHeader
+        onClick={onSelect}
+        className="pointer-events-auto relative z-5 cursor-pointer gap-0 px-4 pt-3 pb-2.5 text-left"
+      >
         <span className="text-sm font-medium tracking-wide text-muted-foreground uppercase">
           {tierType}
         </span>
