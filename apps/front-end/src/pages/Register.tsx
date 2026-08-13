@@ -16,24 +16,27 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Field, FieldGroup, FieldLabel, FieldError } from "@/components/ui/field";
-import { Card, CardHeader, CardTitle, CardDescription, CardAction, CardContent } from "@/components/ui/card";
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { ukPhoneRegexp, ukPostcodeRegexp } from "@/lib/validation";
 
 const registerSchema = z
   .object({
-    firstName: z.string().min(3, "Must be at least 3 characters").max(19, "Must be at most 19 characters"),
-    lastName: z.string().min(3, "Must be at least 3 characters").max(19, "Must be at most 19 characters"),
-    email: z.email("Invalid email address"),
-    password: z.string().min(6, "Must be at least 6 characters").max(29, "Must be at most 29 characters"),
+    firstName: z.string().min(1, "Required").max(100, "Must be at most 100 characters"),
+    lastName: z.string().min(1, "Required").max(100, "Must be at most 100 characters"),
+    email: z.email("Invalid email address").max(100, "Must be at most 100 characters"),
+    password: z.string().min(6, "Must be at least 6 characters").max(100, "Must be at most 100 characters"),
     confirmPassword: z.string(),
     phone: z.string().refine((v) => v === "" || ukPhoneRegexp.test(v), "Invalid UK phone number"),
     organisationNumber: z.string(),
-    address1: z.string(),
-    address2: z.string(),
+    address1: z.string().max(100, "Must be at most 100 characters"),
+    address2: z.string().max(100, "Must be at most 100 characters"),
     city: z.string(),
-    postcode: z.string().refine((v) => v === "" || ukPostcodeRegexp.test(v), "Invalid UK postcode"),
+    postcode: z
+      .string()
+      .trim()
+      .refine((v) => v === "" || ukPostcodeRegexp.test(v), "Invalid UK postcode"),
     organisation: z.string(),
     organisationType: z.string(),
     organisationCommunityInterest: z.string(),
@@ -125,8 +128,8 @@ const Register = ({ updateBgImage }: Props) => {
     submitRegistration(data);
   };
 
-  // No payment gateway is wired in yet. Paid-tier signups still register
-  // `accountType` added to the submitted request to allow follow up.
+  // No payment gateway yet, and createUser drops `accountType`, so paid signups
+  // aren't distinguishable from free ones. TODO: raise an issue to persist it.
   const submitRegistration = (data: RegisterFormValues) => {
     const organisationSubType =
       data.organisationType === "community-interest"
@@ -135,9 +138,12 @@ const Register = ({ updateBgImage }: Props) => {
         ? data.organisationCommercialOther
         : data.organisationCommercial;
 
+    // `city` isn't sent: createUser never writes the column, so it'd be dropped.
+    // TODO: raise an issue to wire it up (ChangeDetails sends it and it's dropped too).
     const request = {
       accountType,
-      address: data.address1,
+      address1: data.address1,
+      address2: data.address2,
       firstName: data.firstName,
       lastName: data.lastName,
       marketing: data.marketing,
@@ -147,6 +153,7 @@ const Register = ({ updateBgImage }: Props) => {
       organisationSubType,
       password: data.password,
       phone: data.phone,
+      postcode: data.postcode,
       username: data.email,
     };
     console.log("registration request", request);
@@ -174,23 +181,21 @@ const Register = ({ updateBgImage }: Props) => {
 
   let formDisplay = (
     <Fragment>
-      <CardHeader className="grid-cols-1! gap-2.5 px-6">
-        <CardTitle className="text-left text-2xl font-medium text-primary">
+      <CardHeader className="gap-2.5 px-6">
+        <CardTitle className="text-2xl font-medium text-primary">
           For everyone. Funded by those who can.
         </CardTitle>
-        <CardDescription className="text-left text-sm">
+        <CardDescription className="text-sm">
           The core Land Explorer tool is free, always. Organisations that
           choose the Solidarity Tier help fund access for grassroots groups,
           tenants&rsquo; unions and community projects.
         </CardDescription>
-        <CardAction className="absolute top-2.5 right-2.5">
-          <Link
-            to="/auth"
-            className="flex size-[25px] items-center justify-center rounded-full bg-[#D8D8D8] text-white hover:bg-[#D8D8D8]/80"
-          >
-            <FontAwesomeIcon icon={faXmark} className="size-3!" />
-          </Link>
-        </CardAction>
+        <Link
+          to="/auth"
+          className="absolute top-2.5 right-2.5 flex size-[25px] items-center justify-center rounded-full bg-[#D8D8D8] text-white hover:bg-[#D8D8D8]/80"
+        >
+          <FontAwesomeIcon icon={faXmark} className="size-3!" />
+        </Link>
       </CardHeader>
       <CardContent className="px-6">
         {registerErrors && (
@@ -219,7 +224,7 @@ const Register = ({ updateBgImage }: Props) => {
                   maxLength={101}
                   aria-invalid={fieldState.invalid}
                 />
-                {fieldState.invalid && <FieldError errors={[fieldState.error]} className="text-left" />}
+                {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
               </Field>
             )}
           />
@@ -239,7 +244,7 @@ const Register = ({ updateBgImage }: Props) => {
                   maxLength={101}
                   aria-invalid={fieldState.invalid}
                 />
-                {fieldState.invalid && <FieldError errors={[fieldState.error]} className="text-left" />}
+                {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
               </Field>
             )}
           />
@@ -260,7 +265,7 @@ const Register = ({ updateBgImage }: Props) => {
                   maxLength={101}
                   aria-invalid={fieldState.invalid}
                 />
-                {fieldState.invalid && <FieldError errors={[fieldState.error]} className="text-left" />}
+                {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
               </Field>
             )}
           />
@@ -293,7 +298,7 @@ const Register = ({ updateBgImage }: Props) => {
                     <FontAwesomeIcon icon={showPassword ? faEyeSlash : faEye} />
                   </button>
                 </div>
-                {fieldState.invalid && <FieldError errors={[fieldState.error]} className="text-left" />}
+                {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
               </Field>
             )}
           />
@@ -310,10 +315,10 @@ const Register = ({ updateBgImage }: Props) => {
                   id="phone"
                   type="tel"
                   placeholder="Telephone"
-                  maxLength={15}
+                  maxLength={20}
                   aria-invalid={fieldState.invalid}
                 />
-                {fieldState.invalid && <FieldError errors={[fieldState.error]} className="text-left" />}
+                {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
               </Field>
             )}
           />
@@ -346,13 +351,14 @@ const Register = ({ updateBgImage }: Props) => {
                     <FontAwesomeIcon icon={showConfirmPassword ? faEyeSlash : faEye} />
                   </button>
                 </div>
-                {fieldState.invalid && <FieldError errors={[fieldState.error]} className="text-left" />}
+                {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
               </Field>
             )}
           />
         </div>
 
         <h3>Organisation details</h3>
+        {/* md:order-* keeps the sub-type select below its parent type select on desktop too — DOM order alone only works for mobile. */}
         <div className="mb-6 grid grid-cols-1 gap-x-4 gap-y-3 md:grid-cols-2">
           <Controller
             control={control}
@@ -370,7 +376,7 @@ const Register = ({ updateBgImage }: Props) => {
                   maxLength={101}
                   aria-invalid={fieldState.invalid}
                 />
-                {fieldState.invalid && <FieldError errors={[fieldState.error]} className="text-left" />}
+                {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
               </Field>
             )}
           />
@@ -392,11 +398,14 @@ const Register = ({ updateBgImage }: Props) => {
                     <SelectValue placeholder="My organisation is..." />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="community-interest">Community Interest</SelectItem>
-                    <SelectItem value="commercial">Commercial</SelectItem>
+                    {Object.entries(organisationTypeItems).map(([value, label]) => (
+                      <SelectItem key={value} value={value}>
+                        {label}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
-                {fieldState.invalid && <FieldError errors={[fieldState.error]} className="text-left" />}
+                {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
               </Field>
             )}
           />
@@ -423,20 +432,14 @@ const Register = ({ updateBgImage }: Props) => {
                       <SelectValue placeholder="Community interest type" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="community-energy">Community Energy</SelectItem>
-                      <SelectItem value="community-growing">
-                        Community Growing or Rural Enterprise
-                      </SelectItem>
-                      <SelectItem value="community-group">Community Group (other)</SelectItem>
-                      <SelectItem value="coop">Co-op</SelectItem>
-                      <SelectItem value="neighbourhood-planning">
-                        Neighbourhood Planning
-                      </SelectItem>
-                      <SelectItem value="renters-union">Renters Union</SelectItem>
-                      <SelectItem value="woodland-enterprise">Woodland Enterprise</SelectItem>
+                      {Object.entries(organisationCommunityInterestItems).map(([value, label]) => (
+                        <SelectItem key={value} value={value}>
+                          {label}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
-                  {fieldState.invalid && <FieldError errors={[fieldState.error]} className="text-left" />}
+                  {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
                 </Field>
               )}
             />
@@ -451,7 +454,7 @@ const Register = ({ updateBgImage }: Props) => {
                     Commercial type
                   </FieldLabel>
                   <Select
-                    name="community-interest"
+                    name="commercial"
                     items={organisationCommercialItems}
                     value={field.value}
                     onValueChange={(value) => field.onChange(value ?? "")}
@@ -460,13 +463,14 @@ const Register = ({ updateBgImage }: Props) => {
                       <SelectValue placeholder="Commercial type" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="local-authority">Local Authority</SelectItem>
-                      <SelectItem value="power-network">Power Network</SelectItem>
-                      <SelectItem value="utility-company">Utility Company</SelectItem>
-                      <SelectItem value="other">Other (please specify)</SelectItem>
+                      {Object.entries(organisationCommercialItems).map(([value, label]) => (
+                        <SelectItem key={value} value={value}>
+                          {label}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
-                  {fieldState.invalid && <FieldError errors={[fieldState.error]} className="text-left" />}
+                  {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
                 </Field>
               )}
             />
@@ -487,7 +491,7 @@ const Register = ({ updateBgImage }: Props) => {
                     placeholder="Other"
                     aria-invalid={fieldState.invalid}
                   />
-                  {fieldState.invalid && <FieldError errors={[fieldState.error]} className="text-left" />}
+                  {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
                 </Field>
               )}
             />
@@ -508,7 +512,7 @@ const Register = ({ updateBgImage }: Props) => {
                   maxLength={101}
                   aria-invalid={fieldState.invalid}
                 />
-                {fieldState.invalid && <FieldError errors={[fieldState.error]} className="text-left" />}
+                {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
               </Field>
             )}
           />
@@ -528,7 +532,7 @@ const Register = ({ updateBgImage }: Props) => {
                   maxLength={101}
                   aria-invalid={fieldState.invalid}
                 />
-                {fieldState.invalid && <FieldError errors={[fieldState.error]} className="text-left" />}
+                {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
               </Field>
             )}
           />
@@ -541,7 +545,7 @@ const Register = ({ updateBgImage }: Props) => {
                   Address line 2
                 </FieldLabel>
                 <Input {...field} id="address2" type="text" placeholder="Address 2" maxLength={101} />
-                {fieldState.invalid && <FieldError errors={[fieldState.error]} className="text-left" />}
+                {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
               </Field>
             )}
           />
@@ -561,7 +565,7 @@ const Register = ({ updateBgImage }: Props) => {
                   maxLength={101}
                   aria-invalid={fieldState.invalid}
                 />
-                {fieldState.invalid && <FieldError errors={[fieldState.error]} className="text-left" />}
+                {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
               </Field>
             )}
           />
@@ -578,10 +582,10 @@ const Register = ({ updateBgImage }: Props) => {
                   id="postcode"
                   type="text"
                   placeholder="Postcode"
-                  maxLength={7}
+                  maxLength={8}
                   aria-invalid={fieldState.invalid}
                 />
-                {fieldState.invalid && <FieldError errors={[fieldState.error]} className="text-left" />}
+                {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
               </Field>
             )}
           />
@@ -621,7 +625,7 @@ const Register = ({ updateBgImage }: Props) => {
                   onCheckedChange={(checked) => field.onChange(checked === true)}
                   aria-invalid={fieldState.invalid}
                 />
-                <FieldLabel htmlFor="agree" className="block text-left text-sm font-normal">
+                <FieldLabel htmlFor="agree" className="block text-sm font-normal">
                   I agree to the{" "}
                   <a target="_blank" className="link-underline" href="/privacy-policy.pdf">
                     privacy policy
@@ -649,21 +653,21 @@ const Register = ({ updateBgImage }: Props) => {
                   onCheckedChange={(checked) => field.onChange(checked === true)}
                   aria-invalid={fieldState.invalid}
                 />
-                <FieldLabel htmlFor="marketing" className="text-left text-sm font-normal">
+                <FieldLabel htmlFor="marketing" className="text-sm font-normal">
                   Keep me up to date with Land Explorer and Digital Commons developments
                 </FieldLabel>
               </Field>
             )}
           />
         </FieldGroup>
-        <div className="p-2.5">
+        <div className="flex justify-center gap-2.5 p-2.5">
           <Link
             to="/auth"
             className={cn(buttonVariants({ variant: "outline" }), "rounded-full md:min-w-50")}
           >
             Cancel
           </Link>
-          <Button type="submit" disabled={!agree} className="ml-2.5 rounded-full md:min-w-50">
+          <Button type="submit" disabled={!agree} className="rounded-full md:min-w-50">
             Register
           </Button>
         </div>
@@ -724,7 +728,7 @@ const Register = ({ updateBgImage }: Props) => {
         </div>
       </div>
       <div style={{ marginBottom: "200px", display: registering ? "none" : "block" }}>
-        <Card className="relative mx-auto mt-24 w-[calc(100vw-40px)] gap-6 text-center shadow-[0_20px_60px_rgba(0,0,0,0.25)] md:w-190">
+        <Card className="relative mx-auto mt-24 w-[calc(100vw-40px)] gap-6 shadow-[0_20px_60px_rgba(0,0,0,0.25)] md:w-190">
           {formDisplay}
         </Card>
       </div>
