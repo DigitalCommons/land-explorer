@@ -1,7 +1,9 @@
 # syntax=docker/dockerfile:1
 
 # Multi-stage build for the Land Explorer front-end: build the Vite/React SPA
-# with Node+npm, then serve the static assets with Caddy.
+# with Node+npm, then serve the static assets with Caddy. Builds from the REPO
+# ROOT context - single root lockfile, npm workspaces:
+#   docker build -f apps/front-end/Dockerfile .
 # Modelled on mykomap-monolith/apps/front-end/Dockerfile. The API is always
 # same-origin: Caddy proxies /api + the socket.io websocket to API_UPSTREAM -
 # the back-end compose service by default, or another deployment's public URL
@@ -16,8 +18,15 @@ FROM node:${NODE_VERSION}-alpine AS build
 WORKDIR /app
 RUN apk add --no-cache git
 
+# Install deps first (cache-friendly). npm ci needs the root manifests plus
+# every workspace's package.json to validate the lockfile; -w installs only
+# this workspace's tree.
 COPY package.json package-lock.json .npmrc ./
-RUN --mount=type=cache,target=/root/.npm npm ci
+COPY apps/back-end/package.json apps/back-end/
+COPY apps/front-end/package.json apps/front-end/
+COPY apps/property-boundaries-service/package.json apps/property-boundaries-service/
+RUN --mount=type=cache,target=/root/.npm npm ci -w apps/front-end
+
 COPY . .
 
 # All client-side config is baked into the bundle at build time (Vite). Required
@@ -38,7 +47,7 @@ ENV VITE_OS_KEY=${VITE_OS_KEY?} \
     VITE_USER_GUIDE_URL=${VITE_USER_GUIDE_URL} \
     VITE_MIXPANEL_TOKEN=${VITE_MIXPANEL_TOKEN} \
     VITE_MIXPANEL_PEPPER=${VITE_MIXPANEL_PEPPER}
-RUN npm run build
+RUN npm run build -w apps/front-end
 
 # ---- runtime stage ----
 FROM caddy:${CADDY_VERSION}-alpine
@@ -56,7 +65,7 @@ ENV CADDY_HOSTNAME=${CADDY_HOSTNAME?}
 ARG API_UPSTREAM=back-end:4000
 
 WORKDIR /usr/share/caddy/
-COPY --from=build /app/dist/ .
+COPY --from=build /app/apps/front-end/dist/ .
 
 # Generate the Caddyfile into the image. Single-site shorthand (no braces).
 # handle blocks are mutually exclusive: /api and /socket.io go to API_UPSTREAM;
