@@ -67,7 +67,7 @@ type SaveMapRequest = LoggedInRequest & {
 async function saveMap(
   request: SaveMapRequest,
   h: ResponseToolkit,
-  d: any
+  d: any,
 ): Promise<ResponseObject> {
   try {
     const { eid, name, data, isSnapshot } = request.payload;
@@ -145,7 +145,7 @@ type SaveMapObjectRequest = LoggedInRequest & {
 async function saveMapMarker(
   request: SaveMapObjectRequest,
   h: ResponseToolkit,
-  d: any
+  d: any,
 ): Promise<ResponseObject> {
   try {
     const { object, eid } = request.payload;
@@ -172,7 +172,7 @@ async function saveMapMarker(
       object.name,
       object.description,
       object.center,
-      uuidv4()
+      uuidv4(),
     );
     await bulkCreateMapMemberships(eid, ItemType.Marker, newMarker.idmarkers);
 
@@ -186,7 +186,7 @@ async function saveMapMarker(
 async function saveMapPolygon(
   request: SaveMapObjectRequest,
   h: ResponseToolkit,
-  d: any
+  d: any,
 ): Promise<ResponseObject> {
   const { object, eid } = request.payload;
 
@@ -215,7 +215,7 @@ async function saveMapPolygon(
     object.center,
     object.length,
     object.area,
-    uuidv4()
+    uuidv4(),
   );
   await bulkCreateMapMemberships(eid, ItemType.Polygon, newPolygon.idpolygons);
 
@@ -225,7 +225,7 @@ async function saveMapPolygon(
 async function saveMapLine(
   request: SaveMapObjectRequest,
   h: ResponseToolkit,
-  d: any
+  d: any,
 ): Promise<ResponseObject> {
   const { object, eid } = request.payload;
 
@@ -252,7 +252,7 @@ async function saveMapLine(
     object.description,
     object.vertices,
     object.length,
-    uuidv4()
+    uuidv4(),
   );
   await bulkCreateMapMemberships(eid, ItemType.Line, newLine.idlinestrings);
 
@@ -269,7 +269,7 @@ type SaveMapZoomRequest = LoggedInRequest & {
 async function saveMapZoom(
   request: SaveMapZoomRequest,
   h: ResponseToolkit,
-  d: any
+  d: any,
 ): Promise<ResponseObject> {
   const { eid, zoom } = request.payload;
 
@@ -300,7 +300,7 @@ type SaveMapLngLatRequest = LoggedInRequest & {
 async function saveMapLngLat(
   request: SaveMapLngLatRequest,
   h: ResponseToolkit,
-  d: any
+  d: any,
 ): Promise<ResponseObject> {
   const { eid, lngLat } = request.payload;
 
@@ -337,7 +337,7 @@ type EditRequest = LoggedInRequest & {
  */
 async function editMapMarker(
   request: EditRequest,
-  h: ResponseToolkit
+  h: ResponseToolkit,
 ): Promise<ResponseObject> {
   const { uuid, name, description, eid } = request.payload;
 
@@ -365,7 +365,7 @@ async function editMapMarker(
 
 async function editMapPolygon(
   request: EditRequest,
-  h: ResponseToolkit
+  h: ResponseToolkit,
 ): Promise<ResponseObject> {
   const { uuid, name, description, eid } = request.payload;
 
@@ -393,7 +393,7 @@ async function editMapPolygon(
 
 async function editMapLine(
   request: EditRequest,
-  h: ResponseToolkit
+  h: ResponseToolkit,
 ): Promise<ResponseObject> {
   const { uuid, name, description, eid } = request.payload;
 
@@ -431,7 +431,7 @@ type GetMapSharedToRequest = LoggedInRequest & {
  */
 async function getMapSharedTo(
   request: GetMapSharedToRequest,
-  h: ResponseToolkit
+  h: ResponseToolkit,
 ): Promise<ResponseObject> {
   const { eid } = request.params;
 
@@ -473,11 +473,10 @@ type ShareMapRequest = LoggedInRequest & {
  */
 async function shareMap(
   request: ShareMapRequest,
-  h: ResponseToolkit
+  h: ResponseToolkit,
 ): Promise<ResponseObject> {
   const originDomain = `https://${request.info.host}`;
   const { "x-session-id": sessionId } = request.headers;
-
 
   const validation = new Validation();
   await validation.validateShareMap(request.payload);
@@ -520,7 +519,7 @@ async function shareMap(
 async function deleteMap(
   request: Request,
   h: ResponseToolkit,
-  d: any
+  d: any,
 ): Promise<ResponseObject> {
   let validation = new Validation();
   await validation.validateEid(request.payload);
@@ -555,7 +554,7 @@ async function deleteMap(
       where: {
         id: payload.eid,
       },
-    }
+    },
   );
 
   return h.response().code(200);
@@ -570,7 +569,7 @@ async function deleteMap(
 async function getUserMaps(
   request: Request,
   h: ResponseToolkit,
-  d: any
+  d: any,
 ): Promise<ResponseObject> {
   try {
     const userId = request.auth.credentials.user_id;
@@ -635,7 +634,7 @@ type GetMapDataRequest = LoggedInRequest & {
  */
 async function getMapData(
   request: GetMapDataRequest,
-  h: ResponseToolkit
+  h: ResponseToolkit,
 ): Promise<ResponseObject> {
   try {
     const { eid } = request.params;
@@ -708,7 +707,7 @@ async function getMapData(
           user_id: userId,
           map_id: eid,
         },
-      }
+      },
     );
 
     return h.response(mapData).code(200);
@@ -744,7 +743,7 @@ type GetLandOwnershipPolygonsRequest = LoggedInRequest & {
 async function getLandOwnershipTitles(
   request: GetLandOwnershipPolygonsRequest,
   h: ResponseToolkit,
-  d: any
+  d: any,
 ): Promise<ResponseObject> {
   const { sw_lng, sw_lat, ne_lng, ne_lat, type, acceptedOnly } = request.query;
   const { user_id } = request.auth.credentials;
@@ -834,19 +833,33 @@ async function getLandOwnershipTitles(
  */
 async function searchOwnership(
   request: LoggedInRequest,
-  h: ResponseToolkit
+  h: ResponseToolkit,
 ): Promise<ResponseObject> {
   const { proprietorName } = request.query;
   const { user_id } = request.auth.credentials;
   const { "x-session-id": sessionId } = request.headers;
 
-  const titles = await searchOwner(proprietorName);
+  const abortController = new AbortController();
+  const onClose = () => abortController.abort();
+  request.raw.req.on("close", onClose);
 
-  trackUserEvent(sessionId, user_id, Event.LAND_OWNERSHIP.BACKSEARCH, {
-    properties_count: titles.length,
-  });
+  try {
+    const titles = await searchOwner(proprietorName, abortController.signal);
 
-  return h.response(titles).code(200);
+    trackUserEvent(sessionId, user_id, Event.LAND_OWNERSHIP.BACKSEARCH, {
+      properties_count: titles.length,
+    });
+
+    return h.response(titles).code(200);
+  } catch (error) {
+    if (abortController.signal.aborted) {
+      return h.response().code(499);
+    }
+    console.error("Error in searchOwnership:", error);
+    return h.response("Internal server error").code(500);
+  } finally {
+    request.raw.req.off("close", onClose);
+  }
 }
 
 type PublicMapRequest = LoggedInRequest & {
@@ -861,7 +874,7 @@ type FileResponseToolkit = ResponseToolkit & {
 
 async function downloadShapefile(
   request: PublicMapRequest,
-  h: FileResponseToolkit
+  h: FileResponseToolkit,
 ): Promise<ResponseObject> {
   const { mapId } = request.params;
   const { user_id } = request.auth.credentials;
@@ -916,7 +929,7 @@ async function downloadShapefile(
 
 async function createMapGeoJSONLink(
   request: PublicMapRequest,
-  h: ResponseToolkit
+  h: ResponseToolkit,
 ): Promise<ResponseObject> {
   const { mapId } = request.payload;
   const { user_id } = request.auth.credentials;
@@ -944,7 +957,7 @@ async function createMapGeoJSONLink(
 
 async function getPublicMap(
   request: Request,
-  h: ResponseToolkit
+  h: ResponseToolkit,
 ): Promise<ResponseObject> {
   const { mapId } = request.params;
   const { "x-session-id": sessionId } = request.headers;
