@@ -72,7 +72,7 @@ jobs:
           version: v0.72.0
           cache: true
       - name: Trivy report (HIGH+CRITICAL, non-blocking)
-        uses: aquasecurity/trivy-action@v0.33.1
+        uses: aquasecurity/trivy-action@0.35.0
         with:
           image-ref: ${{ matrix.app }}:scan
           severity: HIGH,CRITICAL
@@ -80,7 +80,7 @@ jobs:
           exit-code: "0"
           skip-setup-trivy: true
       - name: Trivy gate (CRITICAL)
-        uses: aquasecurity/trivy-action@v0.33.1
+        uses: aquasecurity/trivy-action@0.35.0
         with:
           image-ref: ${{ matrix.app }}:scan
           severity: CRITICAL
