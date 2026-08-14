@@ -9,6 +9,14 @@ const zlib = require("zlib");
 
 module.exports = {
   async up(queryInterface) {
+    // Check if the database is empty first
+    // Don't want to clobber real data or insert seed data to dev
+    //  staging or prod
+    const [[{ existing }]] = await queryInterface.sequelize.query(
+      "SELECT COUNT(*) AS existing FROM land_ownership_polygons",
+    );
+    if (existing > 0) return;
+
     const sql = zlib
       .gunzipSync(
         fs.readFileSync(path.join(__dirname, "data", "penryn-demo.sql.gz")),
@@ -20,9 +28,10 @@ module.exports = {
     }
   },
 
-  // Demo-only environments: drop everything the seed put in
-  async down(queryInterface) {
-    await queryInterface.sequelize.query("DELETE FROM land_ownerships");
-    await queryInterface.sequelize.query("DELETE FROM land_ownership_polygons");
-  },
+  // Previously did:
+  //   await queryInterface.sequelize.query("DELETE FROM land_ownerships");
+  //   await queryInterface.sequelize.query("DELETE FROM land_ownership_polygons");
+  // But that would destroy 45GB of data on the dev env
+  // Reset with `docker compose down -v` on a PR env
+  async down() {},
 };
