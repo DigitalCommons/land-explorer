@@ -854,3 +854,32 @@ describe("groupPolysByTitleNo", () => {
     expect(result).to.deep.equal({});
   });
 });
+
+describe("Create user", () => {
+  afterEach(() => {
+    sandbox.restore();
+  });
+
+  it("still creates the user when the newsletter subscribe fails", async () => {
+    // On 2026-07-31 Marc noticed the whole stack crashed if someone already
+    // subscribed to the newsletter tried to make an account
+    const axios = require("axios");
+    sandbox
+      .stub(axios.default, "post")
+      .rejects({ response: { data: { code: "email_already_exists" } } });
+    const create = sandbox.stub(User, "create").resolves({ id: 1 });
+    const log = sandbox.spy(console, "log");
+
+    const result = await query.createUser({
+      username: "someone@example.com",
+      password: "p4ssw0rd",
+      marketing: 1,
+    });
+
+    await new Promise(setImmediate);
+
+    expect(result).to.deep.equal({ id: 1 });
+    assert.calledOnce(create);
+    assert.calledWith(log, "Buttondown subscribe failed:", "email_already_exists");
+  });
+});

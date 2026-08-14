@@ -63,18 +63,28 @@ export const usernameExist = async (username: string): Promise<Boolean> => {
  */
 export const createUser = async (data: any) => {
   if (data.marketing) {
-    axios.post(
-      "https://api.buttondown.email/v1/subscribers",
-      {
-        email: data.username,
-        referrer_url: "https://app.landexplorer.coop/register",
-      },
-      {
-        headers: {
-          Authorization: `Token ${process.env.BUTTONDOWN_API_KEY}`,
+    axios
+      .post(
+        "https://api.buttondown.email/v1/subscribers",
+        {
+          email: data.username,
+          referrer_url: "https://app.landexplorer.coop/register",
         },
-      }
-    );
+        {
+          headers: {
+            Authorization: `Token ${process.env.BUTTONDOWN_API_KEY}`,
+          },
+        }
+      )
+      // If someone is already subscribed to the newsletter and Buttondown
+      // returns a 400 email_already_exists just catch that error rather
+      // than killing the whole LX process - so they can still create an account
+      .catch((err) => {
+        console.log(
+          "Buttondown subscribe failed:",
+          err?.response?.data?.code ?? err?.message
+        );
+      });
   }
 
   return await User.create({
