@@ -47,7 +47,7 @@ RUN npm run build -w apps/property-boundaries-service
 # mkdir guarantees the workspace-local node_modules exists for the COPY below.
 FROM build AS proddeps
 RUN --mount=type=cache,target=/root/.npm npm ci -w apps/property-boundaries-service --omit=dev \
-    && npm install --no-save sequelize-cli@6 \
+    && npm install --no-save --omit=dev sequelize-cli@6 \
     && mkdir -p apps/property-boundaries-service/node_modules
 
 # ---- runtime stage ----
