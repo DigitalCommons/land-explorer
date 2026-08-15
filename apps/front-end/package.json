@@ -11,7 +11,7 @@
     "@gocardless/react-dropin": "^0.3.0",
     "@mapbox/mapbox-gl-draw": "1.4.3",
     "@mapbox/mapbox-gl-draw-static-mode": "^1.0.1",
-    "@mapbox/mapbox-gl-geocoder": "^4.7.4",
+    "@mapbox/mapbox-gl-geocoder": "^5.1.2",
     "@mapbox/search-js-core": "^1.5.1",
     "@redux-devtools/extension": "^3.3.0",
     "@tailwindcss/vite": "^4.3.3",
