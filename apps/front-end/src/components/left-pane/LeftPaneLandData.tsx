@@ -8,6 +8,7 @@ import { toggleDataGroup } from "../../actions/DataGroupActions";
 import { togglePropertyDisplay } from "../../actions/LandOwnershipActions";
 import LeftPaneNotification from "./left-pane-notification/LeftPaneNotification";
 import iconChevron from "../../assets/img/icon-chevron.svg";
+import { LEFT_PANE_TRAY, LeftPaneTrayId } from "../../reducers/LeftPaneReducer";
 
 type DataLayersContainerProps = {
   children: React.ReactNode;
@@ -52,7 +53,7 @@ const DataLayersContainer = ({ children, title }: DataLayersContainerProps) => {
 
 type Props = {
   open: boolean;
-  active: string;
+  active: LeftPaneTrayId;
   onClose: () => void;
 };
 
@@ -81,7 +82,7 @@ const LeftPaneLandData = ({ open, active, onClose }: Props) => {
   return (
     <LeftPaneTray
       title="Data Layers"
-      open={open && active === "Land Data"}
+      open={open && active === LEFT_PANE_TRAY.LAND_DATA}
       onClose={onClose}
       header={description}
     >

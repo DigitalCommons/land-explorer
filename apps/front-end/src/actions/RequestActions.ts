@@ -10,13 +10,15 @@ import { sessionTimedOut } from "./AuthenticationActions";
  * If we hit a 401 Unauthorized error, timeout the session so the user returns to login screen.
  *
  * @param {string} endpoint the API endpoint, starting '/api/'
- * @returns {Promise<any>} the resulting data, or null if the request failed
+ * @param {AbortSignal} [signal] optional signal to cancel the request
+ * @returns {Promise<any>} the resulting data, or null if the request failed or was cancelled
  */
-export const getRequest = (endpoint: string) => {
+export const getRequest = (endpoint: string, signal?: AbortSignal) => {
   return async (dispatch: any, getState: () => RootState) => {
     try {
       const { sessionId } = getState().user;
       const response = await axios.get(`${constants.ROOT_URL}${endpoint}`, {
+        signal,
         headers: {
           ...getAuthHeader().headers,
           "x-session-id": sessionId,
@@ -24,6 +26,10 @@ export const getRequest = (endpoint: string) => {
       });
       return response.data;
     } catch (err: any) {
+      if (axios.isCancel(err)) {
+        return null;
+      }
+
       console.error(`There was an error in ${endpoint} GET request`, err);
 
       if (err.response?.status === 401) {
