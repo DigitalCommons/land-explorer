@@ -1,0 +1,50 @@
+# Hotreload overlay for the local dev stack
+# Used by devs to have a docker build with hotreloads
+# The docker-compose.local.yml stays as it echos how production works for testing
+#
+# Usage:
+#   docker compose --env-file docker.env -f docker-compose.local.yml -f docker-compose.dev.yml up --build
+#
+# Each app runs its watch script and mounts src/ from the host so edits
+#  reload without a rebuild
+# Rebuild if you change dependencies or Dockerfiles
+#
+# Notes:
+# - front-end runs the Vite dev server instead of Caddy
+# - pbs lack the pipeline toolchain, use plain local stack for pipeline testing
+
+services:
+  back-end:
+    build:
+      target: build
+    command: ["npm", "run", "dev"]
+    volumes:
+      - ./apps/back-end/src:/app/src
+
+  pbs:
+    build:
+      target: build
+    command: ["npm", "run", "dev:serve"]
+    volumes:
+      - ./apps/property-boundaries-service/src:/app/src
+
+  front-end:
+    build:
+      target: build
+    # Vite on port 80 so 28080:80 mapping keeps working
+    command: ["npm", "run", "dev", "--", "--host", "0.0.0.0", "--port", "80"]
+    environment:
+      DEV_API_PROXY: http://back-end:4000
+      VITE_OS_KEY: ${VITE_OS_KEY:?missing - download docker.env from Bitwarden and run with --env-file docker.env}
+      VITE_GEOCODER_TOKEN: ${VITE_GEOCODER_TOKEN:?missing - download docker.env from Bitwarden and run with --env-file docker.env}
+      VITE_MAPBOX_TOKEN: ${VITE_MAPBOX_TOKEN:?missing - download docker.env from Bitwarden and run with --env-file docker.env}
+      VITE_OS_PLACES_KEY: ${VITE_OS_PLACES_KEY:-}
+      VITE_USER_GUIDE_URL: ${VITE_USER_GUIDE_URL:-}
+      VITE_MIXPANEL_TOKEN: ${VITE_MIXPANEL_TOKEN:-}
+      VITE_MIXPANEL_PEPPER: ${VITE_MIXPANEL_PEPPER:-}
+      VITE_FEATURE_HISTORIC_OWNERSHIP: ${VITE_FEATURE_HISTORIC_OWNERSHIP:-}
+    volumes:
+      - ./apps/front-end/src:/app/src
+      - ./apps/front-end/public:/app/public
+      - ./apps/front-end/index.html:/app/index.html
+      - ./apps/front-end/vite.config.ts:/app/vite.config.ts

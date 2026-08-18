@@ -22,8 +22,9 @@ import {
   getRunningPipelineKey,
   notifyMatrix,
 } from "./util.js";
+import { updateOwnershipSnapshots } from "./ownership-snapshots/update-ownership-snapshots.js";
 
-type TaskOptions = {
+export type TaskOptions = {
   inspireDataRestore?: boolean; // If true, restore INSPIRE data from our latest backup instead of downloading it from the gov website
   afterCouncil?: string; // Only process councils after this one, alphabetically
   maxCouncils?: number; // Max number of councils to process INSPIRE data for
@@ -45,6 +46,11 @@ const tasks = [
     name: "ownerships",
     desc: "Get the latest UK & Overseas Companies property ownerhsip data and store it in the land_ownerships DB table",
     method: async (options: TaskOptions) => await updateOwnerships(options),
+  },
+  {
+    name: "ownershipSnapshots",
+    desc: "Create snapshots of historic land ownership data",
+    method: async (_options: TaskOptions) => await updateOwnershipSnapshots(),
   },
   {
     name: "updateProprietors",
@@ -193,7 +199,11 @@ const runPipeline = async (options: PipelineOptions) => {
     logger.error(err, "Pipeline failed");
     console.error(`Pipeline ${pipelineKey} failed:`, err?.message);
 
-    await notifyMatrix(`🔴 Failed ownership + INSPIRE pipeline ${pipelineKey}`);
+    await notifyMatrix(
+      `🔴 Failed ownership + INSPIRE pipeline ${pipelineKey}: ${
+        err?.message?.split("\n")[0]
+      }`,
+    );
 
     // Don't re-throw error since this is an async process and the API route has already returned
   }

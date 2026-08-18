@@ -1,37 +1,43 @@
-import React from 'react';
+import React from "react";
+import { XIcon } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { Button } from "../ui/button";
 
 type Props = {
-    css?: string;
-    open: boolean;
-    title: string;
-    onClose: () => void;
-    header?: React.ReactNode;
-    children: React.ReactNode;
+  open: boolean;
+  title: string;
+  onClose: () => void;
+  header?: React.ReactNode;
+  children: React.ReactNode;
 };
 
-const LeftPaneTray = ({ css, open, title, onClose, header, children }: Props) => {
-
-    return <div className={css ? css : 'left-pane-tray'}
-        style={{
-            transform: open ? 'translateX(0%)' : 'translateX(-200%)',
-            boxShadow: open ? '3px 0 6px 0 rgba(0, 0, 0, 0.16)' : 'none',
-            overflowY: 'auto'
-        }}
+const LeftPaneTray = ({ open, title, onClose, header, children }: Props) => {
+  return (
+    <div
+      className={cn(
+        "fixed top-17 bottom-0 left-18 z-100000 flex w-[calc(100vw-72px)] flex-col overflow-x-hidden bg-background transition-transform duration-500 ease-in-out md:w-100",
+        open
+          ? "translate-x-0 shadow-[3px_0_6px_0_rgba(0,0,0,0.16)]"
+          : "translate-x-[-200%]",
+      )}
     >
-        <div className="left-pane-tray-container">
-            <div className="tray-top">
-                <div className="tray-title">
-                    <div className="title">{title}</div>
-                    <div className="close-tray"
-                        onClick={onClose}
-                    ></div>
-                </div>
-                {header ? header : null}
-            </div>
-            {children}
+      <div className="flex-none border-b border-border">
+        <div className="relative flex h-14.5 w-full items-center">
+          <div className="ml-5 text-2xl text-primary">{title}</div>
+          <Button
+            aria-label="Close"
+            onClick={onClose}
+            variant="ghost"
+            className="absolute right-5"
+          >
+            <XIcon className="size-3.5" />
+          </Button>
         </div>
+        {header ? header : null}
+      </div>
+      <div className="flex grow flex-col overflow-y-auto">{children}</div>
     </div>
-
-}
+  );
+};
 
 export default LeftPaneTray;
