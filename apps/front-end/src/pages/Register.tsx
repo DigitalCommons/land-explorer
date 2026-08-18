@@ -155,8 +155,7 @@ const Register = ({ updateBgImage }: Props) => {
       phone: data.phone,
       postcode: data.postcode,
       username: data.email,
-    };
-    console.log("registration request", request);
+    }; 
     axios
       .post(`${constants.ROOT_URL}/api/user/register`, request)
       .then((response) => {
