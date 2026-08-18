@@ -1,4 +1,4 @@
-import { RawOwnership } from "../../gov-api/datasets.types.js";
+import { RawOwnership } from "../../clients/gov-api/datasets.types.js";
 import { logger } from "../logger.js";
 
 export type LandOwnershipSnapshotRow = {
