@@ -868,7 +868,7 @@ async function searchOwnership(
   }
 }
 
-type PublicMapRequest = LoggedInRequest & {
+type DownloadShapefileRequest = LoggedInRequest & {
   params: {
     mapId: number;
   };
@@ -879,7 +879,7 @@ type FileResponseToolkit = ResponseToolkit & {
 };
 
 async function downloadShapefile(
-  request: PublicMapRequest,
+  request: DownloadShapefileRequest,
   h: FileResponseToolkit,
 ): Promise<ResponseObject> {
   const { mapId } = request.params;
@@ -966,6 +966,15 @@ async function createMapGeoJSONLink(
       .code(403);
   }
 }
+
+type PublicMapRequest = Request & {
+  params: {
+    mapId: number;
+  };
+  headers: Request["headers"] & {
+    ["x-session-id"]: string;
+  };
+};
 
 async function getPublicMap(
   request: PublicMapRequest,
