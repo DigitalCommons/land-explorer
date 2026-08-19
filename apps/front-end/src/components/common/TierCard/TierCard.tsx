@@ -1,11 +1,12 @@
+import { type KeyboardEvent } from "react";
 import { faCheck } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 import { cn } from "@/lib/utils";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 
-type Props = {
-  tierType: string;
+type TierCardProps = {
+  tierType: "Free" | "Paid";
   name: string;
   price: string;
   description: string;
@@ -14,27 +15,32 @@ type Props = {
   onSelect: () => void;
 };
 
-const TierCard = ({ tierType, name, price, description, selected, detailsHref, onSelect }: Props) => {
+const TierCard = ({ tierType, name, price, description, selected, detailsHref, onSelect }: TierCardProps) => {
+  const handleKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      onSelect();
+    }
+  };
+
   return (
     <Card
+      role="button"
+      tabIndex={0}
+      aria-pressed={selected}
+      aria-label={`Select ${name}`}
+      onClick={onSelect}
+      onKeyDown={handleKeyDown}
       className={cn(
-        "relative flex-1 gap-0 border-2 border-input py-0 shadow-[0_0_10px_rgba(0,0,0,0.1)]",
+        "relative flex-1 cursor-pointer gap-0 border-2 border-input py-0 shadow-[0_0_10px_rgba(0,0,0,0.1)] outline-none focus-visible:ring-3 focus-visible:ring-ring/50",
         selected && "border-primary"
       )}
     >
       {selected && (
-        <span className="pointer-events-none absolute top-4 right-4 z-20 flex size-4 items-center justify-center rounded-full bg-primary text-primary-foreground">
+        <span className="pointer-events-none absolute top-4 right-4 flex size-4 items-center justify-center rounded-full bg-primary text-primary-foreground">
           <FontAwesomeIcon icon={faCheck} className="size-2.5!" />
         </span>
       )}
-      {/* Covers the whole card so it's a single click target; the details link sits above it. */}
-      <button
-        type="button"
-        onClick={onSelect}
-        aria-pressed={selected}
-        aria-label={`Select ${name}`}
-        className="absolute inset-0 z-10 cursor-pointer rounded-[inherit] outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
-      />
       <CardHeader className="gap-0 px-4 pt-3 pb-2.5 text-left">
         <span className="text-sm font-medium tracking-wide text-muted-foreground uppercase">
           {tierType}
@@ -48,7 +54,8 @@ const TierCard = ({ tierType, name, price, description, selected, detailsHref, o
           href={detailsHref}
           target="_blank"
           rel="noreferrer"
-          className="relative z-20 mt-2 inline-block text-xs text-link underline! underline-offset-4"
+          onClick={(event) => event.stopPropagation()}
+          className="relative mt-2 inline-block text-xs text-link underline! underline-offset-4"
         >
           View full tier details
         </a>
