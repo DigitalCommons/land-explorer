@@ -87,6 +87,7 @@ export const createUser = async (data: any) => {
     last_name: data.lastName,
     address1: data.address1,
     address2: data.address2,
+    city: data.city, // #158
     postcode: data.postcode,
     phone: data.phone,
     organisation_number: data.organisationNumber,

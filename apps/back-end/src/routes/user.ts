@@ -227,6 +227,7 @@ async function changeUserDetail(
       last_name: payload.lastName,
       address1: payload.address1,
       address2: payload.address2,
+      city: payload.city, // #158
       postcode: payload.postcode,
       phone: payload.phone,
       organisation: payload.organisation,

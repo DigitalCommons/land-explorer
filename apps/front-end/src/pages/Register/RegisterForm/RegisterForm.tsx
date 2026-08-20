@@ -63,7 +63,7 @@ const registerSchema = z
     organisationNumber: z.string(),
     address1: z.string().max(100, "Must be at most 100 characters"),
     address2: z.string().max(100, "Must be at most 100 characters"),
-    city: z.string(),
+    city: z.string().max(100, "Must be at most 100 characters"),
     postcode: z
       .string()
       .trim()
@@ -165,12 +165,11 @@ const RegisterForm = ({ setRegistering, setRegisterSuccess }: Props) => {
           ? data.organisationCommercialOther
           : data.organisationCommercial;
 
-    // `city` isn't sent: createUser never writes the column, so it'd be dropped.
-    // TODO: raise an issue to wire it up (ChangeDetails sends it and it's dropped too).
     const request = {
       accountType,
       address1: data.address1,
       address2: data.address2,
+      city: data.city, // #158
       firstName: data.firstName,
       lastName: data.lastName,
       marketing: data.marketing,

@@ -101,6 +101,7 @@ export class Validation {
     optionalWithMax(this, data, "phone", 20, "Phone");
     optionalWithMax(this, data, "address1", 100, "Address");
     optionalWithMax(this, data, "address2", 100, "Address");
+    optionalWithMax(this, data, "city", 100, "City"); // #158
     optionalWithMax(this, data, "organisation", 100, "Organisation");
     optionalWithMax(
       this,
@@ -183,6 +184,7 @@ export class Validation {
     optionalWithMax(this, data, "phone", 20, "Phone");
     optionalWithMax(this, data, "address1", 100, "Address");
     optionalWithMax(this, data, "address2", 100, "Address");
+    optionalWithMax(this, data, "city", 100, "City"); // #158
     optionalWithMax(this, data, "organisation", 100, "Organisation");
     optionalWithMax(
       this,
