@@ -1,9 +1,9 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import Spinner from "../components/common/Spinner";
-import TopBar from "../components/top-bar/TopBar";
+import Spinner from "../../components/common/Spinner";
+import TopBar from "../../components/top-bar/TopBar";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
-import RegisterForm from "./RegisterForm";
+import RegisterForm from "./RegisterForm/RegisterForm";
 
 type Props = { updateBgImage: (n: number) => void };
 
@@ -37,15 +37,26 @@ const Register = ({ updateBgImage }: Props) => {
         <Spinner />
       </div>
       <Dialog open={registerSuccess}>
-        <DialogContent showCloseButton={false} className="flex flex-col items-center gap-4 text-center">
+        <DialogContent
+          showCloseButton={false}
+          className="flex flex-col items-center gap-4 text-center"
+        >
           <DialogTitle>Registration Successful</DialogTitle>
           <Link to="/auth/" className="button button-small">
             Ok
           </Link>
         </DialogContent>
       </Dialog>
-      <div style={{ marginBottom: "200px", display: registering ? "none" : "block" }}>
-        <RegisterForm setRegistering={setRegistering} setRegisterSuccess={setRegisterSuccess} />
+      <div
+        style={{
+          marginBottom: "200px",
+          display: registering ? "none" : "block",
+        }}
+      >
+        <RegisterForm
+          setRegistering={setRegistering}
+          setRegisterSuccess={setRegisterSuccess}
+        />
       </div>
     </div>
   );
