@@ -76,14 +76,22 @@ export const createUser = async (data: any) => {
           },
         }
       )
-      // If someone is already subscribed to the newsletter and Buttondown
-      // returns a 400 email_already_exists just catch that error rather
-      // than killing the whole LX process - so they can still create an account
+      // If someone is already subscribed to the newsletter ignore it
       .catch((err) => {
-        console.log(
-          "Buttondown subscribe failed:",
-          err?.response?.data?.code ?? err?.message
-        );
+        const code = err?.response?.data?.code;
+        if (code === "email_already_exists") {
+          console.log("Buttondown: already subscribed:", data.username);
+        } else {
+          // If we get any other buttondown error log it as an error
+          //   but continue so the app doesn't crash and restart -
+          //   prevously the unhandledRejection handler would kill
+          //   the server mid registration
+          console.error(
+            "Buttondown subscribe failed for",
+            data.username,
+            code ?? err?.message
+          );
+        }
       });
   }
 
