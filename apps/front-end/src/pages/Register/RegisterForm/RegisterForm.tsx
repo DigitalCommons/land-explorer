@@ -155,8 +155,8 @@ const RegisterForm = ({ setRegistering, setRegisterSuccess }: Props) => {
     submitRegistration(data);
   };
 
-  // No payment gateway yet, and createUser drops `accountType`, so paid signups
-  // aren't distinguishable from free ones. TODO: raise an issue to persist it.
+  // #157: accountType is saved to the DB as there's currently no payment gateway
+  // this can allow for manual follow-up of paying users
   const submitRegistration = (data: RegisterFormValues) => {
     const organisationSubType =
       data.organisationType === "community-interest"

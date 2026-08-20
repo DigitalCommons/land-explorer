@@ -118,6 +118,18 @@ export class Validation {
     );
     optionalWithMax(this, data, "organisationType", 100, "Organisation type");
 
+    // #157: selected tier, restricted to the two allowed values
+    if (
+      data?.accountType !== null &&
+      data?.accountType !== undefined &&
+      Joi.string().valid("free", "paid").validate(data.accountType).error
+    ) {
+      this.addErrorMessage(
+        "accountType",
+        "The account type field must be 'free' or 'paid'."
+      );
+    }
+
     return this;
   }
 

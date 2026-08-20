@@ -93,6 +93,7 @@ export const createUser = async (data: any) => {
     organisation: data.organisation,
     organisation_activity: data.organisationSubType,
     organisation_type: data.organisationType,
+    account_type: data.accountType, // #157
     marketing: data.marketing,
     council_id: data.username.endsWith("rbkc.gov.uk") ? 1 : 0,
   });
