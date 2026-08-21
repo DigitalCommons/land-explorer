@@ -44,6 +44,7 @@ services:
       VITE_USER_GUIDE_URL: ${VITE_USER_GUIDE_URL:-}
       VITE_MIXPANEL_TOKEN: ${VITE_MIXPANEL_TOKEN:-}
       VITE_MIXPANEL_PEPPER: ${VITE_MIXPANEL_PEPPER:-}
+      VITE_FEATURE_HISTORIC_OWNERSHIP: ${VITE_FEATURE_HISTORIC_OWNERSHIP:-}
     volumes:
       - ./apps/front-end/src:/app/apps/front-end/src
       - ./apps/front-end/public:/app/apps/front-end/public

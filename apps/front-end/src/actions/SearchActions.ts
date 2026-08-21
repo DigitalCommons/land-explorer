@@ -1,6 +1,7 @@
 import { getRequest } from "./RequestActions";
 import { fetchRelatedProperties } from "./LandOwnershipActions";
 import { ProprietorResult } from "../types";
+import { LEFT_PANE_TRAY } from "../reducers/LeftPaneReducer";
 
 const DEFAULT_PROPRIETOR_PAGE = 1;
 const DEFAULT_PROPRIETOR_PAGE_SIZE = 10;
@@ -124,6 +125,6 @@ export const selectProprietorResult =
 
     if (!proprietorName) return;
 
-    dispatch({ type: "SET_ACTIVE", payload: "Ownership Search" });
+    dispatch({ type: "SET_ACTIVE", payload: LEFT_PANE_TRAY.OWNERSHIP_SEARCH });
     await dispatch(fetchRelatedProperties(proprietorName));
   };
