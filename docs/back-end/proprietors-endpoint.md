@@ -47,8 +47,8 @@ GET /api/proprietors?searchTerm=Acme&page=1&pageSize=10
 
 ## Implementation
 
-| File                                                                | Role                                                      |
-| ------------------------------------------------------------------- | --------------------------------------------------------- |
-| [src/routes/proprietors.ts](../src/routes/proprietors.ts)           | Route definition, input validation, client-abort handling |
-| [src/queries/proprietors.ts](../src/queries/proprietors.ts)         | `searchProprietors()` - axios call to PBS `/proprietors`  |
-| [src/routes/proprietors.test.ts](../src/routes/proprietors.test.ts) | Unit tests                                                |
+| File                                                                                                     | Role                                                      |
+| ------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------- |
+| [src/routes/proprietors/proprietors.ts](../../apps/back-end/src/routes/proprietors/proprietors.ts)         | Route definition, input validation, client-abort handling |
+| [src/clients/pbs/proprietors.ts](../../apps/back-end/src/clients/pbs/proprietors.ts)                       | `searchProprietors()` - axios call to PBS `/proprietors`  |
+| [src/routes/proprietors/proprietors.test.ts](../../apps/back-end/src/routes/proprietors/proprietors.test.ts) | Unit tests                                                |

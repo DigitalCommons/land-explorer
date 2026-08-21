@@ -66,7 +66,9 @@ describe("GET /api/proprietors", () => {
       // Arrange
       const { getMeiliClientStub } = buildMeiliMock(sandbox);
       const { getProprietors } = await esmock("./proprietors.js", {
-        "../../meilisearch/client.js": { getMeiliClient: getMeiliClientStub },
+        "../../clients/meilisearch/client.js": {
+          getMeiliClient: getMeiliClientStub,
+        },
       });
 
       const request = buildRequest({ secret: undefined });
@@ -83,7 +85,9 @@ describe("GET /api/proprietors", () => {
       // Arrange
       const { getMeiliClientStub } = buildMeiliMock(sandbox);
       const { getProprietors } = await esmock("./proprietors.js", {
-        "../../meilisearch/client.js": { getMeiliClient: getMeiliClientStub },
+        "../../clients/meilisearch/client.js": {
+          getMeiliClient: getMeiliClientStub,
+        },
       });
 
       const request = buildRequest({ secret: "wrongsecret" });
@@ -110,7 +114,9 @@ describe("GET /api/proprietors", () => {
       });
 
       const { getProprietors } = await esmock("./proprietors.js", {
-        "../../meilisearch/client.js": { getMeiliClient: getMeiliClientStub },
+        "../../clients/meilisearch/client.js": {
+          getMeiliClient: getMeiliClientStub,
+        },
       });
 
       const request = buildRequest({ searchTerm: "Cambridge" });
@@ -140,7 +146,9 @@ describe("GET /api/proprietors", () => {
       });
 
       const { getProprietors } = await esmock("./proprietors.js", {
-        "../../meilisearch/client.js": { getMeiliClient: getMeiliClientStub },
+        "../../clients/meilisearch/client.js": {
+          getMeiliClient: getMeiliClientStub,
+        },
       });
 
       const request = buildRequest({ searchTerm: "Xyzzy" });
@@ -167,7 +175,9 @@ describe("GET /api/proprietors", () => {
       });
 
       const { getProprietors } = await esmock("./proprietors.js", {
-        "../../meilisearch/client.js": { getMeiliClient: getMeiliClientStub },
+        "../../clients/meilisearch/client.js": {
+          getMeiliClient: getMeiliClientStub,
+        },
       });
 
       const request = buildRequest({
@@ -196,7 +206,9 @@ describe("GET /api/proprietors", () => {
       const { getProprietors, PROPRIETORS_INDEX } = await esmock(
         "./proprietors.js",
         {
-          "../../meilisearch/client.js": { getMeiliClient: getMeiliClientStub },
+          "../../clients/meilisearch/client.js": {
+          getMeiliClient: getMeiliClientStub,
+        },
         },
       );
 
@@ -221,7 +233,9 @@ describe("GET /api/proprietors", () => {
       const getMeiliClientStub = sandbox.stub().returns({ index: indexStub });
 
       const { getProprietors } = await esmock("./proprietors.js", {
-        "../../meilisearch/client.js": { getMeiliClient: getMeiliClientStub },
+        "../../clients/meilisearch/client.js": {
+          getMeiliClient: getMeiliClientStub,
+        },
       });
 
       const request = buildRequest();
@@ -242,7 +256,9 @@ describe("GET /api/proprietors", () => {
         .throws(new Error("MeiliSearch client not initialised"));
 
       const { getProprietors } = await esmock("./proprietors.js", {
-        "../../meilisearch/client.js": { getMeiliClient: getMeiliClientStub },
+        "../../clients/meilisearch/client.js": {
+          getMeiliClient: getMeiliClientStub,
+        },
       });
 
       const request = buildRequest();
@@ -270,7 +286,9 @@ describe("GET /api/proprietors", () => {
       const getMeiliClientStub = sandbox.stub().returns({ index: indexStub });
 
       const { getProprietors } = await esmock("./proprietors.js", {
-        "../../meilisearch/client.js": { getMeiliClient: getMeiliClientStub },
+        "../../clients/meilisearch/client.js": {
+          getMeiliClient: getMeiliClientStub,
+        },
       });
 
       const request = buildRequest({}, req);

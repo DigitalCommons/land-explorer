@@ -41,10 +41,11 @@ ENV NODE_ENV=production
 # - default-mysql-client - gml script DELETE step uses mysql
 # - rsync + openssh-client - INSPIRE zip backup/restore to storage box
 # - (skipped unless REMOTE_BACKUP_DESTINATION_PATH is set)
-# - curl - Matrix failure notifications in scripts
+ # - curl + ca-certificates - Matrix failure notifications in scripts
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
        bash gdal-bin default-mysql-client rsync openssh-client curl \
+       ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 
 COPY --from=build /app/node_modules ./node_modules
