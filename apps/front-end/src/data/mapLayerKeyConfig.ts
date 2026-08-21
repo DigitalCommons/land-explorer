@@ -286,6 +286,16 @@ const layers = {
       },
     },
   },
+  "related-ownership": {
+    name: "Land Ownership",
+    data: {
+      "Company owned": {
+        fill: "#BE4A9766",
+        border: "#BE4A97",
+      },
+    },
+    hasBorder: true,
+  },
 };
 
 export default layers;

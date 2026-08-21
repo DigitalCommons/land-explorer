@@ -1,7 +1,7 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useMemo } from "react";
 import { useAppDispatch, useAppSelector } from "@/hooks/react-redux";
 import * as turf from "@turf/turf";
-import { Layer, Feature } from "react-mapbox-gl";
+import { Layer, Feature, GeoJSONLayer } from "react-mapbox-gl";
 import constants from "../../constants";
 import LoadingData from "./LoadingData";
 import {
@@ -9,6 +9,7 @@ import {
   highlightProperties,
   setActiveProperty,
 } from "../../actions/LandOwnershipActions";
+import { LEFT_PANE_TRAY } from "../../reducers/LeftPaneReducer";
 
 type Props = {
   center: any;
@@ -22,7 +23,10 @@ const MapProperties = ({ center, map }: Props) => {
     loadingProperties,
     highlightedProperties,
     activePropertyTitleNo,
+    relatedProperties,
+    displayRelatedProperties,
   } = useAppSelector((state) => state.landOwnership);
+
   const activeProperty =
     activePropertyTitleNo !== null
       ? highlightedProperties[activePropertyTitleNo] || null
@@ -37,7 +41,10 @@ const MapProperties = ({ center, map }: Props) => {
       !zooming &&
       activeDisplay &&
       map &&
-      zoom[0] >= constants.PROPERTY_BOUNDARIES_ZOOM_LEVELS[activeDisplay as keyof typeof constants.PROPERTY_BOUNDARIES_ZOOM_LEVELS]
+      zoom[0] >=
+        constants.PROPERTY_BOUNDARIES_ZOOM_LEVELS[
+          activeDisplay as keyof typeof constants.PROPERTY_BOUNDARIES_ZOOM_LEVELS
+        ]
     ) {
       const { _sw, _ne } = map.getBounds();
       dispatch(fetchPropertiesInBox(_sw.lng, _sw.lat, _ne.lng, _ne.lat));
@@ -45,7 +52,7 @@ const MapProperties = ({ center, map }: Props) => {
   }, [center, zooming, activeDisplay]);
 
   const onClickProperty = (property: any) => {
-    if (activePanel !== "Drawing Tools") {
+    if (activePanel !== LEFT_PANE_TRAY.DRAWING_TOOLS) {
       dispatch(highlightProperties({ [property.title_no]: property }));
       dispatch(setActiveProperty(property.title_no));
     }
@@ -75,7 +82,10 @@ const MapProperties = ({ center, map }: Props) => {
 
   if (
     activeDisplay &&
-    zoom[0] >= constants.PROPERTY_BOUNDARIES_ZOOM_LEVELS[activeDisplay as keyof typeof constants.PROPERTY_BOUNDARIES_ZOOM_LEVELS]
+    zoom[0] >=
+      constants.PROPERTY_BOUNDARIES_ZOOM_LEVELS[
+        activeDisplay as keyof typeof constants.PROPERTY_BOUNDARIES_ZOOM_LEVELS
+      ]
   ) {
     Object.values(visibleProperties)?.forEach((property: any) => {
       if (
@@ -101,7 +111,7 @@ const MapProperties = ({ center, map }: Props) => {
               coordinates={lineString.geometry.coordinates}
               key={`line-${polyKey}-${index}`}
             />
-          )
+          ),
         );
 
         if (property.tenure === "unregistered") {
@@ -119,6 +129,38 @@ const MapProperties = ({ center, map }: Props) => {
     });
   }
 
+  // Properties owned in a year, rendered from a single GeoJSON source instead of per-polygon
+  // Features - this set can be large, and is replaced wholesale every time the ownership year slider
+  // changes, so a bulk source update is much cheaper than diffing hundreds of Feature elements.
+  // Memoized so the `data` object passed to GeoJSONLayer doesn't recompute
+  // across re-renders that don't touch these two values, e.g. zoom or highlighted-property changes.
+  const relatedPropertiesData = useMemo(() => {
+    const properties = relatedProperties ?? {};
+    let features = [];
+    if (displayRelatedProperties) {
+      features = Object.values(properties).flatMap((property: any) =>
+        property.polygons.map((polygon: any) => ({
+          type: "Feature" as const,
+          geometry: polygon.geom,
+          properties: { title_no: property.title_no },
+        })),
+      );
+    }
+
+    return {
+      type: "FeatureCollection" as const,
+      features: features,
+    };
+  }, [displayRelatedProperties, relatedProperties]);
+
+  const onRelatedOwnershipFeatureClick = (e: any) => {
+    const titleNo = e.features?.[0]?.properties?.title_no;
+    const property = titleNo && relatedProperties?.[titleNo];
+    if (property) {
+      onClickProperty(property);
+    }
+  };
+
   const highlightedFillFeatures: React.ReactElement[] = [];
   const highlightedBorderFeatures: React.ReactElement[] = [];
 
@@ -132,15 +174,17 @@ const MapProperties = ({ center, map }: Props) => {
           coordinates={[polygon.geom.coordinates]}
           key={`fill-hl-${polyKey}`}
           onClick={() => onClickProperty(property)}
-        />
+        />,
       );
       highlightedBorderFeatures.push(
-        ...getBorderLinestrings(polygon.geom).map((lineString: any, index: number) => (
-          <Feature
-            coordinates={lineString.geometry.coordinates}
-            key={`line-hl-${polyKey}-${index}`}
-          />
-        ))
+        ...getBorderLinestrings(polygon.geom).map(
+          (lineString: any, index: number) => (
+            <Feature
+              coordinates={lineString.geometry.coordinates}
+              key={`line-hl-${polyKey}-${index}`}
+            />
+          ),
+        ),
       );
     });
   });
@@ -152,11 +196,11 @@ const MapProperties = ({ center, map }: Props) => {
     activeProperty.polygons.forEach((polygon: any) => {
       const polyKey = polygon.geom.coordinates[0][0];
       highlightedFillFeatures.push(
-      <Feature
-        coordinates={[polygon.geom.coordinates]}
-        key={`fill-active-${polyKey}`}
-      />
-    );
+        <Feature
+          coordinates={[polygon.geom.coordinates]}
+          key={`fill-active-${polyKey}`}
+        />,
+      );
     });
   }
 
@@ -188,6 +232,22 @@ const MapProperties = ({ center, map }: Props) => {
       >
         {propertyWithOwnershipBorderFeatures}
       </Layer>
+
+      {/* Related ownership properties - Fill + Border, from a single GeoJSON source */}
+      <GeoJSONLayer
+        id="related-ownership"
+        data={relatedPropertiesData}
+        fillPaint={{
+          "fill-opacity": 0.2,
+          "fill-color": "#BE4A97",
+        }}
+        linePaint={{
+          "line-color": "#BE4A97",
+          "line-width": 2,
+          "line-opacity": 1,
+        }}
+        fillOnClick={onRelatedOwnershipFeatureClick}
+      />
 
       {/* Properties data private - Fill */}
       <Layer
@@ -266,14 +326,16 @@ const MapProperties = ({ center, map }: Props) => {
       >
         {activeProperty &&
           activeProperty.polygons.flatMap((polygon: any) =>
-            getBorderLinestrings(polygon.geom).map((lineString: any, index: number) => (
-              <Feature
-                coordinates={lineString.geometry.coordinates}
-                key={`line-active-${
-                  polygon.poly_id || polygon.geom.coordinates[0][0]
-                }-${index}`}
-              />
-            ))
+            getBorderLinestrings(polygon.geom).map(
+              (lineString: any, index: number) => (
+                <Feature
+                  coordinates={lineString.geometry.coordinates}
+                  key={`line-active-${
+                    polygon.poly_id || polygon.geom.coordinates[0][0]
+                  }-${index}`}
+                />
+              ),
+            ),
           )}
       </Layer>
     </>

@@ -15,21 +15,24 @@ import { initializeMixpanel } from "./analytics";
 import "./tailwind.css";
 import "./index.css";
 import "./assets/styles/style.scss";
+import { TooltipProvider } from "./components/ui/tooltip";
 
 initializeMixpanel();
 
 createRoot(document.getElementById("root")!).render(
   <Provider store={store}>
-    <BrowserRouter>
-      <ErrorBoundary FallbackComponent={ErrorFallback}>
-        <Routes>
-          <Route path="/app" element={<MapApp />} />
-          <Route path="/app/my-account/*" element={<MyAccount />} />
-          <Route path="/auth/*" element={<Authentication />} />
-          <Route path="/" element={<Navigate to="/app" replace={true} />} />
-          <Route path="*" element={<FourOhFour />} />
-        </Routes>
-      </ErrorBoundary>
-    </BrowserRouter>
+    <TooltipProvider>
+      <BrowserRouter>
+        <ErrorBoundary FallbackComponent={ErrorFallback}>
+          <Routes>
+            <Route path="/app" element={<MapApp />} />
+            <Route path="/app/my-account/*" element={<MyAccount />} />
+            <Route path="/auth/*" element={<Authentication />} />
+            <Route path="/" element={<Navigate to="/app" replace={true} />} />
+            <Route path="*" element={<FourOhFour />} />
+          </Routes>
+        </ErrorBoundary>
+      </BrowserRouter>
+    </TooltipProvider>
   </Provider>,
 );

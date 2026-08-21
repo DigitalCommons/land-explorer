@@ -1,9 +1,10 @@
 import LeftPaneTray from './LeftPaneTray';
 import DrawingTool from './DrawingTool';
+import { LEFT_PANE_TRAY, LeftPaneTrayId } from '../../reducers/LeftPaneReducer';
 
 type Props = {
     open: boolean;
-    active: string;
+    active: LeftPaneTrayId;
     onClose: () => void;
     drawControl: any;
     handleTrashClick: () => void;
@@ -11,7 +12,7 @@ type Props = {
 
 const LeftPaneDrawingTools = ({ open, active, onClose, drawControl, handleTrashClick }: Props) => (
     <LeftPaneTray
-        open={open && active === 'Drawing Tools'}
+        open={open && active === LEFT_PANE_TRAY.DRAWING_TOOLS}
         onClose={onClose}
         title="Drawing Tools"
     >
