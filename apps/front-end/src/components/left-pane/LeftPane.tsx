@@ -5,6 +5,7 @@ import LeftPaneDrawingTools from "./LeftPaneDrawingTools";
 import LeftPaneRelatedProperties from "./LeftPaneRelatedProperties";
 import { autoSave } from "../../actions/MapActions";
 import { isMobile } from "react-device-detect";
+import { LEFT_PANE_TRAY, LeftPaneTrayId } from "../../reducers/LeftPaneReducer";
 
 type Props = {
   drawControl: any;
@@ -26,7 +27,7 @@ const LeftPane = ({ drawControl }: Props) => {
   };
 
   const closePane = () => {
-    if (active !== "") {
+    if (active !== LEFT_PANE_TRAY.NONE) {
       dispatch({ type: "CLOSE_TRAY" });
 
       setTimeout(() => {
@@ -37,7 +38,7 @@ const LeftPane = ({ drawControl }: Props) => {
     }
   };
 
-  const clickIcon = (tray: string) => {
+  const clickIcon = (tray: LeftPaneTrayId) => {
     active === tray
       ? dispatch({ type: "CLOSE_TRAY" })
       : dispatch({ type: "SET_ACTIVE", payload: tray });
@@ -91,12 +92,12 @@ const LeftPane = ({ drawControl }: Props) => {
         <div
           id="drawing-tools-icon"
           className={`left-pane-icon drawing-tools ${
-            active === "Drawing Tools" && "active"
+            active === LEFT_PANE_TRAY.DRAWING_TOOLS && "active"
           }`}
           style={{ opacity: readOnly ? 0.5 : 1 }}
           onClick={() => {
             if (!readOnly) {
-              clickIcon("Drawing Tools");
+              clickIcon(LEFT_PANE_TRAY.DRAWING_TOOLS);
             }
           }}
           data-tip
@@ -104,17 +105,17 @@ const LeftPane = ({ drawControl }: Props) => {
         />
         <div
           className={`left-pane-icon data-layers ${
-            active === "Land Data" && "active"
+            active === LEFT_PANE_TRAY.LAND_DATA && "active"
           }`}
-          onClick={() => clickIcon("Land Data")}
+          onClick={() => clickIcon(LEFT_PANE_TRAY.LAND_DATA)}
           data-tip
           data-for="ttLandData"
         />
         <div
           className={`left-pane-icon info ${
-            active === "Land Information" && "active"
+            active === LEFT_PANE_TRAY.LAND_INFORMATION && "active"
           }`}
-          onClick={() => clickIcon("Land Information")}
+          onClick={() => clickIcon(LEFT_PANE_TRAY.LAND_INFORMATION)}
           data-tip
           data-for="ttInfo"
         />
@@ -123,14 +124,14 @@ const LeftPane = ({ drawControl }: Props) => {
             /* display ownership search icon only if search is not empty */
             display:
               Object.keys(relatedProperties).length > 0 ||
-              active === "Ownership Search"
+              active === LEFT_PANE_TRAY.OWNERSHIP_SEARCH
                 ? "block"
                 : "none",
           }}
           className={`left-pane-icon ownership ${
-            active === "Ownership Search" && "active"
+            active === LEFT_PANE_TRAY.OWNERSHIP_SEARCH && "active"
           }`}
-          onClick={() => clickIcon("Ownership Search")}
+          onClick={() => clickIcon(LEFT_PANE_TRAY.OWNERSHIP_SEARCH)}
           data-tip
           data-for="ttRelatedProperties"
         />
@@ -149,11 +150,11 @@ const LeftPane = ({ drawControl }: Props) => {
       }
       <LeftPaneLandData open={open} active={active} onClose={closeTray} />
       <LeftPaneInfo
-        open={open && active === "Land Information"}
+        open={open && active === LEFT_PANE_TRAY.LAND_INFORMATION}
         onClose={closeTray}
       />
       <LeftPaneRelatedProperties
-        open={open && active === "Ownership Search"}
+        open={open && active === LEFT_PANE_TRAY.OWNERSHIP_SEARCH}
         onClose={closeTray}
         itemsPerPage={10}
       />

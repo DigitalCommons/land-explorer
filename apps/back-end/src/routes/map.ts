@@ -828,11 +828,17 @@ async function getLandOwnershipTitles(
   }
 }
 
+type SearchOwnershipRequest = LoggedInRequest & {
+  query: {
+    proprietorName: string;
+  }
+}
+
 /**
  * Perform a backsearch, to find all properties owned by a given owner.
  */
 async function searchOwnership(
-  request: LoggedInRequest,
+  request: SearchOwnershipRequest,
   h: ResponseToolkit,
 ): Promise<ResponseObject> {
   const { proprietorName } = request.query;
@@ -862,8 +868,8 @@ async function searchOwnership(
   }
 }
 
-type PublicMapRequest = LoggedInRequest & {
-  payload: {
+type DownloadShapefileRequest = LoggedInRequest & {
+  params: {
     mapId: number;
   };
 };
@@ -873,7 +879,7 @@ type FileResponseToolkit = ResponseToolkit & {
 };
 
 async function downloadShapefile(
-  request: PublicMapRequest,
+  request: DownloadShapefileRequest,
   h: FileResponseToolkit,
 ): Promise<ResponseObject> {
   const { mapId } = request.params;
@@ -927,8 +933,14 @@ async function downloadShapefile(
   return response;
 }
 
+type GeoJsonLinkRequest = LoggedInRequest & {
+  payload: {
+    mapId: number;
+  };
+};
+
 async function createMapGeoJSONLink(
-  request: PublicMapRequest,
+  request: GeoJsonLinkRequest,
   h: ResponseToolkit,
 ): Promise<ResponseObject> {
   const { mapId } = request.payload;
@@ -955,8 +967,17 @@ async function createMapGeoJSONLink(
   }
 }
 
+type PublicMapRequest = Request & {
+  params: {
+    mapId: number;
+  };
+  headers: Request["headers"] & {
+    ["x-session-id"]: string;
+  };
+};
+
 async function getPublicMap(
-  request: Request,
+  request: PublicMapRequest,
   h: ResponseToolkit,
 ): Promise<ResponseObject> {
   const { mapId } = request.params;

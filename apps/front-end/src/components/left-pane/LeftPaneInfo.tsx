@@ -5,6 +5,7 @@ import MarkerSection from "./MarkerSection";
 import DrawingSection from "./DrawingSection";
 import PropertySection from "./property-section/PropertySection";
 import { clearAllHighlightedProperties } from "../../actions/LandOwnershipActions";
+import { Button } from "../ui/button";
 
 type Props = {
   onClose: () => void;
@@ -39,9 +40,11 @@ const LeftPaneInfo = ({ onClose, open }: Props) => {
     <LeftPaneTray title="Land Information" open={open} onClose={onClose}>
       {(Object.keys(relatedProperties).length > 0 ||
         Object.keys(highlightedProperties).length > 0) && (
-        <p className="clear-all" onClick={clearAll}>
-          Clear all properties
-        </p>
+        <div className="p-2">
+          <Button variant="secondary" onClick={clearAll}>
+            Clear all properties
+          </Button>
+        </div>
       )}
       {drawings.length ||
       markers.length ||
@@ -64,7 +67,7 @@ const LeftPaneInfo = ({ onClose, open }: Props) => {
                 property={property}
                 key={`property-${title_no}`}
               />
-            )
+            ),
           )}
         </>
       ) : (

@@ -9,37 +9,37 @@ export type PropertyDisplayType =
   | "socialHousing"
   | "unregistered";
 
-  export type PolygonGeom = {
-    poly_id: string;
-    geom: Polygon;
-  };
+export type PolygonGeom = {
+  poly_id: string;
+  geom: Polygon;
+};
 
-  export type Property = {
-    id: string;
-    title_no: string;
-    property_address: string;
-    proprietor_name_1?: string;
-    proprietor_name_2?: string;
-    proprietor_name_3?: string;
-    proprietor_name_4?: string;
-    proprietor_1_address_1: string;
-    proprietor_2_address_1: string;
-    proprietor_3_address_1: string;
-    proprietor_4_address_1: string;
-    proprietor_category_1: string;
-    proprietor_category_2: string;
-    proprietor_category_3: string;
-    proprietor_category_4: string;
-    tenure: string;
-    date_proprietor_added: string;
-    polygons: PolygonGeom[];
-  };
+export type Property = {
+  id: string;
+  title_no: string;
+  property_address: string;
+  proprietor_name_1?: string;
+  proprietor_name_2?: string;
+  proprietor_name_3?: string;
+  proprietor_name_4?: string;
+  proprietor_1_address_1: string;
+  proprietor_2_address_1: string;
+  proprietor_3_address_1: string;
+  proprietor_4_address_1: string;
+  proprietor_category_1: string;
+  proprietor_category_2: string;
+  proprietor_category_3: string;
+  proprietor_category_4: string;
+  tenure: string;
+  date_proprietor_added: string;
+  polygons: PolygonGeom[];
+};
 
 type HighlightedProperties = {
   [titleNo: string]: Property;
 };
 
-type RelatedProperties = {
+export type RelatedProperties = {
   [titleNo: string]: Property;
 };
 
@@ -58,6 +58,8 @@ type LandOwnershipState = {
   relatedPropertiesError: string | null;
   relatedPropertiesLoading: boolean;
   relatedPropertiesProprietorName: string | null;
+  relatedPropertiesYear: number;
+  displayRelatedProperties: boolean;
 };
 
 const INITIAL_STATE: LandOwnershipState = {
@@ -70,6 +72,8 @@ const INITIAL_STATE: LandOwnershipState = {
   relatedPropertiesError: null,
   relatedPropertiesLoading: false,
   relatedPropertiesProprietorName: null,
+  relatedPropertiesYear: new Date().getFullYear(),
+  displayRelatedProperties: true,
 };
 
 type LoadMapPayload = {
@@ -80,7 +84,7 @@ type LoadMapPayload = {
 
 export default (
   state: LandOwnershipState = INITIAL_STATE,
-  action: Action
+  action: Action,
 ): LandOwnershipState => {
   switch (action.type) {
     case "TOGGLE_PROPERTY_DISPLAY": {
@@ -121,7 +125,7 @@ export default (
       const rest = { ...state.highlightedProperties }; // Create a shallow copy
       propertyTitleNosToClear.forEach((id) => delete rest[id]);
       const activePropertyTitleNo = propertyTitleNosToClear.includes(
-        state.activePropertyTitleNo as string
+        state.activePropertyTitleNo as string,
       )
         ? null
         : state.activePropertyTitleNo;
@@ -148,6 +152,16 @@ export default (
         ...state,
         activePropertyTitleNo: null,
       };
+    case "SET_RELATED_PROPERTIES_YEAR":
+      return {
+        ...state,
+        relatedPropertiesYear: action.payload as number,
+      };
+    case "SET_DISPLAY_RELATED_PROPERTIES":
+      return {
+        ...state,
+        displayRelatedProperties: action.payload as boolean,
+      };
     case "FETCH_RELATED_PROPERTIES_SUCCESS":
       return {
         ...state,
@@ -167,6 +181,11 @@ export default (
         ...state,
         relatedPropertiesLoading: true,
       };
+    case "CLEAR_RELATED_PROPERTIES":
+      return {
+        ...state,
+        relatedProperties: {},
+      };
     case "SET_RELATED_PROPERTIES_PROPRIETOR_NAME":
       return {
         ...state,
@@ -177,6 +196,7 @@ export default (
         ...state,
         relatedProperties: {},
         relatedPropertiesProprietorName: null,
+        displayRelatedProperties: true,
       };
     case "LOAD_MAP":
     case "RELOAD_MAP": {
