@@ -4,10 +4,12 @@ import { Link } from "react-router-dom";
 import { useForm, useWatch, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { faXmark } from "@fortawesome/free-solid-svg-icons";
+import {
+  faXmark,
+  faTriangleExclamation,
+} from "@fortawesome/free-solid-svg-icons";
 import { faEye, faEyeSlash } from "@fortawesome/free-regular-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import Swal from "sweetalert2";
 import TierCard from "../../../components/common/TierCard/TierCard";
 import constants from "../../../constants";
 import { Input } from "@/components/ui/input";
@@ -32,38 +34,38 @@ import {
   CardDescription,
   CardContent,
 } from "@/components/ui/card";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogMedia,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { ukPhoneRegexp, ukPostcodeRegexp } from "@/lib/validation";
 
+const maxCharsMessage = (n: number) => `Must not exceed ${n} characters`;
+const maxChars = (n: number) => z.string().max(n, maxCharsMessage(n));
+
 const registerSchema = z
   .object({
-    firstName: z
-      .string()
-      .min(1, "Please enter your first name")
-      .max(100, "Must be at most 100 characters"),
-    lastName: z
-      .string()
-      .min(1, "Please enter your last name")
-      .max(100, "Must be at most 100 characters"),
-    email: z
-      .email("Invalid email address")
-      .max(100, "Must be at most 100 characters"),
-    password: z
-      .string()
-      .min(6, "Must be at least 6 characters")
-      .max(100, "Must be at most 100 characters"),
+    firstName: maxChars(100).min(1, "Please enter your first name"),
+    lastName: maxChars(100).min(1, "Please enter your last name"),
+    email: z.email("Invalid email address").max(100, maxCharsMessage(100)),
+    password: maxChars(100).min(6, "Must be at least 6 characters"),
     confirmPassword: z.string(),
-    phone: z
-      .string()
-      .refine(
-        (v) => v === "" || ukPhoneRegexp.test(v),
-        "Invalid UK phone number",
-      ),
-    organisationNumber: z.string(),
-    address1: z.string().max(100, "Must be at most 100 characters"),
-    address2: z.string().max(100, "Must be at most 100 characters"),
-    city: z.string().max(100, "Must be at most 100 characters"),
+    phone: maxChars(20).refine(
+      (v) => v === "" || ukPhoneRegexp.test(v),
+      "Invalid UK phone number",
+    ),
+    organisationNumber: maxChars(100),
+    address1: maxChars(100),
+    address2: maxChars(100),
+    city: maxChars(100),
     postcode: z
       .string()
       .trim()
@@ -71,11 +73,11 @@ const registerSchema = z
         (v) => v === "" || ukPostcodeRegexp.test(v),
         "Invalid UK postcode",
       ),
-    organisation: z.string(),
+    organisation: maxChars(100),
     organisationType: z.string(),
     organisationCommunityInterest: z.string(),
     organisationCommercial: z.string(),
-    organisationCommercialOther: z.string(),
+    organisationCommercialOther: maxChars(100),
     agree: z.boolean(),
     marketing: z.boolean(),
   })
@@ -129,6 +131,19 @@ const organisationCommercialItems = {
   other: "Other (please specify)",
 };
 
+// the back-end (apps/back-end/src/validation.ts) calls it "username"; its other
+// validation keys match form field names, apart from organisationSubType, which
+// is resolved per organisation type at submit time
+const serverFieldRenames: Partial<Record<string, keyof RegisterFormValues>> = {
+  username: "email",
+};
+
+const resolveField = (key: string, subTypeField: keyof RegisterFormValues) =>
+  key === "organisationSubType"
+    ? subTypeField
+    : serverFieldRenames[key] ??
+      (key in defaultValues ? (key as keyof RegisterFormValues) : undefined);
+
 type Props = {
   setRegistering: (registering: boolean) => void;
   setRegisterSuccess: (registerSuccess: boolean) => void;
@@ -138,8 +153,9 @@ const RegisterForm = ({ setRegistering, setRegisterSuccess }: Props) => {
   const [accountType, setAccountType] = useState("free");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [errorMessages, setErrorMessages] = useState<string[]>([]);
 
-  const { control, handleSubmit } = useForm<RegisterFormValues>({
+  const { control, handleSubmit, setError } = useForm<RegisterFormValues>({
     resolver: zodResolver(registerSchema),
     mode: "onBlur",
     defaultValues,
@@ -150,6 +166,8 @@ const RegisterForm = ({ setRegistering, setRegisterSuccess }: Props) => {
     name: ["organisationType", "organisationCommercial", "agree"] as const,
   });
 
+  const dismissErrors = () => setErrorMessages([]);
+
   const onSubmit = (data: RegisterFormValues) => {
     setRegistering(true);
     submitRegistration(data);
@@ -158,12 +176,13 @@ const RegisterForm = ({ setRegistering, setRegisterSuccess }: Props) => {
   // #157: accountType is saved to the DB as there's currently no payment gateway
   // this can allow for manual follow-up of paying users
   const submitRegistration = (data: RegisterFormValues) => {
-    const organisationSubType =
+    const organisationSubTypeField: keyof RegisterFormValues =
       data.organisationType === "community-interest"
-        ? data.organisationCommunityInterest
+        ? "organisationCommunityInterest"
         : data.organisationCommercial === "other"
-          ? data.organisationCommercialOther
-          : data.organisationCommercial;
+          ? "organisationCommercialOther"
+          : "organisationCommercial";
+    const organisationSubType = data[organisationSubTypeField] as string;
 
     const request = {
       accountType,
@@ -184,22 +203,48 @@ const RegisterForm = ({ setRegistering, setRegisterSuccess }: Props) => {
     };
     axios
       .post(`${constants.ROOT_URL}/api/user/register`, request)
-      .then((response) => {
-        console.log("register response", response);
+      .then(() => {
         setRegisterSuccess(true);
-        setRegistering(false);
       })
       .catch((err: any) => {
-        console.log(err.message);
-        //Catch err 400 here
         const { response } = err;
-        if (response?.status === 400) {
-          console.log("Hey we get some custom error message from server:");
-          console.log(response.data);
-
-          if (response.data.username)
-            Swal.fire({ icon: "error", text: response.data.username[0] });
+        if (
+          response?.status === 400 &&
+          typeof response.data === "object" &&
+          response.data !== null
+        ) {
+          const unattributed: string[] = [];
+          let focused = false;
+          Object.entries(response.data as Record<string, string[]>).forEach(
+            ([key, messages]) => {
+              const field = resolveField(key, organisationSubTypeField);
+              if (field) {
+                setError(
+                  field,
+                  { type: "server", message: messages.join(" ") },
+                  { shouldFocus: !focused },
+                );
+                focused = true;
+              } else {
+                unattributed.push(...messages);
+              }
+            },
+          );
+          setErrorMessages(unattributed);
+        } else {
+          // no response means the request never landed, so the connection is
+          // worth checking; anything else came from the server, where trying
+          // again now would not help
+          const unreachable =
+            err.code === "ERR_NETWORK" || err.code === "ECONNABORTED";
+          setErrorMessages([
+            unreachable
+              ? "We could not reach the server. Check your internet connection and try again."
+              : "We could not complete your registration at the moment. Please try again later.",
+          ]);
         }
+      })
+      .finally(() => {
         setRegistering(false);
       });
   };
@@ -795,6 +840,37 @@ const RegisterForm = ({ setRegistering, setRegisterSuccess }: Props) => {
           </div>
         </form>
       </CardContent>
+
+      <AlertDialog
+        open={errorMessages.length > 0}
+        onOpenChange={(open) => !open && dismissErrors()}
+      >
+        <AlertDialogContent className="ring-destructive/40">
+          <AlertDialogHeader>
+            <AlertDialogMedia className="size-auto bg-transparent text-destructive">
+              <FontAwesomeIcon
+                icon={faTriangleExclamation}
+                className="size-6!"
+              />
+            </AlertDialogMedia>
+            <AlertDialogTitle className="text-destructive!">
+              Registration error
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-foreground">
+              {errorMessages.join(" ")}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="border-destructive/30 bg-destructive/15">
+            <AlertDialogAction
+              onClick={dismissErrors}
+              variant="secondary"
+              className="border-destructive/50 px-6 pb-0.5"
+            >
+              OK
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Card>
   );
 };
