@@ -2,7 +2,7 @@ import "dotenv/config";
 import { chromium } from "playwright";
 import path from "path";
 import fs from "fs";
-import { readdir, lstat, rm } from "fs/promises";
+import { readdir, lstat, open, rm } from "fs/promises";
 import extract from "extract-zip";
 import { exec, spawn } from "child_process";
 import { wrapper } from "axios-cookiejar-support";
@@ -100,23 +100,100 @@ const downloadInspire = async (
   }
 };
 
+const DOWNLOAD_ATTEMPTS = 3;
+const MIN_ZIP_BYTES = 1024; // The gov.uk error page is about 9KB
+
+/**
+ * Check that a downloaded file is a zip archive and not an error page
+ * or the network didn't fail during download. We are having many months
+ * of failed downloads. The gov.uk website sometimes replies 200 but has
+ * an error body and we're saving those in a zip then the pipeline dies
+ * when it tries to process it. The network also sometimes dies and we
+ * get a broken unreadable zip
+ */
+const assertIsCompleteZipFile = async (
+  filePath: string,
+  expectedBytes: number | undefined,
+) => {
+  const { size } = await lstat(filePath);
+
+  // Sometimes nginx decompresses as it streams so safe check is <
+  if (expectedBytes !== undefined && size < expectedBytes) {
+    throw new Error(
+      `download is incorrect size, got ${size} bytes but expected ${expectedBytes}`,
+    );
+  }
+  if (size < MIN_ZIP_BYTES) {
+    throw new Error(`file is only ${size} bytes, error page or truncated zip`);
+  }
+
+  const handle = await open(filePath, "r");
+  try {
+    const { buffer } = await handle.read(Buffer.alloc(2), 0, 2, 0);
+    if (buffer.toString("latin1") !== "PK") {
+      throw new Error("file doesn't start with the zip magic bytes 'PK'");
+    }
+  } finally {
+    await handle.close();
+  }
+};
+
+/**
+ * Download council zip file and retry if we don't get a valid archive
+ * Download to a temp file and move it once it has been checked - stops the
+ *  pipeline crashing later with error HTML or truncated zips
+ */
 const downloadZipFile = async (url: string, outputPath: string) => {
-  const writer = fs.createWriteStream(outputPath);
+  const partPath = `${outputPath}.part`;
 
-  const jar = new CookieJar();
-  const response = await wrapper(axios).get(url, {
-    jar,
-    withCredentials: true,
-    maxRedirects: 2,
-    responseType: "stream",
-  });
+  for (let attempt = 1; attempt <= DOWNLOAD_ATTEMPTS; attempt++) {
+    try {
+      await rm(partPath, { force: true });
 
-  response.data.pipe(writer);
+      const jar = new CookieJar();
+      const response = await wrapper(axios).get(url, {
+        jar,
+        withCredentials: true,
+        maxRedirects: 2,
+        responseType: "stream",
+      });
 
-  return new Promise<void>((resolve, reject) => {
-    writer.on("finish", () => resolve());
-    writer.on("error", reject);
-  });
+      const contentType = String(response.headers["content-type"] ?? "");
+      if (contentType.includes("html")) {
+        response.data.destroy();
+        throw new Error(`server returned '${contentType}' instead of a zip`);
+      }
+      const contentLength = Number(response.headers["content-length"]);
+
+      const writer = fs.createWriteStream(partPath);
+      await new Promise<void>((resolve, reject) => {
+        response.data.on("error", reject);
+        writer.on("error", reject);
+        writer.on("finish", () => resolve());
+        response.data.pipe(writer);
+      });
+
+      await assertIsCompleteZipFile(
+        partPath,
+        Number.isFinite(contentLength) ? contentLength : undefined,
+      );
+      fs.renameSync(partPath, outputPath);
+      return;
+    } catch (err) {
+      await rm(partPath, { force: true });
+      const reason = err?.message ?? err;
+
+      if (attempt === DOWNLOAD_ATTEMPTS) {
+        throw new Error(
+          `Failed to download ${url} after ${DOWNLOAD_ATTEMPTS} attempts: ${reason}`,
+        );
+      }
+      logger.warn(
+        `Download of ${url} failed (attempt ${attempt} of ${DOWNLOAD_ATTEMPTS}): ${reason}. Retrying...`,
+      );
+      await new Promise((resolve) => setTimeout(resolve, attempt * 5000));
+    }
+  }
 };
 
 /**
@@ -132,9 +209,20 @@ const backupInspireDownloads = async () => {
   }
   const command = "bash scripts/backup-inspire-downloads.sh";
   logger.info(`Running '${command}'`);
-  const { stdout, stderr } = await promisify(exec)(command);
-  logger.info(`raw INSPIRE backup script stdout: ${stdout}`);
-  logger.info(`raw INSPIRE backup script stderr: ${stderr}`);
+  try {
+    const { stdout, stderr } = await promisify(exec)(command, {
+      maxBuffer: 64 * 1024 * 1024, // Check the backup size looks correct
+    });
+    logger.info(`raw INSPIRE backup script stdout: ${stdout}`);
+    logger.info(`raw INSPIRE backup script stderr: ${stderr}`);
+  } catch (err) {
+    // Log the error if we fail to backup but don't die
+    // We get a matrix notification
+    logger.error(
+      err,
+      "INSPIRE downloads backup failed, continuing with the pipeline",
+    );
+  }
 };
 
 /**
@@ -282,9 +370,8 @@ export const downloadAndBackupInspirePolygons = async (options: any) => {
       .map((file) => file.replace(".zip", ""));
   } else {
     logger.info(
-      `Download ${inspireDataMonth} INSPIRE data ` + afterCouncil
-        ? `after council ${afterCouncil}`
-        : "for all councils",
+      `Download ${inspireDataMonth} INSPIRE data ` +
+        (afterCouncil ? `after council ${afterCouncil}` : "for all councils"),
     );
 
     councils = [];
@@ -299,9 +386,35 @@ export const downloadAndBackupInspirePolygons = async (options: any) => {
   }
 
   // Unzip and transform all new downloads
+  // Keep each council independent so one bad archive doesn't throw away the
+  // rest of the run
+  const failedCouncils: string[] = [];
   for (const council of councils) {
-    await unzipArchive(council);
-    await gmlToPendingInspirePolygons(council);
+    try {
+      await unzipArchive(council);
+      await gmlToPendingInspirePolygons(council);
+    } catch (err) {
+      failedCouncils.push(council);
+      logger.error(err, `Failed to process ${council}, skipping it`);
+      // Delete the download so a later run fetches it
+      // Otherwise we think this month is complete
+      await rm(path.resolve(`${downloadPath}/${council}`), {
+        recursive: true,
+        force: true,
+      });
+      await rm(path.resolve(`${downloadPath}/${council}.zip`), { force: true });
+    }
+  }
+
+  if (failedCouncils.length === councils.length && councils.length > 0) {
+    throw new Error(
+      `Failed to process all ${councils.length} councils, so something is broken`,
+    );
+  }
+  if (failedCouncils.length > 0) {
+    logger.warn(
+      `Failed to process ${failedCouncils.length} of ${councils.length} councils: ${failedCouncils.join(", ")}`,
+    );
   }
 
   logger.info(
