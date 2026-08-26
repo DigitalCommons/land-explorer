@@ -6,6 +6,7 @@ import { ProprietorOwnershipsResponse } from "../../clients/pbs/proprietor-owner
 
 // Dependencies to be stubbed
 const proprietorOwnerships = require("../../clients/pbs/proprietor-ownerships");
+const query = require("../../queries/query");
 
 const sandbox = createSandbox();
 
@@ -39,6 +40,7 @@ describe("GET /api/proprietors/ownerships", () => {
 
   beforeEach(async () => {
     server = await init();
+    sandbox.replace(query, "trackUserEvent", fake.resolves(null));
   });
 
   afterEach(async () => {
