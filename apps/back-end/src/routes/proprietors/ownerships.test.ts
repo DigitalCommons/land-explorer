@@ -3,6 +3,7 @@ import { createSandbox, fake } from "sinon";
 import { Server } from "@hapi/hapi";
 import { init } from "../../server";
 import { ProprietorOwnershipsResponse } from "../../clients/pbs/proprietor-ownerships";
+import { Event } from "../../instrument";
 
 // Dependencies to be stubbed
 const proprietorOwnerships = require("../../clients/pbs/proprietor-ownerships");
@@ -22,6 +23,9 @@ describe("GET /api/proprietors/ownerships", () => {
         user_id: 123,
       },
     },
+    headers: {
+        ["x-session-id"]: "sessionId"
+    }
   };
 
   const pbsResponse: ProprietorOwnershipsResponse = {
@@ -38,9 +42,12 @@ describe("GET /api/proprietors/ownerships", () => {
     totalResults: 1,
   };
 
+  let analyticsStub: ReturnType<typeof fake.resolves>;
+
   beforeEach(async () => {
     server = await init();
-    sandbox.replace(query, "trackUserEvent", fake.resolves(null));
+    analyticsStub = fake.resolves(null);
+    sandbox.replace(query, "trackUserEvent", analyticsStub);
   });
 
   afterEach(async () => {
@@ -67,6 +74,17 @@ describe("GET /api/proprietors/ownerships", () => {
       const res = await server.inject(validRequest);
 
       expect(res.result).to.deep.equal(pbsResponse);
+    });
+
+    it("sends analytics", async () => {
+      await server.inject(validRequest);
+
+      expect(analyticsStub.calledOnce).to.be.true;
+      expect(analyticsStub.firstCall.args[0]).to.equal("sessionId");
+      expect(analyticsStub.firstCall.args[1]).to.equal(123);
+      expect(analyticsStub.firstCall.args[2]).to.equal(
+        Event.LAND_OWNERSHIP.HISTORIC_SEARCH,
+      );
     });
   });
 
