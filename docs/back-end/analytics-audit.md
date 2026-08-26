@@ -167,6 +167,17 @@ When analtics consent is given, the `distinct_id` hash is SHA-256 of `userId + u
 
 ---
 
+### `LandOwnership_HistoricSearch`
+**Trigger:** User searches for historic property ownerships by proprietor name or company registration number  
+**Source:** `src/routes/proprietors/ownerships.ts`
+
+| Field | Consenting | Non-consenting |
+|---|---|---|
+| `distinct_id` | hashed user ID | session UUID |
+| `user_groups` | array of group names | — |
+
+---
+
 ## Defined but unused
 
 `LandOwnership_SaveProperty` is declared in `src/instrument.ts` but never called anywhere in the codebase.

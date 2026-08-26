@@ -2,6 +2,8 @@ import { ResponseToolkit, ResponseObject, ServerRoute } from "@hapi/hapi";
 import Joi from "joi";
 import { LoggedInRequest } from "../request_types";
 import { getProprietorOwnerships } from "../../clients/pbs/proprietor-ownerships";
+import { trackUserEvent } from "../../queries/query";
+import { Event } from "../../instrument";
 
 const MINIMUM_OWNERSHIPS_YEAR: number = 2017;
 
@@ -28,6 +30,8 @@ export async function getOwnerships(
   h: ResponseToolkit,
 ): Promise<ResponseObject> {
   const { proprietorName, companyRegNo, year } = request.query;
+  const { user_id } = request.auth.credentials;
+  const { "x-session-id": sessionId } = request.headers;
 
   const abortController = new AbortController();
   const onClose = () => abortController.abort();
@@ -41,6 +45,9 @@ export async function getOwnerships(
       companyRegNo,
       abortController.signal,
     );
+
+    await trackUserEvent(sessionId, user_id, Event.LAND_OWNERSHIP.HISTORIC_SEARCH);
+
     return h.response(result).code(200);
   } catch (error) {
     if (abortController.signal.aborted) {
