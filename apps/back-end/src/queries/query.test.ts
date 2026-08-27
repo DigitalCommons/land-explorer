@@ -854,3 +854,59 @@ describe("groupPolysByTitleNo", () => {
     expect(result).to.deep.equal({});
   });
 });
+
+describe("Create user", () => {
+  afterEach(() => {
+    sandbox.restore();
+  });
+
+  const createUser = () =>
+    query.createUser({
+      username: "someone@example.com",
+      password: "p4ssw0rd",
+      marketing: 1,
+    });
+
+  it("still creates the user when they are already on the newsletter", async () => {
+    // On 2026-07-31 the whole stack crashed when someone already subscribed
+    // to the newsletter tried to make an account
+    const axios = require("axios");
+    sandbox
+      .stub(axios.default, "post")
+      .rejects({ response: { data: { code: "email_already_exists" } } });
+    const create = sandbox.stub(User, "create").resolves({ id: 1 });
+    const log = sandbox.spy(console, "log");
+    const error = sandbox.spy(console, "error");
+
+    const result = await createUser();
+    await new Promise(setImmediate);
+
+    expect(result).to.deep.equal({ id: 1 });
+    assert.calledOnce(create);
+    assert.calledWith(
+      log,
+      "Buttondown: already subscribed:",
+      "someone@example.com"
+    );
+    assert.notCalled(error);
+  });
+
+  it("logs an error with the address on any other newsletter failure", async () => {
+    const axios = require("axios");
+    sandbox.stub(axios.default, "post").rejects(new Error("timeout"));
+    const create = sandbox.stub(User, "create").resolves({ id: 1 });
+    const error = sandbox.spy(console, "error");
+
+    const result = await createUser();
+    await new Promise(setImmediate);
+
+    expect(result).to.deep.equal({ id: 1 });
+    assert.calledOnce(create);
+    assert.calledWith(
+      error,
+      "Buttondown subscribe failed for",
+      "someone@example.com",
+      "timeout"
+    );
+  });
+});
