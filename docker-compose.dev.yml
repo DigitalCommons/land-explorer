@@ -13,26 +13,28 @@
 # - front-end runs the Vite dev server instead of Caddy
 # - pbs lack the pipeline toolchain, use plain local stack for pipeline testing
 
+# The build stage keeps the workspace layout: root at /app, each app at
+# /app/apps/<name>. Mounts and -w flags target the app inside that tree.
 services:
   back-end:
     build:
       target: build
-    command: ["npm", "run", "dev"]
+    command: ["npm", "run", "dev", "-w", "apps/back-end"]
     volumes:
-      - ./apps/back-end/src:/app/src
+      - ./apps/back-end/src:/app/apps/back-end/src
 
   pbs:
     build:
       target: build
-    command: ["npm", "run", "dev:serve"]
+    command: ["npm", "run", "dev:serve", "-w", "apps/property-boundaries-service"]
     volumes:
-      - ./apps/property-boundaries-service/src:/app/src
+      - ./apps/property-boundaries-service/src:/app/apps/property-boundaries-service/src
 
   front-end:
     build:
       target: build
     # Vite on port 80 so 28080:80 mapping keeps working
-    command: ["npm", "run", "dev", "--", "--host", "0.0.0.0", "--port", "80"]
+    command: ["npm", "run", "dev", "-w", "apps/front-end", "--", "--host", "0.0.0.0", "--port", "80"]
     environment:
       DEV_API_PROXY: http://back-end:4000
       VITE_OS_KEY: ${VITE_OS_KEY:?missing - download docker.env from Bitwarden and run with --env-file docker.env}
@@ -44,7 +46,7 @@ services:
       VITE_MIXPANEL_PEPPER: ${VITE_MIXPANEL_PEPPER:-}
       VITE_FEATURE_HISTORIC_OWNERSHIP: ${VITE_FEATURE_HISTORIC_OWNERSHIP:-}
     volumes:
-      - ./apps/front-end/src:/app/src
-      - ./apps/front-end/public:/app/public
-      - ./apps/front-end/index.html:/app/index.html
-      - ./apps/front-end/vite.config.ts:/app/vite.config.ts
+      - ./apps/front-end/src:/app/apps/front-end/src
+      - ./apps/front-end/public:/app/apps/front-end/public
+      - ./apps/front-end/index.html:/app/apps/front-end/index.html
+      - ./apps/front-end/vite.config.ts:/app/apps/front-end/vite.config.ts

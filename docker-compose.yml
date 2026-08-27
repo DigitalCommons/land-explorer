@@ -1,7 +1,8 @@
 # Production deployment stack for Coolify.
 #
-# Coolify builds each service from its app context and serves it behind its own
-# reverse proxy, so we expose NO host ports here (exposing ports would bypass
+# Coolify builds each service from the REPO ROOT context (single root lockfile,
+# npm workspaces - each Dockerfile needs the root manifests) and serves it
+# behind its own reverse proxy, so we expose NO host ports here (exposing ports would bypass
 # Coolify's proxy + HTTPS). All secrets/config come from environment variables set
 # in the Coolify dashboard - the ${VAR?...} form makes a missing value fail fast.
 #
@@ -49,7 +50,7 @@ services:
       start_period: 10s
 
   be-migrate:
-    build: { context: ./apps/back-end, args: { NODE_VERSION: "24" } }
+    build: { context: ., dockerfile: apps/back-end/Dockerfile, args: { NODE_VERSION: "24" } }
     # Seeding is idempotent (seederStorage: sequelize tracks applied seeders).
     # SEED_DEMO_DATA=true on dev only; PR previews inherit it and self-seed.
     command: ["sh", "-c", "npx sequelize-cli db:create || true; npx sequelize-cli db:migrate; if [ \"$$SEED_DEMO_DATA\" = true ]; then npx sequelize-cli db:seed:all; fi"]
@@ -65,7 +66,7 @@ services:
     restart: "no"
 
   back-end:
-    build: { context: ./apps/back-end, args: { NODE_VERSION: "24" } }
+    build: { context: ., dockerfile: apps/back-end/Dockerfile, args: { NODE_VERSION: "24" } }
     environment:
       NODE_ENV: production
       PORT: "4000"
@@ -92,7 +93,7 @@ services:
       be-migrate: { condition: service_completed_successfully }
 
   pbs-migrate:
-    build: { context: ./apps/property-boundaries-service, args: { NODE_VERSION: "24" } }
+    build: { context: ., dockerfile: apps/property-boundaries-service/Dockerfile, args: { NODE_VERSION: "24" } }
     # SEED_DEMO_DATA=true
     #   will seed the Penryn demo dataset for small real data - see seeders/
     command: ["sh", "-c", "npx sequelize-cli db:create || true; npx sequelize-cli db:migrate; if [ \"$$SEED_DEMO_DATA\" = true ]; then npx sequelize-cli db:seed:all; fi"]
@@ -107,7 +108,7 @@ services:
     restart: "no"
 
   pbs:
-    build: { context: ./apps/property-boundaries-service, args: { NODE_VERSION: "24" } }
+    build: { context: ., dockerfile: apps/property-boundaries-service/Dockerfile, args: { NODE_VERSION: "24" } }
     environment:
       NODE_ENV: production
       PORT: "4000"
@@ -132,8 +133,8 @@ services:
       REMOTE_BACKUP_SSH_PORT: ${REMOTE_BACKUP_SSH_PORT:-}
     volumes:
       # INSPIRE downloads (lets a rerun resume the month) and pipeline logs
-      - pbs_downloads:/app/downloads
-      - pbs_logs:/app/logs
+      - pbs_downloads:/app/apps/property-boundaries-service/downloads
+      - pbs_logs:/app/apps/property-boundaries-service/logs
       # Storage box SSH key for backups
       - /root/pbs-backup-ssh:/home/node/.ssh
     depends_on:
@@ -155,7 +156,8 @@ services:
 
   front-end:
     build:
-      context: ./apps/front-end
+      context: .
+      dockerfile: apps/front-end/Dockerfile
       args:
         NODE_VERSION: "24"
         CADDY_HOSTNAME: ${FRONT_END_HOSTNAME:?public hostname of the app}

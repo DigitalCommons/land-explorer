@@ -1,0 +1,34 @@
+# All three app images build from the repo root context (single root lockfile,
+# npm workspaces), so this is the one .dockerignore for every build.
+
+# Secrets - never in an image
+docker.env*
+**/.env
+**/.env.*
+**/secrets
+
+# Build outputs and installs - rebuilt inside the image
+# lib is scoped to the back-end: the front-end has source at src/lib
+**/node_modules
+**/dist
+apps/back-end/lib
+**/build
+
+# Not needed in images
+**/.git
+**/.github
+**/.gitignore
+**/.dockerignore
+**/.vscode
+**/.cache
+**/npm-debug.log
+**/docker-compose*
+**/compose*
+**/Dockerfile*
+**/downloads
+**/logs
+**/analysis
+docs
+LICENSE
+*.md
+**/*.md
