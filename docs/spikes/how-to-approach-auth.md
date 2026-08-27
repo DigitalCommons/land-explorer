@@ -1,4 +1,5 @@
 # Spike: should we use an auth vendor, an auth library, or roll our own?
+https://github.com/DigitalCommons/land-explorer/issues/159
 
 Our current auth is written in house. The backend issues a JWT that's valid for 365 days with no way to revoke a token, no sessions and no rate limiting/brute force protection. 
 
