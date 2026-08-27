@@ -161,6 +161,7 @@ async function getAuthUserDetails(
     organisation: user.organisation ?? "",
     organisationNumber: user.organisation_number ?? "",
     organisationType: user.organisation_type ?? "",
+    accountType: user.account_type ?? "", // #157
     organisationActivity: user.organisation_activity ?? "",
     address1: user.address1 ?? "",
     address2: user.address2 ?? "",
@@ -226,6 +227,7 @@ async function changeUserDetail(
       last_name: payload.lastName,
       address1: payload.address1,
       address2: payload.address2,
+      city: payload.city, // #158
       postcode: payload.postcode,
       phone: payload.phone,
       organisation: payload.organisation,

@@ -101,6 +101,7 @@ export class Validation {
     optionalWithMax(this, data, "phone", 20, "Phone");
     optionalWithMax(this, data, "address1", 100, "Address");
     optionalWithMax(this, data, "address2", 100, "Address");
+    optionalWithMax(this, data, "city", 100, "City"); // #158
     optionalWithMax(this, data, "organisation", 100, "Organisation");
     optionalWithMax(
       this,
@@ -117,6 +118,18 @@ export class Validation {
       "Organisation number"
     );
     optionalWithMax(this, data, "organisationType", 100, "Organisation type");
+
+    // #157: selected tier, restricted to the two allowed values
+    if (
+      data?.accountType !== null &&
+      data?.accountType !== undefined &&
+      Joi.string().valid("free", "paid").validate(data.accountType).error
+    ) {
+      this.addErrorMessage(
+        "accountType",
+        "The account type field must be 'free' or 'paid'."
+      );
+    }
 
     return this;
   }
@@ -171,6 +184,7 @@ export class Validation {
     optionalWithMax(this, data, "phone", 20, "Phone");
     optionalWithMax(this, data, "address1", 100, "Address");
     optionalWithMax(this, data, "address2", 100, "Address");
+    optionalWithMax(this, data, "city", 100, "City"); // #158
     optionalWithMax(this, data, "organisation", 100, "Organisation");
     optionalWithMax(
       this,
