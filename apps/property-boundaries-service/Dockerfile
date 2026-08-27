@@ -4,7 +4,6 @@
 # compiled to dist/ with tsc). Builds from the REPO ROOT context - single root
 # lockfile, npm workspaces:
 #   docker build -f apps/property-boundaries-service/Dockerfile .
-# Modelled on mykomap-monolith/apps/back-end.
 #
 # Debian, instead of the other container's more slimline Alpine: the INSPIRE
 #   pipeline needs chromium
