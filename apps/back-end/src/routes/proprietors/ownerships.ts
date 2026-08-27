@@ -46,7 +46,7 @@ export async function getOwnerships(
       abortController.signal,
     );
 
-    await trackUserEvent(sessionId, user_id, Event.LAND_OWNERSHIP.HISTORIC_SEARCH);
+    trackUserEvent(sessionId, user_id, Event.LAND_OWNERSHIP.HISTORIC_SEARCH);
 
     return h.response(result).code(200);
   } catch (error) {
