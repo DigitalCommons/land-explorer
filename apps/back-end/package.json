@@ -14,7 +14,7 @@
   },
   "author": "Hansen Salim",
   "dependencies": {
-    "@faker-js/faker": "^6.0.0-beta.0",
+    "@faker-js/faker": "^10.5.0",
     "@hapi/basic": "^6.0.0",
     "@hapi/hapi": "^21.4.10",
     "@hapi/inert": "^6.0.5",
