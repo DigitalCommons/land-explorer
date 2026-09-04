@@ -6,3 +6,11 @@
 # neither are used to extract untrusted archives from users but should still be fixed
 # Remove when node image/npm ships tar > 7.5.19 and bcrypt is bumped
 CVE-2026-59873
+
+# golang.org/x/crypto/ssh auth bypass (unenforced source-address restrictions),
+# bundled in the caddy binary (apps/front-end/Dockerfile). Fixed upstream in
+# x/crypto v0.55.0, but no Caddy release pulls it in yet. Not reachable here regardless:
+# this image only uses Caddy as a static file server + HTTP reverse proxy, never
+# its SSH client/server. 
+# Remove once a Caddy release ships x/crypto >= 0.55.0.
+CVE-2026-56854
