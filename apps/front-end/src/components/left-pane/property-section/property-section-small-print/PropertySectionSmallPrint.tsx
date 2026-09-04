@@ -32,7 +32,7 @@ const PropertySectionSmallPrint = ({ title_no, unregistered }: Props) => {
           information{" "}
           <a
             target="_blank"
-            href="https://landexplorer.coop/land-ownership-how"
+            href="https://docs.google.com/document/d/1IzjiSknWgn4EqEJOd8SMdwuHdVHcu01TlCzL0B3xTm0/edit?usp=sharing"
           >
             click here
           </a>

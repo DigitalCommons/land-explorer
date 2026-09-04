@@ -65,7 +65,7 @@ const LeftPaneRelatedProperties = ({
           Some data is displayed here for evaluation purposes only. For more
           information{" "}
           <a
-            href="https://landexplorer.coop/land-ownership-how"
+            href="https://docs.google.com/document/d/1IzjiSknWgn4EqEJOd8SMdwuHdVHcu01TlCzL0B3xTm0/edit?usp=sharing"
             target="_blank"
             rel="noopener noreferrer"
           >
