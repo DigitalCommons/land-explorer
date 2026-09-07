@@ -13,4 +13,5 @@ CVE-2026-59873
 # this image only uses Caddy as a static file server + HTTP reverse proxy, never
 # its SSH client/server. 
 # Remove once a Caddy release ships x/crypto >= 0.55.0.
-CVE-2026-56854
+# Set expiry date so we review this 
+CVE-2026-56854 exp:2027-01-07
