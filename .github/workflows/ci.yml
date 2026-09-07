@@ -6,14 +6,9 @@ on:
   pull_request:
     branches: [main]
 
-# Each app is a verbatim mirror of its original repo and keeps its OWN lockfile,
-# so CI builds each one in isolation from that lockfile - exactly as the per-app
-# Dockerfile does for deployment, and as the original per-repo CI did. This
-# sidesteps hoisting version-drift between the three apps.
-# --workspaces=false is load-bearing: without it, npm ci inside apps/<name>
-# detects the workspace root and installs a workspace-scoped subset into the
-# ROOT node_modules (which skips peer deps under legacy-peer-deps, e.g.
-# @hapi/boom) instead of the app's own full lockfile tree.
+# Single root lockfile (npm workspaces): one npm ci at the root installs the
+# whole workspace tree, exactly as the Dockerfiles do. legacy-peer-deps comes
+# from the root .npmrc.
 jobs:
   build-test:
     runs-on: ubuntu-latest
@@ -21,9 +16,6 @@ jobs:
       fail-fast: false
       matrix:
         app: [back-end, front-end, property-boundaries-service]
-    defaults:
-      run:
-        working-directory: apps/${{ matrix.app }}
     env:
       PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: "1"
     steps:
@@ -32,13 +24,13 @@ jobs:
         with:
           node-version: 24.x
       - name: Install
-        run: npm ci --legacy-peer-deps --workspaces=false
+        run: npm ci
       - name: Build
-        run: npm run build --if-present
+        run: npm run build --if-present -w apps/${{ matrix.app }}
       - name: Type-check
-        run: npm run typecheck --if-present
+        run: npm run typecheck --if-present -w apps/${{ matrix.app }}
       - name: Test
-        run: npm test --if-present
+        run: npm run test --if-present -w apps/${{ matrix.app }}
 
   # Dockerfile lint + image CVE scan (technology-and-infrastructure#171).
   # DL3018 (pin apk versions) is ignored because pinned alpine packages
@@ -60,7 +52,7 @@ jobs:
           ignore: DL3018,DL3008
       - name: Build image
         run: >
-          docker build apps/${{ matrix.app }} -t ${{ matrix.app }}:scan
+          docker build -f apps/${{ matrix.app }}/Dockerfile . -t ${{ matrix.app }}:scan
           --build-arg NODE_VERSION=24
           --build-arg CADDY_HOSTNAME=ci-scan.invalid
           --build-arg VITE_OS_KEY=ci-scan

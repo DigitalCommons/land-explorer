@@ -22,7 +22,7 @@
     "rimraf": "^6.0.1"
   },
   "comments": {
-    "overrides": "Pin transitive/dev versions to what the source repos' own lockfiles used, so workspace hoisting reproduces each app's original build. Revisit at cutover."
+    "overrides": "Version pins carried over from the pre-monorepo per-app lockfiles. Candidates for removal now the root lockfile is the single source of truth."
   },
   "overrides": {
     "@types/jsonwebtoken": "9.0.1",
