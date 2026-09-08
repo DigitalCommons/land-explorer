@@ -16,6 +16,7 @@ import {
   createUserFeedback,
   getAskForFeedback,
   trackUserEvent,
+  hashUserId,
 } from "../queries/query";
 import { User, PasswordResetToken } from "../queries/database";
 import { hashPassword, generateRandomToken } from "../queries/helper";
@@ -170,6 +171,7 @@ async function getAuthUserDetails(
     council_id: user.council_id ?? 0,
     is_super_user: user.is_super_user ?? 0,
     analyticsConsent: computeAnalyticsConsent(user),
+    analyticsUserHash: await hashUserId(user),
     userGuidePromptSeen: user.user_guide_prompt_seen ?? false,
   });
 }

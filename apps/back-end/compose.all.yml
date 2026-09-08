@@ -242,7 +242,6 @@ services:
         # Optional build args - these won't be wired up if they are unset
         VITE_USER_GUIDE_URL: ${VITE_USER_GUIDE_URL:-}
         VITE_MIXPANEL_TOKEN: ${VITE_MIXPANEL_TOKEN:-}
-        VITE_MIXPANEL_PEPPER: ${VITE_MIXPANEL_PEPPER:-}
 
     container_name: lx-fe
     ports:
