@@ -25,8 +25,9 @@ export type User = {
   privileged: boolean;
   askForFeedback: boolean;
   analyticsConsent: boolean | null;
+  analyticsUserHash: string;
   sessionId: string;
-  userGuidePromptSeen: boolean;
+  userGuidePromptSeen: boolean;  
 };
 
 type UserPayload = {
@@ -49,6 +50,7 @@ type UserPayload = {
   is_super_user?: boolean;
   analyticsConsent: boolean | null;
   userGuidePromptSeen: boolean;
+  analyticsUserHash: string;
 };
 
 const getInitialState = (): User => ({
@@ -77,6 +79,7 @@ const getInitialState = (): User => ({
   analyticsConsent: null,
   sessionId: crypto.randomUUID(),
   userGuidePromptSeen: false,
+  analyticsUserHash: ""
 });
 
 type UserAction =

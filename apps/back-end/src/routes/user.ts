@@ -16,6 +16,7 @@ import {
   createUserFeedback,
   getAskForFeedback,
   trackUserEvent,
+  hashUserId,
 } from "../queries/query";
 import { User, PasswordResetToken } from "../queries/database";
 import { hashPassword, generateRandomToken } from "../queries/helper";
@@ -151,6 +152,7 @@ async function getAuthUserDetails(
     (user.first_name || "?")[0].toUpperCase() +
     (user.last_name || "?")[0].toUpperCase();
 
+  const analyticsConsent = computeAnalyticsConsent(user);
   return h.response({
     id: user.id ?? "",
     username: user.username,
@@ -169,7 +171,8 @@ async function getAuthUserDetails(
     phone: user.phone ?? "",
     council_id: user.council_id ?? 0,
     is_super_user: user.is_super_user ?? 0,
-    analyticsConsent: computeAnalyticsConsent(user),
+    analyticsConsent: analyticsConsent,
+    analyticsUserHash: analyticsConsent ? await hashUserId(user): "",
     userGuidePromptSeen: user.user_guide_prompt_seen ?? false,
   });
 }
