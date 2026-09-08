@@ -12,8 +12,8 @@ export const getUserDetails = () => {
     if (userData) {
       dispatch({ type: "POPULATE_USER", payload: userData });
       if (userData.analyticsConsent === true) {
-        try {
-          await optInAndSetAnalyticsUser(userData.id, userData.username);
+        try {          
+          await optInAndSetAnalyticsUser(userData.analyticsUserHash);
         } catch {
           // analytics failure should not prevent the app from loading
         }
@@ -65,9 +65,9 @@ export const setAnalyticsConsent = (status: boolean) => {
       });
 
       if (status) {
-        const { id, username } = getState().user;
+        const { analyticsUserHash } = getState().user;
         try {
-          await optInAndSetAnalyticsUser(id, username);
+          await optInAndSetAnalyticsUser(analyticsUserHash);
         } catch {
           // analytics failure should not prevent consent from being saved
         }

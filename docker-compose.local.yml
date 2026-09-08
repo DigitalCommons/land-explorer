@@ -198,7 +198,6 @@ services:
         VITE_MAPBOX_TOKEN: ${VITE_MAPBOX_TOKEN:?missing - download docker.env from Bitwarden and run with --env-file docker.env}
         VITE_USER_GUIDE_URL: ${VITE_USER_GUIDE_URL:-}
         VITE_MIXPANEL_TOKEN: ${VITE_MIXPANEL_TOKEN:-}
-        VITE_MIXPANEL_PEPPER: ${VITE_MIXPANEL_PEPPER:-}
         VITE_FEATURE_HISTORIC_OWNERSHIP: ${VITE_FEATURE_HISTORIC_OWNERSHIP:-}
     container_name: lx-fe
     ports:
