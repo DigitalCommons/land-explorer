@@ -6,12 +6,13 @@ import "./instrument";
 import * as Sentry from "@sentry/node";
 import Hapi from "@hapi/hapi";
 import { Request, Server } from "@hapi/hapi";
-import { userRoutes } from "./routes/user";
+import { userAuthRoutes, userRoutes } from "./routes/user";
 import { mapRoutes } from "./routes/map";
 import { dataGroupRoutes } from "./routes/datagroup";
 import { proprietorRoutes } from "./routes/proprietors";
 import { setupWebsockets } from "./websockets/server";
 import { getCorsOrigins } from "./cors";
+import { useBetterAuth } from "./featureFlagUtils";
 
 const AuthBearer = require("hapi-auth-bearer-token");
 const Inert = require("@hapi/inert");
@@ -50,28 +51,30 @@ export const init = async function (): Promise<Server> {
   await server.register(AuthBearer);
   await server.register(Inert);
 
-  server.auth.strategy("simple", "bearer-access-token", {
-    allowQueryToken: true, // optional, false by default
-    validate: async (request: any, token: string, h: any) => {
-      let isValid = false;
-      let credentials = {};
+  if (!useBetterAuth()) {
+    server.auth.strategy("simple", "bearer-access-token", {
+      allowQueryToken: true, // optional, false by default
+      validate: async (request: any, token: string, h: any) => {
+        let isValid = false;
+        let credentials = {};
 
-      try {
-        // see the loginUser function to see token content
-        const decodedToken = jwt.verify(token, process.env.TOKEN_KEY);
+        try {
+          // see the loginUser function to see token content
+          const decodedToken = jwt.verify(token, process.env.TOKEN_KEY);
 
-        isValid = true;
-        credentials = { user_id: decodedToken.user_id };
-      } catch (err) {
-        console.log("Failed authentication", err);
-      }
+          isValid = true;
+          credentials = { user_id: decodedToken.user_id };
+        } catch (err) {
+          console.log("Failed authentication", err);
+        }
 
-      return { isValid, credentials };
-    },
-  });
+        return { isValid, credentials };
+      },
+    });
 
-  server.auth.default("simple");
-
+    server.auth.default("simple");
+  }
+  
   server.route({
     method: "GET",
     path: "/",
@@ -82,6 +85,7 @@ export const init = async function (): Promise<Server> {
   });
 
   server.route(userRoutes);
+  server.route(userAuthRoutes())
   server.route(mapRoutes);
   server.route(dataGroupRoutes);
   server.route(proprietorRoutes);

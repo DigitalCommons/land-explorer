@@ -7,6 +7,9 @@ import Spinner from "../components/common/Spinner";
 import TopBar from "../components/top-bar/TopBar";
 import constants from "../constants";
 
+// TODO: Remove this component as part of the clean up of VITE_FEATURE_USE_BETTERAUTH feature flag - dont forget
+// to clean up scss.
+
 type Props = { updateBgImage: (n: number) => void };
 
 const Login = ({ updateBgImage }: Props) => {
