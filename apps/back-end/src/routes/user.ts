@@ -27,9 +27,12 @@ import {
   UpdateUserGuidePromptSeenRequest,
 } from "./user.types";
 import { computeAnalyticsConsent } from "../userAnalyticsConsent";
+import { useBetterAuth } from "../featureFlagUtils";
 
+//TODO: DELETE FUNCTION WHEN `FEATURE_USE_BETTERAUTH` ENV VAR IS REMOVED
 const RESET_PASSWORD_EXPIRY_HOURS = 24;
 
+//TODO: DELETE FUNCTION WHEN `FEATURE_USE_BETTERAUTH` ENV VAR IS REMOVED
 type RegisterRequest = Request & {
   payload: {
     username: string;
@@ -40,12 +43,14 @@ type RegisterRequest = Request & {
 };
 
 /**
+ * TODO: DELETE FUNCTION WHEN `FEATURE_USE_BETTERAUTH` ENV VAR IS REMOVED
+ * 
  * Register new user using request data from API
  */
 async function registerUser(
   request: RegisterRequest,
   h: ResponseToolkit,
-): Promise<ResponseObject> {
+): Promise<ResponseObject> {  
   const originDomain = `https://${request.info.host}`;
 
   let validation = new Validation();
@@ -84,12 +89,14 @@ type LoginRequest = Request & {
 };
 
 /**
+ * TODO: DELETE FUNCTION WHEN `FEATURE_USE_BETTERAUTH` ENV VAR IS REMOVED
+ * 
  * Handle user login using request data from API
  */
 async function loginUser(
   request: LoginRequest,
   h: ResponseToolkit,
-): Promise<ResponseObject> {
+): Promise<ResponseObject> { 
   console.log("login user");
 
   const { username, password, reset_token } = request.payload;
@@ -175,6 +182,8 @@ async function getAuthUserDetails(
 }
 
 /**
+ * TODO: DELETE FUNCTION WHEN `FEATURE_USE_BETTERAUTH` ENV VAR IS REMOVED
+ * 
  * Update the email of autheticated user
  */
 async function changeEmail(
@@ -250,6 +259,9 @@ type ChangePasswordRequest = LoggedInRequest & {
 };
 
 /**
+ * 
+ * TODO: DELETE FUNCTION WHEN `FEATURE_USE_BETTERAUTH` ENV VAR IS REMOVED
+ * 
  * Allow logged in user to change their password
  */
 async function changePassword(
@@ -285,6 +297,9 @@ type ResetPasswordRequest = Request & {
 };
 
 /**
+ * 
+ * TODO: DELETE FUNCTION WHEN `FEATURE_USE_BETTERAUTH` ENV VAR IS REMOVED
+ * 
  * Allow user to request a password reset link when they forget their password
  */
 async function resetPassword(
@@ -480,8 +495,7 @@ async function updateUserGuidePromptSeen(
   return h.response().code(200);
 }
 
-export const userRoutes: ServerRoute[] = [
-  /** Public APIs */
+export const legacyUserAuthRoutes: ServerRoute[] = [
   // Register a new account
   {
     method: "POST",
@@ -503,7 +517,17 @@ export const userRoutes: ServerRoute[] = [
     handler: loginUser,
     options: { auth: false },
   },
+  // Allow user to change their email address
+  { method: "POST", path: "/api/user/email", handler: changeEmail },
+  // Allow logged in user to change their password
+  { method: "POST", path: "/api/user/password", handler: changePassword },
+  
+]
 
+export const userAuthRoutes = (): ServerRoute[] => useBetterAuth() ? []: legacyUserAuthRoutes;
+
+export const userRoutes: ServerRoute[] = [
+  /** Public APIs */ 
   /** Authenticated users only */
   // Return logged in user's details
   { method: "GET", path: "/api/user/details", handler: getAuthUserDetails },
@@ -513,8 +537,6 @@ export const userRoutes: ServerRoute[] = [
     path: "/api/user/ask-for-feedback",
     handler: getUserAskForFeedback,
   },
-  // Allow user to change their email address
-  { method: "POST", path: "/api/user/email", handler: changeEmail },
   // Allow user to change their details
   { method: "POST", path: "/api/user/details", handler: changeUserDetail },
   // Allow user to update their ask for feedback flag
@@ -523,8 +545,6 @@ export const userRoutes: ServerRoute[] = [
     path: "/api/user/ask-for-feedback",
     handler: updateAskForFeedback,
   },
-  // Allow logged in user to change their password
-  { method: "POST", path: "/api/user/password", handler: changePassword },
   // Allow logged in user to submit feedback
   { method: "POST", path: "/api/user/feedback", handler: userFeedback },
   // Update analytics consent
