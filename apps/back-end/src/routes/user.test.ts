@@ -5,6 +5,7 @@ import { expect } from "chai";
 import { assert, createSandbox, fake, match, SinonSpy } from "sinon";
 import { Server } from "@hapi/hapi";
 import { init } from "../server";
+import { useBetterAuth } from "../featureFlagUtils";
 
 // Dependencies to be stubbed https://sinonjs.org/how-to/stub-dependency/
 const query = require("../queries/query");
@@ -19,8 +20,11 @@ const sandbox = createSandbox();
 
 let server: Server;
 
+// Only registered while the legacy auth routes are active - see legacyUserAuthRoutes in ./user.ts
+const describeLegacyAuth = useBetterAuth() ? describe.skip : describe;
+
 // Describe the feature that we're testing
-describe("POST /api/token", () => {
+describeLegacyAuth("POST /api/token", () => {
   const testUser = {
     id: 123,
     username: "douglas.quaid@yahoomail.com",
@@ -176,7 +180,7 @@ describe("POST /api/token", () => {
   });
 });
 
-describe("POST /api/user/password-reset", () => {
+describeLegacyAuth("POST /api/user/password-reset", () => {
   const testUserId = 123;
   const testEmail = "douglas.quaid@yahoomail.com";
   const testFirstName = "Douglas";
