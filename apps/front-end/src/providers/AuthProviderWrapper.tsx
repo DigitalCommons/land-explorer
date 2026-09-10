@@ -12,7 +12,7 @@ export default function AuthProviderWrapper({children}: PropsWithChildren) {
             authClient={authClient}
             redirectTo="/settings/account"
             socialProviders={["google", "github"]}
-            emailAndPassword={{ requireEmailVerification: true }}
+            emailAndPassword={{ requireEmailVerification: true, minPasswordLength: 6 }}
             navigate={({ to, replace }) => navigate(to, {replace: replace})}
             Link={({ href, ...props }) => <Link to={href} {...props} />}
         >
