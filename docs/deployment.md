@@ -36,7 +36,8 @@ Then set FRONT_END_HOSTNAME= the front-end domain (bakes into the FE image at bu
 -   VITE_FEATURE_HISTORIC_OWNERSHIP - boolean value to turn on/off the historic ownership feature
 -   VITE_FEATURE_USE_BETTERAUTH - boolean value to turn on/off betterAuth feature in the frontend
 -   FEATURE_USE_BETTERAUTH - boolean value to turn on/off betterAuth feature in the backend
-
+-   BETTER_AUTH_SECRET - secret value set in the backend. generate with `openssl rand -base64 32`
+-   BETTER_AUTH_URL - base url of app. set in the backend
 ## Databases — seed vs full copy
 
 Migrations run as one-shot services (be-migrate, pbs-migrate) before the apps.
