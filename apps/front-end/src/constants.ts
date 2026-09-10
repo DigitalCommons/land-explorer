@@ -43,6 +43,7 @@ type Constants = {
   MIXPANEL_TOKEN: string | undefined;
   MIXPANEL_PEPPER: string | undefined;
   USER_GUIDE_URL: string;
+  VITE_FEATURE_USE_BETTERAUTH: boolean;
 };
 
 const constants: Constants = {
@@ -80,6 +81,7 @@ const constants: Constants = {
   MIXPANEL_TOKEN: import.meta.env.VITE_MIXPANEL_TOKEN,
   MIXPANEL_PEPPER: import.meta.env.VITE_MIXPANEL_PEPPER,
   USER_GUIDE_URL: import.meta.env.VITE_USER_GUIDE_URL,
+  VITE_FEATURE_USE_BETTERAUTH: import.meta.env.VITE_FEATURE_USE_BETTERAUTH === "true"
 };
 
 export const VERSION = "1.1";

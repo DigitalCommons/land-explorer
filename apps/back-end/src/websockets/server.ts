@@ -3,6 +3,7 @@ import { Server as HapiServer } from "@hapi/hapi";
 import { clearAllLocks, maybeUnlock, getUserWithLockOrNull } from "./locking";
 import jwt, { JwtPayload } from "jsonwebtoken";
 import { getCorsOrigins } from "../cors";
+import { useBetterAuth } from "../featureFlagUtils";
 
 /** The socket.io server object */
 export let io: SocketIOServer;
@@ -21,57 +22,59 @@ export const setupWebsockets = (server: HapiServer): void => {
     corsOrigins.length > 0 ? { cors: { origin: corsOrigins } } : {}
   );
 
-  io.on("connection", (socket) => {
-    try {
-      // implement authentication, using the same JWT that we use for Hapi API requests
-      // see the 'loginUser' function to see token content
-      const { token } = socket.handshake.auth;
-      const { user_id } = jwt.verify(
-        token,
-        process.env.TOKEN_KEY ?? ""
-      ) as JwtPayload;
+  if (!useBetterAuth()) {
+    io.on("connection", (socket) => {
+      try {
+        // implement authentication, using the same JWT that we use for Hapi API requests
+        // see the 'loginUser' function to see token content
+        const { token } = socket.handshake.auth;
+        const { user_id } = jwt.verify(
+          token,
+          process.env.TOKEN_KEY ?? ""
+        ) as JwtPayload;
 
-      // The client cannot see or edit socket.data so it is safe to just store this on connection
-      socket.data.userId = Number(user_id);
-    } catch (err) {
-      // Reject the connection but never throw - an uncaught error here kills
-      // the whole process, so one client with a stale/invalid token would
-      // crash-loop the server
-      console.log("Failed authentication", err);
-      socket.disconnect(true);
-      return;
-    }
-
-    console.log("User websocket connected");
-
-    socket.on("disconnecting", () => {
-      console.log("User websocket disconnecting");
-      leaveAllMaps(socket);
-    });
-
-    socket.on("currentMap", async (mapId) => {
-      if (mapId === null) {
-        // null map id means a new untitled map was opened
-        console.log(`User opened a new untitled map`);
-        leaveAllMaps(socket);
-      } else {
-        if (getCurrentMapId(socket) != mapId) {
-          console.log(`User opened map`);
-          leaveAllMaps(socket);
-          socket.join(`${mapId}`);
-        }
-
-        // Tell the user about who has the lock (or null if the map is unlocked)
-        const user = await getUserWithLockOrNull(mapId);
-        socket.emit("mapLock", {
-          mapId,
-          userId: user?.id ?? null,
-          userInitials: user?.initials ?? null,
-        });
+        // The client cannot see or edit socket.data so it is safe to just store this on connection
+        socket.data.userId = Number(user_id);
+      } catch (err) {
+        // Reject the connection but never throw - an uncaught error here kills
+        // the whole process, so one client with a stale/invalid token would
+        // crash-loop the server
+        console.log("Failed authentication", err);
+        socket.disconnect(true);
+        return;
       }
+
+      console.log("User websocket connected");
+
+      socket.on("disconnecting", () => {
+        console.log("User websocket disconnecting");
+        leaveAllMaps(socket);
+      });
+
+      socket.on("currentMap", async (mapId) => {
+        if (mapId === null) {
+          // null map id means a new untitled map was opened
+          console.log(`User opened a new untitled map`);
+          leaveAllMaps(socket);
+        } else {
+          if (getCurrentMapId(socket) != mapId) {
+            console.log(`User opened map`);
+            leaveAllMaps(socket);
+            socket.join(`${mapId}`);
+          }
+
+          // Tell the user about who has the lock (or null if the map is unlocked)
+          const user = await getUserWithLockOrNull(mapId);
+          socket.emit("mapLock", {
+            mapId,
+            userId: user?.id ?? null,
+            userInitials: user?.initials ?? null,
+          });
+        }
+      });
     });
-  });
-};
+  };
+}
 
 /**
  * For a given socket belonging to a user, return the map ID they are currently viewing or null.
