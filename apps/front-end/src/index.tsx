@@ -44,6 +44,5 @@ createRoot(document.getElementById("root")!).render(
           </BrowserRouter>
         </TooltipProvider>
       </Provider>    
-    
   </QueryClientProvider>,
 );
