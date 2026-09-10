@@ -16,6 +16,10 @@ export const auth = betterAuth({
       joins: true,
     },
   },
+  emailAndPassword: {
+    enabled: true,
+    minPasswordLength: 6
+  },
   user: {
     modelName: "auth_user"
   },
