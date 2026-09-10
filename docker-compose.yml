@@ -53,7 +53,7 @@ services:
     build: { context: ., dockerfile: apps/back-end/Dockerfile, args: { NODE_VERSION: "24" } }
     # Seeding is idempotent (seederStorage: sequelize tracks applied seeders).
     # SEED_DEMO_DATA=true on dev only; PR previews inherit it and self-seed.
-    command: ["sh", "-c", "npx sequelize-cli db:create || true; npx sequelize-cli db:migrate; if [ \"$$SEED_DEMO_DATA\" = true ]; then npx sequelize-cli db:seed:all; fi"]
+    command: ["sh", "-c", "npx sequelize-cli db:create || true; npx sequelize-cli db:migrate; npx auth migrate -y; if [ \"$$SEED_DEMO_DATA\" = true ]; then npx sequelize-cli db:seed:all; fi"]
     environment:
       NODE_ENV: production
       SEED_DEMO_DATA: ${SEED_DEMO_DATA:-false}
@@ -62,6 +62,7 @@ services:
       DATABASE_USER: root
       DATABASE_PASSWORD: ${MYSQL_ROOT_PASSWORD}
       DATABASE_NAME: land_explorer
+      BETTER_AUTH_URL: ${BETTER_AUTH_URL:-}
     depends_on: { mysql: { condition: service_healthy } }
     restart: "no"
 

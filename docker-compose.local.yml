@@ -63,7 +63,7 @@ services:
       args:
         NODE_VERSION: ${NODE_VERSION:-24}
     container_name: lx-be-migrate
-    command: ["sh", "-c", "npx sequelize-cli db:create || true; npx sequelize-cli db:migrate; if [ \"$$SEED_DEMO_DATA\" = true ]; then npx sequelize-cli db:seed:all; fi"]
+    command: ["sh", "-c", "npx sequelize-cli db:create || true; npx sequelize-cli db:migrate; npx auth migrate -y; if [ \"$$SEED_DEMO_DATA\" = true ]; then npx sequelize-cli db:seed:all; fi"]
     environment:
       NODE_ENV: development
       SEED_DEMO_DATA: "true" # idempotent - tracked like migrations
@@ -72,6 +72,7 @@ services:
       DATABASE_USER: root
       DATABASE_PASSWORD: devroot
       DATABASE_NAME: land_explorer
+      BETTER_AUTH_URL: http://localhost:28080
     depends_on:
       mysql:
         condition: service_healthy
