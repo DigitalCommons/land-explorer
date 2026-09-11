@@ -11,6 +11,9 @@ import {
 } from "../../actions/LandOwnershipActions";
 import { LEFT_PANE_TRAY } from "../../reducers/LeftPaneReducer";
 
+// GeoJSONLayer suffixes its sub-layers with the type
+const RELATED_OWNERSHIP_FILL_LAYER = "related-ownership-fill";
+
 type Props = {
   center: any;
   map: any;
@@ -56,6 +59,14 @@ const MapProperties = ({ center, map }: Props) => {
       dispatch(highlightProperties({ [property.title_no]: property }));
       dispatch(setActiveProperty(property.title_no));
     }
+  };
+
+  const propertyFromFeature = (feature: any) => {
+    const titleNo = feature?.properties?.title_no;
+    if (!titleNo) return null;
+    return feature.layer.id === RELATED_OWNERSHIP_FILL_LAYER
+      ? relatedProperties?.[titleNo]
+      : highlightedProperties[titleNo] || visibleProperties[titleNo];
   };
 
   // For each property polygon, we need to render both a fill and a line layer, since React Mapbox
@@ -155,11 +166,8 @@ const MapProperties = ({ center, map }: Props) => {
   }, [displayRelatedProperties, relatedProperties]);
 
   const onRelatedOwnershipFeatureClick = (e: any) => {
-    const titleNo = e.features?.[0]?.properties?.title_no;
-    const property = titleNo && relatedProperties?.[titleNo];
-    if (property) {
-      onClickProperty(property);
-    }
+    const property = propertyFromFeature(e.features?.[0]);
+    if (property) onClickProperty(property);
   };
 
   const highlightedFillFeatures: React.ReactElement[] = [];
