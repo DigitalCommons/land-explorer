@@ -14,6 +14,17 @@ import { LEFT_PANE_TRAY } from "../../reducers/LeftPaneReducer";
 // GeoJSONLayer suffixes its sub-layers with the type
 const RELATED_OWNERSHIP_FILL_LAYER = "related-ownership-fill";
 
+// mapbox-gl-draw calls preventDefault() on every touchend, which also cancels the click the
+// browser would otherwise emulate. react-mapbox-gl binds Feature onClick to the map's click
+// event, so on touch devices we have to find the tapped property ourselves. See issue #138.
+const PROPERTY_FILL_LAYER_IDS = [
+  "all",
+  "properties-without-ownership",
+  "properties-unregistered",
+  "properties-highlighted",
+  RELATED_OWNERSHIP_FILL_LAYER,
+];
+
 type Props = {
   center: any;
   map: any;
@@ -68,6 +79,54 @@ const MapProperties = ({ center, map }: Props) => {
       ? relatedProperties?.[titleNo]
       : highlightedProperties[titleNo] || visibleProperties[titleNo];
   };
+
+  // Tap to select on touch devices, see PROPERTY_FILL_LAYER_IDS above
+  useEffect(() => {
+    if (!map) return;
+
+    let start: { point: any; time: number } | null = null;
+
+    const onTouchStart = (e: any) => {
+      start =
+        e.points.length === 1 ? { point: e.point, time: Date.now() } : null;
+    };
+
+    const onTouchEnd = (e: any) => {
+      const tap = start;
+      start = null;
+
+      // a pan, a pinch or a long press shouldn't select anything
+      if (
+        !tap ||
+        e.points.length !== 1 ||
+        Date.now() - tap.time > 500 ||
+        tap.point.dist(e.point) > 10
+      ) {
+        return;
+      }
+
+      // queryRenderedFeatures returns nothing at all if one of the layers is missing,
+      // and these briefly disappear while a new base layer's style loads
+      const layers = PROPERTY_FILL_LAYER_IDS.filter((id) => map.getLayer(id));
+      const property = propertyFromFeature(
+        map.queryRenderedFeatures(e.point, { layers })[0],
+      );
+      if (property) onClickProperty(property);
+    };
+
+    map.on("touchstart", onTouchStart);
+    map.on("touchend", onTouchEnd);
+    return () => {
+      map.off("touchstart", onTouchStart);
+      map.off("touchend", onTouchEnd);
+    };
+  }, [
+    map,
+    activePanel,
+    visibleProperties,
+    highlightedProperties,
+    relatedProperties,
+  ]);
 
   // For each property polygon, we need to render both a fill and a line layer, since React Mapbox
   // GL does not support configuring both the fill and border in a single layer.
