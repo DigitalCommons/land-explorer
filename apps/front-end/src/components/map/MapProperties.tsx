@@ -102,6 +102,7 @@ const MapProperties = ({ center, map }: Props) => {
           <Feature
             coordinates={[polygon.geom.coordinates]}
             key={`fill-${polyKey}`}
+            properties={{ title_no: property.title_no }}
             onClick={() => onClickProperty(property)}
           />
         );
@@ -173,6 +174,7 @@ const MapProperties = ({ center, map }: Props) => {
         <Feature
           coordinates={[polygon.geom.coordinates]}
           key={`fill-hl-${polyKey}`}
+          properties={{ title_no: property.title_no }}
           onClick={() => onClickProperty(property)}
         />,
       );
@@ -251,6 +253,7 @@ const MapProperties = ({ center, map }: Props) => {
 
       {/* Properties data private - Fill */}
       <Layer
+        id="properties-without-ownership"
         type="fill"
         paint={{
           "fill-opacity": 0.2,
@@ -273,6 +276,7 @@ const MapProperties = ({ center, map }: Props) => {
 
       {/* Unregistered Properties - Fill */}
       <Layer
+        id="properties-unregistered"
         type="fill"
         paint={{
           "fill-opacity": 0.2,
@@ -295,6 +299,7 @@ const MapProperties = ({ center, map }: Props) => {
 
       {/* Highlighted Properties - Fill */}
       <Layer
+        id="properties-highlighted"
         type="fill"
         paint={{
           "fill-opacity": 0.4,
