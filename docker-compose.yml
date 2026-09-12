@@ -23,6 +23,9 @@ name: land-explorer
 services:
   mysql:
     image: mysql:8
+    # A full pipeline run writes ~90G of binlogs so skip them
+    #  we can rerun the pipeline in an emergency
+    command: --skip-log-bin
     environment:
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?set in Coolify}
     volumes:
