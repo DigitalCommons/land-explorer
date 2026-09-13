@@ -1,24 +1,24 @@
 'use strict';
 
-const { faker } = require('@faker-js/faker');
 const enums = require('../lib/enums');
 const bcrypt = require('bcrypt');
 
 module.exports = {
 
-  up: (queryInterface, Sequelize) => {
+  up: async (queryInterface, Sequelize) => {
+    const { faker } = await import('@faker-js/faker');
     return queryInterface.bulkInsert('user', [{
-      first_name: faker.name.firstName(),
-      last_name: faker.name.lastName(),
-      address1: faker.address.streetAddress(),
-      address2: faker.address.secondaryAddress(),
-      city: faker.address.city(),
-      postcode: faker.address.zipCode(),
-      phone: faker.phone.phoneNumber(),
+      first_name: faker.person.firstName(),
+      last_name: faker.person.lastName(),
+      address1: faker.location.streetAddress(),
+      address2: faker.location.secondaryAddress(),
+      city: faker.location.city(),
+      postcode: faker.location.zipCode(),
+      phone: faker.phone.number(),
 
       marketing: faker.datatype.boolean(),
-      organisation: faker.company.companyName(),
-      organisation_number: faker.internet.color(),
+      organisation: faker.company.name(),
+      organisation_number: faker.color.rgb(),
       organisation_activity: enums.OrganisationSubType.PowerNetwork,
       organisation_type: enums.OrganisationType.Commercial,
       council_id: 0,
