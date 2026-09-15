@@ -39,7 +39,7 @@ const UserModel = sequelize.define(
     organisation_activity: DataTypes.STRING,
     organisation_number: DataTypes.STRING,
     organisation_type: DataTypes.STRING,
-    account_type: DataTypes.STRING, // #157: selected tier ("free"/"paid") at registration
+    account_type: { type: DataTypes.STRING, allowNull: false }, // #157: selected tier ("free"/"paid")
     council_id: { type: DataTypes.INTEGER, allowNull: false },
 
     username: { type: DataTypes.STRING, allowNull: false },

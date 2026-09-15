@@ -119,11 +119,11 @@ export class Validation {
     );
     optionalWithMax(this, data, "organisationType", 100, "Organisation type");
 
-    // #157: selected tier, restricted to the two allowed values
+    // #157: selected tier, required and restricted to the two accepted values
     if (
-      data?.accountType !== null &&
-      data?.accountType !== undefined &&
-      Joi.string().valid("free", "paid").validate(data.accountType).error
+      Joi.string()
+        .valid("free", "paid")
+        .validate(data?.accountType, { presence: "required" }).error
     ) {
       this.addErrorMessage(
         "accountType",

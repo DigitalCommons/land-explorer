@@ -4,7 +4,7 @@ module.exports = {
   async up(queryInterface, Sequelize) {
     await queryInterface.sequelize.query(
       `ALTER TABLE user
-            ADD account_type VARCHAR(255) DEFAULT NULL;`,
+            ADD account_type VARCHAR(255) NOT NULL DEFAULT 'free';`,
     );
   },
 
