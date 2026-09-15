@@ -70,7 +70,7 @@
     "@types/lodash": "^4.17.24",
     "@types/mapbox-gl": "2",
     "@types/node": "^24.0.0",
-    "@types/react": "^18.3.23",
+    "@types/react": "^19.2.4",
     "@types/react-dom": "^18.3.7",
     "@vitejs/plugin-react": "^4",
     "sass": "^1.72.0",

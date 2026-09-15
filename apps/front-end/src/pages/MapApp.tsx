@@ -15,17 +15,20 @@ import {
   closeSocketConnection,
 } from "../actions/WebSocketActions";
 import constants from "@/constants";
-
+import { useSession } from "@better-auth-ui/react";
+import { authClient } from "@/lib/auth/auth-client";
 
 const MapApp = () => {
   const authenticated = useAppSelector(
     (state) => state.authentication.authenticated
   );
   const user = useAppSelector((state) => state.user);
+  
+  const {data: session } = useSession(authClient)
 
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
-
+  
   if (!constants.VITE_FEATURE_USE_BETTERAUTH) {
     useEffect(() => {
       (async () => {
@@ -54,6 +57,28 @@ const MapApp = () => {
         }
       })();
     }, [authenticated]);
+  } else {
+    useEffect(() => {
+      if (!session) {
+      console.log("Not got session")
+        return;
+      }    
+
+      console.log("Got session")
+      dispatch(getUserDetails());
+      dispatch(establishSocketConnection());
+      dispatch(getAskForFeedback());
+      dispatch(getMyMaps());
+
+      // Open the map that was previously open if the page was refreshed
+      const storedMapId = parseInt(
+        sessionStorage.getItem("currentMapId") ?? ""
+      );
+      if (storedMapId) {
+        dispatch(openMap(storedMapId));
+      }
+
+    }, [session]);
   }
 
   // If user details have been populated, render map, else render loading spinner

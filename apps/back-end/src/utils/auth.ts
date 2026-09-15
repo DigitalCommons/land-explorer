@@ -20,7 +20,16 @@ export const auth = betterAuth({
     
   },
   user: {
-    modelName: "auth_user",
+    modelName: "auth_user",    
+    additionalFields: {
+      dcc_user_id: {
+        type: "number",
+        bigint: true,
+        required: false,   // nullable
+        unique: true,
+        input: false,
+      },
+    }    
   },
   emailAndPassword: {
     enabled: true,
