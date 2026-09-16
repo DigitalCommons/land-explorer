@@ -1,6 +1,6 @@
 import { createRoot } from "react-dom/client";
 import { Provider } from "react-redux";
-import { BrowserRouter, Route, Navigate, Routes, useNavigate } from "react-router-dom";
+import { BrowserRouter, Route, Navigate, Routes } from "react-router-dom";
 
 import MapApp from "./pages/MapApp";
 import MyAccount from "./pages/MyAccount";
