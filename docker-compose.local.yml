@@ -103,6 +103,8 @@ services:
       BOUNDARY_SERVICE_URL: http://pbs:4000
       BOUNDARY_SERVICE_SECRET: devsecret    
       FEATURE_USE_BETTERAUTH: false  
+      BETTER_AUTH_SECRET: dev-only-not-a-secret
+      BETTER_AUTH_URL: http://localhost:28080
     ports:
       - "24000:4000"
     depends_on:

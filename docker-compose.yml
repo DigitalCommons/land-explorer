@@ -87,7 +87,9 @@ services:
       GLITCHTIP_ENVIRONMENT: ${GLITCHTIP_ENVIRONMENT:-}
       MIXPANEL_TOKEN: ${MIXPANEL_TOKEN:-}
       ANALYTICS_PEPPER: ${ANALYTICS_PEPPER:-}      
-      FEATURE_USE_BETTERAUTH: ${FEATURE_USE_BETTERAUTH:-}      
+      FEATURE_USE_BETTERAUTH: ${FEATURE_USE_BETTERAUTH:-}
+      BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET:-}
+      BETTER_AUTH_URL: ${BETTER_AUTH_URL:-}
     depends_on:
       mysql: { condition: service_healthy }
       be-migrate: { condition: service_completed_successfully }
