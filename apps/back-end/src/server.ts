@@ -12,7 +12,7 @@ import { dataGroupRoutes } from "./routes/datagroup";
 import { proprietorRoutes } from "./routes/proprietors";
 import { setupWebsockets } from "./websockets/server";
 import { getCorsOrigins } from "./cors";
-import { useBetterAuth } from "./featureFlagUtils";
+import { isBetterAuthEnabled } from "./featureFlagUtils";
 
 const AuthBearer = require("hapi-auth-bearer-token");
 const Inert = require("@hapi/inert");
@@ -51,7 +51,7 @@ export const init = async function (): Promise<Server> {
   await server.register(AuthBearer);
   await server.register(Inert);
 
-  if (!useBetterAuth()) {
+  if (!isBetterAuthEnabled()) {
     server.auth.strategy("simple", "bearer-access-token", {
       allowQueryToken: true, // optional, false by default
       validate: async (request: any, token: string, h: any) => {
