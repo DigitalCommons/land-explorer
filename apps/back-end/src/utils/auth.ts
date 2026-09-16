@@ -15,6 +15,7 @@ export const auth = betterAuth({
     database: {
       joins: true,
     },
+    cookiePrefix: "lx"
   },
   emailVerification: {
     
@@ -22,7 +23,7 @@ export const auth = betterAuth({
   user: {
     modelName: "auth_user",    
     additionalFields: {
-      dcc_user_id: {
+      appUserId: {
         type: "number",
         bigint: true,
         required: false,   // nullable

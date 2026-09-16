@@ -57,7 +57,7 @@ export const setupWebsockets = (server: HapiServer): void => {
         })
         if (!session) return next(new Error("unauthorized"));
 
-        socket.data.userId = session.user.dcc_user_id;
+        socket.data.userId = session.user.appUserId;
         console.log("User websocket connected");
         next();
       } catch (err) {

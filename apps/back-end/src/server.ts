@@ -85,7 +85,7 @@ export const init = async function (): Promise<Server> {
           if (!session) {
             throw Boom.unauthorized(null, 'betterauth');
           } else {                                    
-            return h.authenticated({ credentials: { user_id: session.user.dcc_user_id } });
+            return h.authenticated({ credentials: { user_id: session.user.appUserId } });
           }
         }
     }});
