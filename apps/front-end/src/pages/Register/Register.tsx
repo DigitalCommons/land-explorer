@@ -14,13 +14,7 @@ const Register = ({ updateBgImage }: Props) => {
   }, []);
 
   return (
-    <div
-      style={{
-        height: "100vh",
-        overflowY: "scroll",
-        position: "relative",
-      }}
-    >
+    <div className="box-border h-screen overflow-y-scroll pb-50">
       <TopBar limited={true} />
       <Dialog open={registerSuccess}>
         <DialogContent
@@ -33,9 +27,7 @@ const Register = ({ updateBgImage }: Props) => {
           </Link>
         </DialogContent>
       </Dialog>
-      <div style={{ marginBottom: "200px" }}>
-        <RegisterForm setRegisterSuccess={setRegisterSuccess} />
-      </div>
+      <RegisterForm setRegisterSuccess={setRegisterSuccess} />
     </div>
   );
 };
