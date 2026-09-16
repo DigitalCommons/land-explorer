@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import Spinner from "../../components/common/Spinner";
 import TopBar from "../../components/top-bar/TopBar";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import RegisterForm from "./RegisterForm/RegisterForm";
@@ -8,7 +7,6 @@ import RegisterForm from "./RegisterForm/RegisterForm";
 type Props = { updateBgImage: (n: number) => void };
 
 const Register = ({ updateBgImage }: Props) => {
-  const [registering, setRegistering] = useState(false);
   const [registerSuccess, setRegisterSuccess] = useState(false);
 
   useEffect(() => {
@@ -24,18 +22,6 @@ const Register = ({ updateBgImage }: Props) => {
       }}
     >
       <TopBar limited={true} />
-      <div
-        style={{
-          display: registering ? "block" : "none",
-          left: "50%",
-          top: "50%",
-          transform: "translateX(-50%) translateY(-50%)",
-          position: "absolute",
-          textAlign: "center",
-        }}
-      >
-        <Spinner />
-      </div>
       <Dialog open={registerSuccess}>
         <DialogContent
           showCloseButton={false}
@@ -47,16 +33,8 @@ const Register = ({ updateBgImage }: Props) => {
           </Link>
         </DialogContent>
       </Dialog>
-      <div
-        style={{
-          marginBottom: "200px",
-          display: registering ? "none" : "block",
-        }}
-      >
-        <RegisterForm
-          setRegistering={setRegistering}
-          setRegisterSuccess={setRegisterSuccess}
-        />
+      <div style={{ marginBottom: "200px" }}>
+        <RegisterForm setRegisterSuccess={setRegisterSuccess} />
       </div>
     </div>
   );

@@ -45,6 +45,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Button, buttonVariants } from "@/components/ui/button";
+import { Spinner } from "@/components/ui/spinner";
 import { cn } from "@/lib/utils";
 import { ukPhoneRegexp, ukPostcodeRegexp } from "@/lib/validation";
 
@@ -145,17 +146,21 @@ const resolveField = (key: string, subTypeField: keyof RegisterFormValues) =>
       (key in defaultValues ? (key as keyof RegisterFormValues) : undefined);
 
 type Props = {
-  setRegistering: (registering: boolean) => void;
   setRegisterSuccess: (registerSuccess: boolean) => void;
 };
 
-const RegisterForm = ({ setRegistering, setRegisterSuccess }: Props) => {
+const RegisterForm = ({ setRegisterSuccess }: Props) => {
   const [accountType, setAccountType] = useState("free");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [errorMessages, setErrorMessages] = useState<string[]>([]);
 
-  const { control, handleSubmit, setError } = useForm<RegisterFormValues>({
+  const {
+    control,
+    handleSubmit,
+    setError,
+    formState: { isSubmitting },
+  } = useForm<RegisterFormValues>({
     resolver: zodResolver(registerSchema),
     mode: "onBlur",
     defaultValues,
@@ -168,13 +173,9 @@ const RegisterForm = ({ setRegistering, setRegisterSuccess }: Props) => {
 
   const dismissErrors = () => setErrorMessages([]);
 
-  const onSubmit = (data: RegisterFormValues) => {
-    setRegistering(true);
-    submitRegistration(data);
-  };
-
   // #157: accountType is saved to the DB as there's currently no payment gateway
   // this can allow for manual follow-up of paying users
+  // returns the request promise so react-hook-form can track isSubmitting
   const submitRegistration = (data: RegisterFormValues) => {
     const organisationSubTypeField: keyof RegisterFormValues =
       data.organisationType === "community-interest"
@@ -201,7 +202,7 @@ const RegisterForm = ({ setRegistering, setRegisterSuccess }: Props) => {
       postcode: data.postcode,
       username: data.email,
     };
-    axios
+    return axios
       .post(`${constants.ROOT_URL}/api/user/register`, request)
       .then(() => {
         setRegisterSuccess(true);
@@ -243,9 +244,6 @@ const RegisterForm = ({ setRegistering, setRegisterSuccess }: Props) => {
               : "We could not complete your registration at the moment. Please try again later.",
           ]);
         }
-      })
-      .finally(() => {
-        setRegistering(false);
       });
   };
 
@@ -268,7 +266,7 @@ const RegisterForm = ({ setRegistering, setRegisterSuccess }: Props) => {
         </Link>
       </CardHeader>
       <CardContent className="px-6">
-        <form onSubmit={handleSubmit(onSubmit)}>
+        <form onSubmit={handleSubmit(submitRegistration)}>
           <h3 className="mb-3! text-primary!">Account details</h3>
           <div className="mb-8 grid grid-cols-1 gap-x-4 gap-y-3 md:grid-cols-2">
             <Controller
@@ -832,10 +830,15 @@ const RegisterForm = ({ setRegistering, setRegisterSuccess }: Props) => {
             </Link>
             <Button
               type="submit"
-              disabled={!agree}
-              className="rounded-full md:min-w-50"
+              disabled={!agree || isSubmitting}
+              className={cn(
+                "rounded-full md:min-w-50",
+                // the spinner is the busy signal, keep the button solid
+                isSubmitting && "disabled:opacity-100",
+              )}
             >
-              Register
+              {isSubmitting && <Spinner />}
+              {isSubmitting ? "Registering…" : "Register"}
             </Button>
           </div>
         </form>
