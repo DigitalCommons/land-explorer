@@ -139,6 +139,15 @@ const serverFieldRenames: Partial<Record<string, keyof RegisterFormValues>> = {
   username: "email",
 };
 
+// which form field holds the organisation sub-type
+const subTypeField = (data: RegisterFormValues): keyof RegisterFormValues => {
+  if (data.organisationType === "community-interest")
+    return "organisationCommunityInterest";
+  if (data.organisationCommercial === "other")
+    return "organisationCommercialOther";
+  return "organisationCommercial";
+};
+
 const resolveField = (key: string, subTypeField: keyof RegisterFormValues) =>
   key === "organisationSubType"
     ? subTypeField
@@ -177,12 +186,7 @@ const RegisterForm = ({ setRegisterSuccess }: Props) => {
   // this can allow for manual follow-up of paying users
   // returns the request promise so react-hook-form can track isSubmitting
   const submitRegistration = (data: RegisterFormValues) => {
-    const organisationSubTypeField: keyof RegisterFormValues =
-      data.organisationType === "community-interest"
-        ? "organisationCommunityInterest"
-        : data.organisationCommercial === "other"
-          ? "organisationCommercialOther"
-          : "organisationCommercial";
+    const organisationSubTypeField = subTypeField(data);
     const organisationSubType = data[organisationSubTypeField] as string;
 
     const request = {
