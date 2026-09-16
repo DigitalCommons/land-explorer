@@ -734,8 +734,8 @@ const RegisterForm = ({ setRegisterSuccess }: Props) => {
               name="Community Tier"
               price="Always free"
               description="Core Land Explorer access."
-              selected={accountType == "free"}
-              detailsHref="https://landexplorer.coop/#PB2L8SM7jqBqJSzQ"
+              selected={accountType === "free"}
+              detailsHref={constants.TIERS_URL}
               onSelect={() => setAccountType("free")}
             />
             <TierCard
@@ -743,8 +743,8 @@ const RegisterForm = ({ setRegisterSuccess }: Props) => {
               name="Solidarity Tier"
               price="£600 (incl VAT) per year"
               description="Helps fund free access for others."
-              selected={accountType == "paid"}
-              detailsHref="https://landexplorer.coop/#PB2L8SM7jqBqJSzQ"
+              selected={accountType === "paid"}
+              detailsHref={constants.TIERS_URL}
               onSelect={() => setAccountType("paid")}
             />
           </div>
