@@ -10,9 +10,8 @@ export default function AuthProviderWrapper({children}: PropsWithChildren) {
     return (
         <AuthProvider
             authClient={authClient}
-            redirectTo="/settings/account"
-            socialProviders={["google", "github"]}
-            emailAndPassword={{ requireEmailVerification: true, minPasswordLength: 6 }}
+            redirectTo="/app"            
+            emailAndPassword={{ minPasswordLength: 6 }}
             navigate={({ to, replace }) => navigate(to, {replace: replace})}
             Link={({ href, ...props }) => <Link to={href} {...props} />}
         >
