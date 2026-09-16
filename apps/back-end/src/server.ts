@@ -92,9 +92,7 @@ export const init = async function (): Promise<Server> {
 
     server.auth.strategy("session", "betterauth");   
     server.auth.default("session");
-  }
-
-  if (isBetterAuthEnabled()) {
+  
     server.route({
       method: "*",
       path: "/api/auth/{path*}",
