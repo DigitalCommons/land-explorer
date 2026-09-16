@@ -15,9 +15,19 @@ export const auth = betterAuth({
     database: {
       joins: true,
     },
+    cookiePrefix: "lx"
   },
   user: {
-    modelName: "auth_user",
+    modelName: "auth_user",    
+    additionalFields: {
+      appUserId: {
+        type: "number",
+        bigint: true,
+        required: false,   // nullable
+        unique: true,
+        input: false,
+      },
+    }    
   },
   emailAndPassword: {
     enabled: true,
