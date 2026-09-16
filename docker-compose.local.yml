@@ -101,8 +101,8 @@ services:
       TOKEN_KEY: dev-token-key-not-for-production
       TOKEN_EXPIRY_DAYS: "365"
       BOUNDARY_SERVICE_URL: http://pbs:4000
-      BOUNDARY_SERVICE_SECRET: devsecret
-      MEILISEARCH_ENABLED: "true"
+      BOUNDARY_SERVICE_SECRET: devsecret    
+      FEATURE_USE_BETTERAUTH: false  
     ports:
       - "24000:4000"
     depends_on:
@@ -151,8 +151,7 @@ services:
       DB_USER: root
       DB_PASSWORD: devroot
       DB_NAME: property_boundaries
-      SECRET: devsecret
-      MEILISEARCH_ENABLED: "true"
+      SECRET: devsecret      
       MEILI_HOST: http://meilisearch:7700
       MEILI_MASTER_KEY: devmasterkey
     ports:
@@ -200,6 +199,7 @@ services:
         VITE_MIXPANEL_TOKEN: ${VITE_MIXPANEL_TOKEN:-}
         VITE_MIXPANEL_PEPPER: ${VITE_MIXPANEL_PEPPER:-}
         VITE_FEATURE_HISTORIC_OWNERSHIP: ${VITE_FEATURE_HISTORIC_OWNERSHIP:-}
+        VITE_FEATURE_USE_BETTERAUTH: ${VITE_FEATURE_USE_BETTERAUTH:-}
     container_name: lx-fe
     ports:
       - "28080:80"

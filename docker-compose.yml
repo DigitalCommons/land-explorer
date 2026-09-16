@@ -86,8 +86,8 @@ services:
       # Tags errors with the deploy environment: dev, staging or production
       GLITCHTIP_ENVIRONMENT: ${GLITCHTIP_ENVIRONMENT:-}
       MIXPANEL_TOKEN: ${MIXPANEL_TOKEN:-}
-      ANALYTICS_PEPPER: ${ANALYTICS_PEPPER:-}
-      MEILISEARCH_ENABLED: "true"
+      ANALYTICS_PEPPER: ${ANALYTICS_PEPPER:-}      
+      FEATURE_USE_BETTERAUTH: ${FEATURE_USE_BETTERAUTH:-}      
     depends_on:
       mysql: { condition: service_healthy }
       be-migrate: { condition: service_completed_successfully }
@@ -116,8 +116,7 @@ services:
       DB_USER: root
       DB_PASSWORD: ${MYSQL_ROOT_PASSWORD}
       DB_NAME: property_boundaries
-      SECRET: ${BOUNDARY_SERVICE_SECRET}
-      MEILISEARCH_ENABLED: "true"
+      SECRET: ${BOUNDARY_SERVICE_SECRET}      
       MEILI_HOST: http://${SERVICE_NAME_MEILISEARCH:-meilisearch}:7700
       MEILI_MASTER_KEY: ${MEILI_MASTER_KEY}
       GOV_API_URL: ${GOV_API_URL:-}
@@ -171,6 +170,7 @@ services:
         VITE_MIXPANEL_TOKEN: ${VITE_MIXPANEL_TOKEN:-}
         VITE_MIXPANEL_PEPPER: ${VITE_MIXPANEL_PEPPER:-}
         VITE_FEATURE_HISTORIC_OWNERSHIP: ${VITE_FEATURE_HISTORIC_OWNERSHIP:-}
+        VITE_FEATURE_USE_BETTERAUTH: ${VITE_FEATURE_USE_BETTERAUTH:-}
     depends_on: [back-end]
 
 volumes:
