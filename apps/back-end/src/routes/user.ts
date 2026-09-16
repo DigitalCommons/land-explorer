@@ -27,7 +27,7 @@ import {
   UpdateUserGuidePromptSeenRequest,
 } from "./user.types";
 import { computeAnalyticsConsent } from "../userAnalyticsConsent";
-import { useBetterAuth } from "../featureFlagUtils";
+import { isBetterAuthEnabled } from "../featureFlagUtils";
 
 //TODO: DELETE FUNCTION WHEN `FEATURE_USE_BETTERAUTH` ENV VAR IS REMOVED
 const RESET_PASSWORD_EXPIRY_HOURS = 24;
@@ -524,7 +524,7 @@ export const legacyUserAuthRoutes: ServerRoute[] = [
   
 ]
 
-export const userAuthRoutes = (): ServerRoute[] => useBetterAuth() ? []: legacyUserAuthRoutes;
+export const userAuthRoutes = (): ServerRoute[] => isBetterAuthEnabled() ? []: legacyUserAuthRoutes;
 
 export const userRoutes: ServerRoute[] = [
   /** Public APIs */ 
