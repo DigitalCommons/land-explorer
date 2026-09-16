@@ -3,7 +3,7 @@ import { Server as HapiServer } from "@hapi/hapi";
 import { clearAllLocks, maybeUnlock, getUserWithLockOrNull } from "./locking";
 import jwt, { JwtPayload } from "jsonwebtoken";
 import { getCorsOrigins } from "../cors";
-import { useBetterAuth } from "../featureFlagUtils";
+import { isBetterAuthEnabled } from "../featureFlagUtils";
 
 /** The socket.io server object */
 export let io: SocketIOServer;
@@ -22,7 +22,7 @@ export const setupWebsockets = (server: HapiServer): void => {
     corsOrigins.length > 0 ? { cors: { origin: corsOrigins } } : {}
   );
 
-  if (!useBetterAuth()) {
+  if (!isBetterAuthEnabled()) {
     io.on("connection", (socket) => {
       try {
         // implement authentication, using the same JWT that we use for Hapi API requests
