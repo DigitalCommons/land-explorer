@@ -5,9 +5,9 @@ import { reloadCurrentMap } from "./MapActions";
 import { updateReadOnly } from "./ReadOnlyActions";
 
 const socket: Socket = io(constants.ROOT_URL as string, {
-  auth: (cb) => {
-    cb({ token: Auth.getToken() });
-  },
+  ...(constants.VITE_FEATURE_USE_BETTERAUTH
+    ? {}
+    : { auth: (cb) => cb({ token: Auth.getToken() }) }),
   autoConnect: false,
 });
 
@@ -25,12 +25,12 @@ export const establishSocketConnection = () => {
     socket.on("mapLock", ({ mapId, userId, userInitials }) => {
       console.log("mapLock", { mapId, userId, userInitials });
       const { currentMapId } = getState().mapMeta;
-
+      
       if (mapId === currentMapId) {
         if (userId === null) {
           dispatch({ type: "MAP_UNLOCKED" });
           dispatch(reloadCurrentMap());
-        } else if (userId === getState().user.id) {
+        } else if (userId === getState().user.id) {          
           // if user with the lock is this user, we can treat this as if the map is unlocked
           dispatch({ type: "MAP_UNLOCKED" });
         } else {
