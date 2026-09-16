@@ -34,7 +34,6 @@
     "mapbox-gl": "^2.7.0",
     "mixpanel-browser": "^2.79.0",
     "moment": "^2.29.1",
-    "next-themes": "^0.4.6",
     "react": "^19.2.4",
     "react-day-picker": "^10.0.1",
     "react-device-detect": "^2.1.2",
