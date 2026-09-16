@@ -15,13 +15,23 @@ export const auth = betterAuth({
     database: {
       joins: true,
     },
+    cookiePrefix: "lx"
   },
   emailAndPassword: {
     enabled: true,
     minPasswordLength: 6
   },
   user: {
-    modelName: "auth_user"
+    modelName: "auth_user",    
+    additionalFields: {
+      appUserId: {
+        type: "number",
+        bigint: true,
+        required: false,   // nullable
+        unique: true,
+        input: false,
+      },
+    }    
   },
   session: {
     modelName: "auth_session"
