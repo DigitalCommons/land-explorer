@@ -16,4 +16,8 @@ export const auth = betterAuth({
       joins: true,
     },
   },
+  user: {
+    modelName: "auth_user"
+  }
+  
 });
