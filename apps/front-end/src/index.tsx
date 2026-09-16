@@ -19,6 +19,7 @@ import { TooltipProvider } from "./components/ui/tooltip";
 import constants from "./constants";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import AuthProviderWrapper from "./providers/AuthProviderWrapper";
+import { Toaster } from "./components/ui/sonner";
 
 initializeMixpanel();
 
@@ -40,6 +41,7 @@ createRoot(document.getElementById("root")!).render(
                   <Route path="*" element={<FourOhFour />} />
                 </Routes>
               </ErrorBoundary>
+              <Toaster />
             </AuthProviderWrapper>
           </BrowserRouter>
         </TooltipProvider>
