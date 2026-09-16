@@ -18,18 +18,17 @@ import constants from "@/constants";
 import { useSession } from "@better-auth-ui/react";
 import { authClient } from "@/lib/auth/auth-client";
 
-const MapApp = () => {
-  const authenticated = useAppSelector(
-    (state) => state.authentication.authenticated
-  );
+const MapApp = () => { 
   const user = useAppSelector((state) => state.user);
   
-  const {data: session } = useSession(authClient)
-
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
   
   if (!constants.VITE_FEATURE_USE_BETTERAUTH) {
+    const authenticated = useAppSelector(
+      (state) => state.authentication.authenticated
+    );
+
     useEffect(() => {
       (async () => {
         if (authenticated && Auth.isTokenActive()) {
@@ -57,14 +56,14 @@ const MapApp = () => {
         }
       })();
     }, [authenticated]);
-  } else {
+  } else {    
+    const {data: session } = useSession(authClient)
+  
     useEffect(() => {
-      if (!session) {
-      console.log("Not got session")
+      if (!session) {      
         return;
       }    
 
-      console.log("Got session")
       dispatch(getUserDetails());
       dispatch(establishSocketConnection());
       dispatch(getAskForFeedback());
@@ -77,7 +76,6 @@ const MapApp = () => {
       if (storedMapId) {
         dispatch(openMap(storedMapId));
       }
-
     }, [session]);
   }
 
