@@ -1,3 +1,5 @@
+import constants from "@/constants";
+
 type Props = {
   title_no: string | null;
   unregistered: boolean;
@@ -32,7 +34,7 @@ const PropertySectionSmallPrint = ({ title_no, unregistered }: Props) => {
           information{" "}
           <a
             target="_blank"
-            href="https://landexplorer.coop/land-ownership-how"
+            href={constants.LAND_OWNERSHIP_PROCESS_URL}
           >
             click here
           </a>
