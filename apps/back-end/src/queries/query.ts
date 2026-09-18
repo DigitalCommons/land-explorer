@@ -63,18 +63,36 @@ export const usernameExist = async (username: string): Promise<Boolean> => {
  */
 export const createUser = async (data: any) => {
   if (data.marketing) {
-    axios.post(
-      "https://api.buttondown.email/v1/subscribers",
-      {
-        email: data.username,
-        referrer_url: "https://app.landexplorer.coop/register",
-      },
-      {
-        headers: {
-          Authorization: `Token ${process.env.BUTTONDOWN_API_KEY}`,
+    axios
+      .post(
+        "https://api.buttondown.email/v1/subscribers",
+        {
+          email: data.username,
+          referrer_url: "https://app.landexplorer.coop/register",
         },
-      },
-    );
+        {
+          headers: {
+            Authorization: `Token ${process.env.BUTTONDOWN_API_KEY}`,
+          },
+        }
+      )
+      // If someone is already subscribed to the newsletter ignore it
+      .catch((err) => {
+        const code = err?.response?.data?.code;
+        if (code === "email_already_exists") {
+          console.log("Buttondown: already subscribed:", data.username);
+        } else {
+          // If we get any other buttondown error log it as an error
+          //   but continue so the app doesn't crash and restart -
+          //   prevously the unhandledRejection handler would kill
+          //   the server mid registration
+          console.error(
+            "Buttondown subscribe failed for",
+            data.username,
+            code ?? err?.message
+          );
+        }
+      });
   }
 
   return await User.create({

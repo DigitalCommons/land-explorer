@@ -29,10 +29,10 @@ Then set FRONT_END_HOSTNAME= the front-end domain (bakes into the FE image at bu
 -   TOKEN_EXPIRY_DAYS - 365 by default
 -   CORS_ORIGIN - https://app.landexplorer.coop
 -   SEED_DEMO_DATA - true - be-migrate runs the demo seeds to get some test data in - see apps/back-end/seeders - the default user is test-lx@digitalcommons.coop and password is testingtesting123
--   VITE_OS_KEY, VITE_OS_PLACES_KEY, VITE_GEOCODER_TOKEN, VITE_MAPBOX_TOKEN - required for various map features, each is an API key requiring an account or subscription
+-   VITE_OS_KEY, VITE_OS_PLACES_KEY, VITE_GEOCODER_TOKEN, VITE_MAPBOX_TOKEN - required for various map features, each is an API key requiring an account or subscription - see [api-keys.md](api-keys.md), `VITE_*` keys are public in the built front-end so must be domain-restricted
 -   SENDGRID_API_KEY - required to send email
 -   MIXPANEL_TOKEN, ANALYTICS_PEPPER, VITE_MIXPANEL_TOKEN, VITE_MIXPANEL_PEPPER - leave off for non-production - stores analytics data if consent given
--   GOV_API_URL, GOV_API_KEY, OS_NGD_API_URL, OS_NGD_API_KEY, MAPBOX_GEOCODER_TOKEN\ - required for PBS pipeline, each is an API key requiring an account or subscription
+-   GOV_API_URL, GOV_API_KEY, OS_NGD_API_URL, OS_NGD_API_KEY, MAPBOX_GEOCODER_TOKEN\ - required for PBS pipeline, each is an API key requiring an account or subscription - see [api-keys.md](api-keys.md) re: OS_NGD_API_KEY
 -   VITE_FEATURE_HISTORIC_OWNERSHIP - boolean value to turn on/off the historic ownership feature
 
 ## Databases — seed vs full copy

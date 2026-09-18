@@ -29,6 +29,7 @@ export const Event = {
     ENABLE: "LandOwnership_Enable",
     SAVE_PROPERTY: "LandOwnership_SaveProperty",
     BACKSEARCH: "LandOwnership_Backsearch",
+    HISTORIC_SEARCH: "LandOwnership_HistoricSearch"
   },
   MAP: {
     FIRST_SAVE: "Map_FirstSave",
