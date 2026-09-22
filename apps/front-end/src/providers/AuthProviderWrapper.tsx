@@ -12,14 +12,14 @@ export default function AuthProviderWrapper({children}: PropsWithChildren) {
     return (
         <AuthProvider
             authClient={authClient}
-            redirectTo="/app"            
+            redirectTo="app"            
             emailAndPassword={{ minPasswordLength: 6, rememberMe: true, requireEmailVerification: true }}
             viewPaths={{auth: {
                 signUp: "register",
                 signIn: "",
                 //forgotPassword: ""
                 //resetPassword: ""
-                //signOut: ""
+                signOut: "sign-out",
                 verifyEmail: "verify"
             }}}
             navigate={({ to, replace }) => navigate(to, {replace: replace})}
