@@ -14,8 +14,8 @@ import { LEFT_PANE_TRAY } from "../../reducers/LeftPaneReducer";
 // GeoJSONLayer suffixes its sub-layers with the type
 const RELATED_OWNERSHIP_FILL_LAYER = "related-ownership-fill";
 
-// mapbox-gl-draw calls preventDefault() on every touchend, which also cancels the click the
-// browser would otherwise emulate. react-mapbox-gl binds Feature onClick to the map's click
+// mapbox-gl-draw calls preventDefault() on every touchend, which cancels the click the
+// browser would emulate. react-mapbox-gl binds Feature onClick to the map's click
 // event, so on touch devices we have to find the tapped property ourselves. See issue #138.
 const PROPERTY_FILL_LAYER_IDS = [
   "all",
