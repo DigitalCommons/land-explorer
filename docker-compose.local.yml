@@ -3,8 +3,8 @@
 #
 # One command to bring the whole stack up from the monorepo root. This is a local
 # development aid, NOT the production artefact (see docker-compose.yml for Coolify).
-# Each service builds from its own apps/<name>/ context using that app's mirrored
-# Dockerfile - the apps have no cross-workspace build deps, so no root context is needed.
+# Each service builds from the REPO ROOT context with its app's Dockerfile -
+# single root lockfile, npm workspaces, so every build needs the root manifests.
 #
 # Usage (from the monorepo root) - REQUIRES the secrets file `docker.env` at the
 # root (download from Bitwarden; gitignored; see apps/back-end/docker.env.example):
@@ -58,7 +58,8 @@ services:
 
   be-migrate:
     build:
-      context: ./apps/back-end
+      context: .
+      dockerfile: apps/back-end/Dockerfile
       args:
         NODE_VERSION: ${NODE_VERSION:-24}
     container_name: lx-be-migrate
@@ -80,7 +81,8 @@ services:
 
   back-end:
     build:
-      context: ./apps/back-end
+      context: .
+      dockerfile: apps/back-end/Dockerfile
       args:
         NODE_VERSION: ${NODE_VERSION:-24}
     container_name: lx-be
@@ -113,7 +115,8 @@ services:
 
   pbs-migrate:
     build:
-      context: ./apps/property-boundaries-service
+      context: .
+      dockerfile: apps/property-boundaries-service/Dockerfile
       args:
         NODE_VERSION: ${NODE_VERSION:-24}
     container_name: lx-pbs-migrate
@@ -133,7 +136,8 @@ services:
 
   pbs:
     build:
-      context: ./apps/property-boundaries-service
+      context: .
+      dockerfile: apps/property-boundaries-service/Dockerfile
       args:
         NODE_VERSION: ${NODE_VERSION:-24}
     container_name: lx-pbs
@@ -184,7 +188,8 @@ services:
 
   front-end:
     build:
-      context: ./apps/front-end
+      context: .
+      dockerfile: apps/front-end/Dockerfile
       args:
         NODE_VERSION: ${NODE_VERSION:-24}
         CADDY_HOSTNAME: localhost

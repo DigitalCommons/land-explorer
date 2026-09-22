@@ -29,6 +29,17 @@ npm test
 npm run front-end: dev # run one app (also back-end: / pbs:)
 ```
 
+### Changing an app's dependencies
+
+There is one lockfile: the root package-lock.json. Docker and CI install from
+it. To change an app's dependencies:
+
+```
+npm install -w apps/front-end <package>
+```
+
+Commit package.json and the root package-lock.json.
+
 First download the secrets file docker.env from Bitwarden (named Land Explorer docker.env) and put it in this repo's root - or if you don't have Bitwarden access (only DCC employees do) edit the docker.env.example and rename it to docker.env
 
 Run the whole stack locally with Docker:
@@ -52,15 +63,3 @@ Now up at http://localhost:28080 and any edits reload without a rebuild. You onl
 PBS lacks the full toolchain so for pipline work use the npm steps above.
 
 Use the docker compose without the .dev overlay for smoke testing big changes as that one mirrors the production Coolify setup with Caddy.
-
-### Changing an app's dependencies
-
-Each app keeps its own package-lock.json, which Docker and CI build from, but npm workspaces only updates the root package-lock.json. After any dependency change, sync the app's own lockfile so for example to add a package to the front end do this:
-
-```
-npm install -w apps/front-end <package>
-cd apps/front-end
-npm install --package-lock-only --workspaces=false --legacy-peer-deps
-```
-
-Commit both lockfiles. If you forget, npm ci fails in Docker and CI with a package.json / package-lock.json out of sync error.
