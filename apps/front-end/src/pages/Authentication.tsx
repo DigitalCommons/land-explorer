@@ -21,7 +21,7 @@ const Authentication = () => {
             <TopBar limited={true} />
             <BackgroundImage image={image} />
             <Routes>
-                {!constants.VITE_FEATURE_USE_BETTERAUTH ? <Route path="/" element={<LoginLegacy updateBgImage={updateBgImage} />} /> : <Route path="/" element={<Login/>} />  }
+                {!constants.VITE_FEATURE_USE_BETTERAUTH ? <Route path="/" element={<LoginLegacy updateBgImage={updateBgImage} />} /> : <Route path="/" element={<Login updateBgImage={updateBgImage}/>} />  }
                 <Route path="/register" element={<Register updateBgImage={updateBgImage} />} />
                 {!constants.VITE_FEATURE_USE_BETTERAUTH ? <Route path="/reset-password" element={<ResetPassword updateBgImage={updateBgImage} />} /> : null }
                 <Route path="/*" element={<FourOhFour />} />
