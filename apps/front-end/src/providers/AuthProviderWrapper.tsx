@@ -1,15 +1,20 @@
 import { AuthProvider } from "@/components/auth/auth-provider";
 import { authClient } from "@/lib/auth/auth-client";
+import { QueryClient } from "@tanstack/react-query";
 import { PropsWithChildren } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
+type AuthProviderWrapperProps = {
+    client: QueryClient
+} & PropsWithChildren
 
-export default function AuthProviderWrapper({children}: PropsWithChildren) {
+export default function AuthProviderWrapper({children, client}: AuthProviderWrapperProps) {
     const navigate = useNavigate();
 
     return (
-        <AuthProvider
+        <AuthProvider        
             authClient={authClient}
+            queryClient={client}
             redirectTo="app"            
             emailAndPassword={{ minPasswordLength: 6, rememberMe: true, requireEmailVerification: true }}
             viewPaths={{auth: {
