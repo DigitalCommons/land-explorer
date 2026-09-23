@@ -21,11 +21,23 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import AuthProviderWrapper from "./providers/AuthProviderWrapper";
 import { Toaster } from "./components/ui/sonner";
 import RequireAuth from "./components/layouts/RequireAuth";
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 
+
+const queryClient = new QueryClient()
+// This code is only for TypeScript
+declare global {
+  interface Window {
+    __TANSTACK_QUERY_CLIENT__:
+      import('@tanstack/query-core').QueryClient
+  }
+}
+
+// This code is for all users
+window.__TANSTACK_QUERY_CLIENT__ = queryClient
 initializeMixpanel();
 
 // Create a client
-const queryClient = new QueryClient()
 
 const RoutesLegacy = () => {
   return (
@@ -39,7 +51,7 @@ const RoutesLegacy = () => {
   )
 }
 
-const RoutesNew = () => {
+const RoutesNew = () => { 
   return (
     <Routes>
       <Route element={<RequireAuth />}>
@@ -58,7 +70,7 @@ createRoot(document.getElementById("root")!).render(
       <Provider store={store}>
         <TooltipProvider>
           <BrowserRouter>
-            <AuthProviderWrapper>
+            <AuthProviderWrapper client={queryClient}>
               <ErrorBoundary FallbackComponent={ErrorFallback}>
                 {constants.VITE_FEATURE_USE_BETTERAUTH ? <RoutesNew/> : <RoutesLegacy/>}                
               </ErrorBoundary>
@@ -67,6 +79,7 @@ createRoot(document.getElementById("root")!).render(
           </BrowserRouter>
         </TooltipProvider>
       </Provider>    
+      <ReactQueryDevtools initialIsOpen={false} />
   </QueryClientProvider>,
 );
 
