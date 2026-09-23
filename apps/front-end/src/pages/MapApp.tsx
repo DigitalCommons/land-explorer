@@ -5,7 +5,6 @@ import MapboxMap from "../components/map/MapboxMap";
 import TopBar from "../components/top-bar/TopBar";
 import Tooltips from "../components/common/Tooltips";
 import ControlButtons from "../components/map-controls/ControlButtons";
-import Spinner from "../components/common/Spinner";
 import * as Auth from "../utils/Auth";
 import { getMyMaps, openMap } from "../actions/MapActions";
 import { getUserDetails, getAskForFeedback } from "../actions/UserActions";
@@ -15,6 +14,7 @@ import {
   closeSocketConnection,
 } from "../actions/WebSocketActions";
 import constants from "@/constants";
+import { Spinner } from "@/components/ui/spinner";
 import { useSession } from "@better-auth-ui/react";
 import { authClient } from "@/lib/auth/auth-client";
 
@@ -36,7 +36,7 @@ const MapAppShell = () => {
             Controls - map and layer controls in bottom right of app
          */
     return (
-      <div>
+      <div className="h-screen min-h-screen flex flex-col">
         <MapboxMap />
         <TopBar limited={false} />
         <NoConnectionToast />
@@ -46,12 +46,10 @@ const MapAppShell = () => {
     );
   } else {
     return (
-      <div className="full-height overflow-y">
+      <div className="h-screen min-h-screen flex flex-col items-center justify-center grow">
         <TopBar limited={true} />
-        <div className="centered">
-          <Spinner />
-        </div>
-      </div>
+        <Spinner className="text-primary size-8 items-center"></Spinner>
+      </div>   
     );
   }
 };
@@ -102,21 +100,24 @@ const MapAppBetterAuth = () => {
   const dispatch = useAppDispatch();
 
   useEffect(() => {
-    if (!session) {
-      return;
-    }
+    (async () => {
+      if (!session) {
+        return; // This will be changed in a later PR to redirect to sign in page
+      }
 
-    dispatch(getUserDetails());
-    dispatch(establishSocketConnection());
-    dispatch(getAskForFeedback());
-    dispatch(getMyMaps());
+      await dispatch(getUserDetails());
+      dispatch(establishSocketConnection());
+      dispatch(getAskForFeedback());
+      await dispatch(getMyMaps());
 
-    // Open the map that was previously open if the page was refreshed
-    const storedMapId = parseInt(sessionStorage.getItem("currentMapId") ?? "");
-    if (storedMapId) {
-      dispatch(openMap(storedMapId));
-    }
-  }, [session, dispatch]);
+      // Open the map that was previously open if the page was refreshed
+      const storedMapId = parseInt(sessionStorage.getItem("currentMapId") ?? "");
+      if (storedMapId) {
+        await dispatch(openMap(storedMapId));
+      }
+    })();
+  }, [dispatch]);
+
 
   return <MapAppShell />;
 };
