@@ -84,8 +84,7 @@ const getInitialState = (): User => ({
 
 type UserAction =
   | (Action<UserPayload> & { type: "POPULATE_USER" })
-  | (Action<boolean> & { type: "USER_FEEDBACK_STATUS" })
-  | (Action<boolean> & { type: "USER_ANALYTICS_CONSENT_STATUS" })
+  | (Action<boolean> & { type: "USER_FEEDBACK_STATUS" })  
   | (Action<UserGuideStatusData> & { type: "USER_GUIDE_PROMPT_SEEN" })
   | Action;
 
@@ -108,12 +107,7 @@ export default (state: User = getInitialState(), action: UserAction): User => {
       return {
         ...state,
         askForFeedback: action.payload as boolean,
-      };
-    case "USER_ANALYTICS_CONSENT_STATUS":
-      return {
-        ...state,
-        analyticsConsent: action.payload as boolean,
-      };
+      };    
     case "USER_GUIDE_PROMPT_SEEN":
       const payload = action.payload as UserGuideStatusData;
       return {

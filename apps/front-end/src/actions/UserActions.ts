@@ -53,27 +53,13 @@ export const setAskForFeedback = (status: boolean) => {
 };
 
 export const setAnalyticsConsent = (status: boolean) => {
-  return async (dispatch: AppDispatch, getState: () => RootState) => {
+  return async (dispatch: AppDispatch) => {
     const success = await dispatch(
       postRequest("/api/user/analytics-consent", { analyticsConsent: status }),
     );
 
     if (success) {
-      dispatch({
-        type: "USER_ANALYTICS_CONSENT_STATUS",
-        payload: status,
-      });
-
-      if (status) {
-        const { analyticsUserHash } = getState().user;
-        try {
-          await optInAndSetAnalyticsUser(analyticsUserHash);
-        } catch {
-          // analytics failure should not prevent consent from being saved
-        }
-      } else {
-        optOutAndResetAnalyticsUser();
-      }
+      await dispatch(getUserDetails()); // refresh the user details so that we get the updated user analytics hash and analytics consent status
     }
 
     return success;
