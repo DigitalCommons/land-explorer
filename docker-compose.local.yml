@@ -103,7 +103,7 @@ services:
       TOKEN_EXPIRY_DAYS: "365"
       BOUNDARY_SERVICE_URL: http://pbs:4000
       BOUNDARY_SERVICE_SECRET: devsecret    
-      FEATURE_USE_BETTERAUTH: true  
+      FEATURE_USE_BETTERAUTH: false  
       BETTER_AUTH_SECRET: dev-better-auth-key-only-not-a-secret
       BETTER_AUTH_URL: http://localhost:28080
     ports:
