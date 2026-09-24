@@ -11,6 +11,20 @@ import {
 } from "../../actions/LandOwnershipActions";
 import { LEFT_PANE_TRAY } from "../../reducers/LeftPaneReducer";
 
+// GeoJSONLayer suffixes its sub-layers with the type
+const RELATED_OWNERSHIP_FILL_LAYER = "related-ownership-fill";
+
+// mapbox-gl-draw calls preventDefault() on every touchend, which cancels the click the
+// browser would emulate. react-mapbox-gl binds Feature onClick to the map's click
+// event, so on touch devices we have to find the tapped property ourselves. See issue #138.
+const PROPERTY_FILL_LAYER_IDS = [
+  "all",
+  "properties-without-ownership",
+  "properties-unregistered",
+  "properties-highlighted",
+  RELATED_OWNERSHIP_FILL_LAYER,
+];
+
 type Props = {
   center: any;
   map: any;
@@ -58,6 +72,62 @@ const MapProperties = ({ center, map }: Props) => {
     }
   };
 
+  const propertyFromFeature = (feature: any) => {
+    const titleNo = feature?.properties?.title_no;
+    if (!titleNo) return null;
+    return feature.layer.id === RELATED_OWNERSHIP_FILL_LAYER
+      ? relatedProperties?.[titleNo]
+      : highlightedProperties[titleNo] || visibleProperties[titleNo];
+  };
+
+  // Tap to select on touch devices, see PROPERTY_FILL_LAYER_IDS above
+  useEffect(() => {
+    if (!map) return;
+
+    let start: { point: any; time: number } | null = null;
+
+    const onTouchStart = (e: any) => {
+      start =
+        e.points.length === 1 ? { point: e.point, time: Date.now() } : null;
+    };
+
+    const onTouchEnd = (e: any) => {
+      const tap = start;
+      start = null;
+
+      // a pan, a pinch or a long press shouldn't select anything
+      if (
+        !tap ||
+        e.points.length !== 1 ||
+        Date.now() - tap.time > 500 ||
+        tap.point.dist(e.point) > 10
+      ) {
+        return;
+      }
+
+      // queryRenderedFeatures returns nothing at all if one of the layers is missing,
+      // and these briefly disappear while a new base layer's style loads
+      const layers = PROPERTY_FILL_LAYER_IDS.filter((id) => map.getLayer(id));
+      const property = propertyFromFeature(
+        map.queryRenderedFeatures(e.point, { layers })[0],
+      );
+      if (property) onClickProperty(property);
+    };
+
+    map.on("touchstart", onTouchStart);
+    map.on("touchend", onTouchEnd);
+    return () => {
+      map.off("touchstart", onTouchStart);
+      map.off("touchend", onTouchEnd);
+    };
+  }, [
+    map,
+    activePanel,
+    visibleProperties,
+    highlightedProperties,
+    relatedProperties,
+  ]);
+
   // For each property polygon, we need to render both a fill and a line layer, since React Mapbox
   // GL does not support configuring both the fill and border in a single layer.
 
@@ -102,6 +172,7 @@ const MapProperties = ({ center, map }: Props) => {
           <Feature
             coordinates={[polygon.geom.coordinates]}
             key={`fill-${polyKey}`}
+            properties={{ title_no: property.title_no }}
             onClick={() => onClickProperty(property)}
           />
         );
@@ -154,11 +225,8 @@ const MapProperties = ({ center, map }: Props) => {
   }, [displayRelatedProperties, relatedProperties]);
 
   const onRelatedOwnershipFeatureClick = (e: any) => {
-    const titleNo = e.features?.[0]?.properties?.title_no;
-    const property = titleNo && relatedProperties?.[titleNo];
-    if (property) {
-      onClickProperty(property);
-    }
+    const property = propertyFromFeature(e.features?.[0]);
+    if (property) onClickProperty(property);
   };
 
   const highlightedFillFeatures: React.ReactElement[] = [];
@@ -173,6 +241,7 @@ const MapProperties = ({ center, map }: Props) => {
         <Feature
           coordinates={[polygon.geom.coordinates]}
           key={`fill-hl-${polyKey}`}
+          properties={{ title_no: property.title_no }}
           onClick={() => onClickProperty(property)}
         />,
       );
@@ -251,6 +320,7 @@ const MapProperties = ({ center, map }: Props) => {
 
       {/* Properties data private - Fill */}
       <Layer
+        id="properties-without-ownership"
         type="fill"
         paint={{
           "fill-opacity": 0.2,
@@ -273,6 +343,7 @@ const MapProperties = ({ center, map }: Props) => {
 
       {/* Unregistered Properties - Fill */}
       <Layer
+        id="properties-unregistered"
         type="fill"
         paint={{
           "fill-opacity": 0.2,
@@ -295,6 +366,7 @@ const MapProperties = ({ center, map }: Props) => {
 
       {/* Highlighted Properties - Fill */}
       <Layer
+        id="properties-highlighted"
         type="fill"
         paint={{
           "fill-opacity": 0.4,
