@@ -9,6 +9,9 @@ import BackgroundImage from '../components/common/BackgroundImage';
 import constants from "@/constants";
 import Login from "./Login";
 import { SignOut } from "@/components/auth/sign-out";
+import ForgottenPasswordPage from "./ForgottenPasswordPage";
+import ResetLinkSentPage from "./ResetLinkSentPage";
+import ResetPasswordPage from "./ResetPasswordPage";
 
 const Authentication = () => {
     const [image, setImage] = useState(0);
@@ -36,8 +39,11 @@ const Authentication = () => {
             <TopBar limited={true} />
             <BackgroundImage image={image} />
             <Routes>
-                <Route path="/" element={<Login updateBgImage={updateBgImage}/>} />
+                <Route path="/sign-in" element={<Login updateBgImage={updateBgImage}/>} />
                 <Route path="/register" element={<Register updateBgImage={updateBgImage} />} />
+                <Route path="/forgot-password" element={<ForgottenPasswordPage updateBgImage={updateBgImage} />} />
+                <Route path="/reset-link-sent" element={<ResetLinkSentPage updateBgImage={updateBgImage} />} />
+                <Route path="/reset-password" element={<ResetPasswordPage updateBgImage={updateBgImage} />} />
                 <Route path="/sign-out" element={<SignOut />} />
                 <Route path="/*" element={<FourOhFour />} />
             </Routes>

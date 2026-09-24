@@ -16,15 +16,15 @@ export default function AuthProviderWrapper({children, client}: AuthProviderWrap
             authClient={authClient}
             queryClient={client}
             redirectTo="app"            
-            emailAndPassword={{ minPasswordLength: 6, rememberMe: true, requireEmailVerification: true }}
+            emailAndPassword={{ minPasswordLength: 6, rememberMe: true }}
             viewPaths={{auth: {
+                signIn: "sign-in",
                 signUp: "register",
-                signIn: "",
-                //forgotPassword: ""
-                //resetPassword: ""
-                signOut: "sign-out",
-                verifyEmail: "verify"
-            }}}
+                forgotPassword: "forgot-password",  
+                resetLinkSent: "reset-link-sent",    
+                resetPassword: "reset-password",          
+                signOut: "sign-out",               
+            }}}            
             navigate={({ to, replace }) => navigate(to, {replace: replace})}
             Link={({ href, ...props }) => <Link to={href} {...props} />}
         >

@@ -1,6 +1,7 @@
 
 import { betterAuth } from "better-auth";
 import { createPool } from "mysql2/promise";
+import sgMail from "@sendgrid/mail";
 
 export const auth = betterAuth({
    database: createPool({
@@ -31,7 +32,19 @@ export const auth = betterAuth({
   },
   emailAndPassword: {
     enabled: true,
-    minPasswordLength: 6
-  }
+    minPasswordLength: 6,
+    sendResetPassword: async ({user, url, token}, request) => {
+      void sgMail.send({
+        to: user.email,
+        from: {
+          name: "Land Explorer",
+          email: "landexplorer@digitalcommons.coop",
+        },
+        subject: "Reset your password",
+        html: `Click the link to reset your password: ${url}`,
+      });
+    },  
+  },
+
   
 });
