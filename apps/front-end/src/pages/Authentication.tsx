@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Route, Routes } from 'react-router-dom';
+import { Navigate, Route, Routes } from 'react-router-dom';
 import TopBar from '../components/top-bar/TopBar';
 import Register from "./Register";
 import LoginLegacy from "./LoginLegacy";
@@ -39,6 +39,7 @@ const Authentication = () => {
             <TopBar limited={true} />
             <BackgroundImage image={image} />
             <Routes>
+                <Route index element={<Navigate to="sign-in" replace />} />
                 <Route path="/sign-in" element={<Login updateBgImage={updateBgImage}/>} />
                 <Route path="/register" element={<Register updateBgImage={updateBgImage} />} />
                 <Route path="/forgot-password" element={<ForgottenPasswordPage updateBgImage={updateBgImage} />} />
