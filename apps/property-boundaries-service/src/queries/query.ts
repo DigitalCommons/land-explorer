@@ -814,6 +814,8 @@ export const getChurchOfEnglandPolygonsInSearchArea = async (
 
 /**
  * Get polygons owned by the Social Housing Companies that intersect with the search area.
+ * Local Authority proprietors are excluded per slot, so a title a provider holds jointly with a
+ * council still counts. <=> is NULL-safe, unlike =.
  * Limit result to 5000 polygons to avoid OOMEs.
  *
  * @param searchArea a stringified GeoJSON Polygon geometry
@@ -830,10 +832,14 @@ export const getSocialHousingPolygonsInSearchArea = async (
       SELECT 1
       FROM social_housing_owners sho
       WHERE
-        land_ownerships.proprietor_name_1 LIKE CONCAT('%', sho.name, '%')
-        OR land_ownerships.proprietor_name_2 LIKE CONCAT('%', sho.name, '%')
-        OR land_ownerships.proprietor_name_3 LIKE CONCAT('%', sho.name, '%')
-        OR land_ownerships.proprietor_name_4 LIKE CONCAT('%', sho.name, '%')
+        (land_ownerships.proprietor_name_1 LIKE CONCAT('%', sho.name, '%')
+          AND NOT proprietor_category_1 <=> 'Local Authority')
+        OR (land_ownerships.proprietor_name_2 LIKE CONCAT('%', sho.name, '%')
+          AND NOT proprietor_category_2 <=> 'Local Authority')
+        OR (land_ownerships.proprietor_name_3 LIKE CONCAT('%', sho.name, '%')
+          AND NOT proprietor_category_3 <=> 'Local Authority')
+        OR (land_ownerships.proprietor_name_4 LIKE CONCAT('%', sho.name, '%')
+          AND NOT proprietor_category_4 <=> 'Local Authority')
     )
   LIMIT 5000;`;
   return await sequelize.query(query, {
