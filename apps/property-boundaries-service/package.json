@@ -71,7 +71,7 @@
     "sequelize-cli": "^6.6.2",
     "stats-lite": "^2.2.0",
     "stream-chain": "^2.2.5",
-    "stream-json": "^1.8.0",
+    "stream-json": "^3.5.0",
     "tough-cookie": "^5.1.2",
     "unzip-stream": "^0.3.1"
   }
