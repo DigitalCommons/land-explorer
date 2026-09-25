@@ -1,45 +1,48 @@
-
 import { betterAuth } from "better-auth";
 import { createPool } from "mysql2/promise";
 
 export const auth = betterAuth({
-   database: createPool({
+  database: createPool({
     host: process.env.DATABASE_HOST,
     database: process.env.DATABASE_NAME,
     user: process.env.DATABASE_USER,
     password: process.env.DATABASE_PASSWORD,
     timezone: "Z", // Important to ensure consistent timezone values
-    port: process.env.DATABASE_PORT ? Number(process.env.DATABASE_PORT) : 3306
+    port: process.env.DATABASE_PORT ? Number(process.env.DATABASE_PORT) : 3306,
   }),
   advanced: {
     database: {
       joins: true,
     },
-    cookiePrefix: "lx"
+    cookiePrefix: "lx",
   },
   emailAndPassword: {
     enabled: true,
-    minPasswordLength: 6
+    minPasswordLength: 6,
   },
   user: {
-    modelName: "auth_user",    
+    modelName: "auth_user",
     additionalFields: {
       appUserId: {
         type: "number",
         bigint: true,
-        required: false,   // nullable
+        required: false, // nullable
         unique: true,
         input: false,
       },
-    }    
+    },
   },
   session: {
-    modelName: "auth_session"
+    modelName: "auth_session",
+    cookieCache: {
+      enabled: true,
+      maxAge: 5 * 60, // Cache duration in seconds (5 minutes)
+    },
   },
   verification: {
-    modelName: "auth_verification"
+    modelName: "auth_verification",
   },
   account: {
-    modelName: "auth_account"
-  }  
+    modelName: "auth_account",
+  },
 });
