@@ -63,7 +63,7 @@ services:
       args:
         NODE_VERSION: ${NODE_VERSION:-24}
     container_name: lx-be-migrate
-    command: ["sh", "-c", "npx sequelize-cli db:create || true; npx sequelize-cli db:migrate; npx auth migrate -y; if [ \"$$SEED_DEMO_DATA\" = true ]; then npx sequelize-cli db:seed:all; fi"]
+    command: ["sh", "-c", "npx sequelize-cli db:create || true; npx sequelize-cli db:migrate; if [ \"$$SEED_DEMO_DATA\" = true ]; then npx sequelize-cli db:seed:all; fi"]
     environment:
       NODE_ENV: development
       SEED_DEMO_DATA: "true" # idempotent - tracked like migrations
@@ -72,7 +72,7 @@ services:
       DATABASE_USER: root
       DATABASE_PASSWORD: devroot
       DATABASE_NAME: land_explorer
-      BETTER_AUTH_URL: http://localhost:28080
+
     depends_on:
       mysql:
         condition: service_healthy
@@ -102,8 +102,8 @@ services:
       TOKEN_KEY: dev-token-key-not-for-production
       TOKEN_EXPIRY_DAYS: "365"
       BOUNDARY_SERVICE_URL: http://pbs:4000
-      BOUNDARY_SERVICE_SECRET: devsecret    
-      FEATURE_USE_BETTERAUTH: false  
+      BOUNDARY_SERVICE_SECRET: devsecret
+      FEATURE_USE_BETTERAUTH: false
       BETTER_AUTH_SECRET: dev-better-auth-key-only-not-a-secret
       BETTER_AUTH_URL: http://localhost:28080
     ports:
@@ -154,7 +154,7 @@ services:
       DB_USER: root
       DB_PASSWORD: devroot
       DB_NAME: property_boundaries
-      SECRET: devsecret      
+      SECRET: devsecret
       MEILI_HOST: http://meilisearch:7700
       MEILI_MASTER_KEY: devmasterkey
     ports:

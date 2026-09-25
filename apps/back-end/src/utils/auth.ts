@@ -18,6 +18,14 @@ export const auth = betterAuth({
   },
   user: {
     modelName: "auth_user"
-  }
-  
+  },
+  session: {
+    modelName: "auth_session"
+  },
+  verification: {
+    modelName: "auth_verification"
+  },
+  account: {
+    modelName: "auth_account"
+  }  
 });
