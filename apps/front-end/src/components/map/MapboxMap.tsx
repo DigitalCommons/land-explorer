@@ -65,7 +65,9 @@ const MapboxMap = () => {
   const { zoom, lngLat, movingMethod } = useAppSelector((state) => state.map);
   const { currentMarker } = useAppSelector((state) => state.markers);
   const baseLayer = useAppSelector((state) => state.mapBaseLayer.layer);
-  const { landDataLayers } = useAppSelector((state) => state.landDataLayers);
+  const { landDataLayers, showBoundaryNamesOnHover } = useAppSelector(
+    (state) => state.landDataLayers,
+  );
   const { activeTool } = useAppSelector((state) => state.leftPane);
   const { activeDrawing, drawings, polygonsDrawn, linesDrawn } = useAppSelector(
     (state) => state.drawings,
@@ -320,6 +322,7 @@ const MapboxMap = () => {
   useEffect(() => {
     if (
       !map ||
+      !showBoundaryNamesOnHover ||
       !landDataLayers.some((id) => ADMIN_BOUNDARY_LAYER_GROUP_IDS.includes(id))
     ) {
       setAdminBoundaryPopup(null);
@@ -330,7 +333,7 @@ const MapboxMap = () => {
       map.off("mousemove", debouncedMouseMove);
       debouncedMouseMove.cancel();
     };
-  }, [map, landDataLayers, debouncedMouseMove]);
+  }, [map, landDataLayers, showBoundaryNamesOnHover, debouncedMouseMove]);
 
   return (
     <div>

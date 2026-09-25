@@ -4,6 +4,7 @@ import LeftPaneTray from "./LeftPaneTray";
 import LeftPaneToggle from "./LeftPaneToggle";
 import Draggable from "./Draggable";
 import LandDataLayerToggle from "./LandDataLayerToggle";
+import AdminBoundaryOptions from "./AdminBoundaryOptions";
 import { toggleDataGroup } from "../../actions/DataGroupActions";
 import { togglePropertyDisplay } from "../../actions/LandOwnershipActions";
 import LeftPaneNotification from "./left-pane-notification/LeftPaneNotification";
@@ -211,6 +212,7 @@ const LeftPaneLandData = ({ open, active, onClose }: Props) => {
           layerId="devolved-powers"
         />
         <LandDataLayerToggle title="Counties" layerId="county-4ef4ik" />
+        <AdminBoundaryOptions />
       </DataLayersContainer>
       {userGroupTitlesAndIDs &&
         userGroupTitlesAndIDs.map((userGroup) => (
