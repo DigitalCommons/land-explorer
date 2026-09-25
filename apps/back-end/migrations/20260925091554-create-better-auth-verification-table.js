@@ -10,11 +10,13 @@ module.exports = {
             expiresAt timestamp(3) not null, 
             createdAt timestamp(3) default CURRENT_TIMESTAMP(3) not null, 
             updatedAt timestamp(3) default CURRENT_TIMESTAMP(3) not null,
-            INDEX verification_identifier_idx (identifier)
+            INDEX auth_verification_identifier_idx (identifier)
           );`,
     );
   },
   async down(queryInterface, Sequelize) {
-    await queryInterface.sequelize.query(`DROP TABLE IF EXISTS auth_verification;`);
+    await queryInterface.sequelize.query(
+      `DROP TABLE IF EXISTS auth_verification;`,
+    );
   },
 };

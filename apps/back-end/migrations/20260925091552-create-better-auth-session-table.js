@@ -12,7 +12,7 @@ module.exports = {
             ipAddress text, 
             userAgent text, 
             userId varchar(36) not null,
-            INDEX session_userId_idx (userId),
+            INDEX auth_session_userId_idx (userId),
             FOREIGN KEY (userId) REFERENCES auth_user (id) ON DELETE CASCADE
           );`,
     );

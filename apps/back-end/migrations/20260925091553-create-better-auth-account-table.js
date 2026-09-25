@@ -17,7 +17,7 @@ module.exports = {
             password text, 
             createdAt timestamp(3) default CURRENT_TIMESTAMP(3) not null, 
             updatedAt timestamp(3) not null,
-            INDEX account_userId_idx (userId),
+            INDEX auth_account_userId_idx (userId),
             FOREIGN KEY (userId) REFERENCES auth_user (id) ON DELETE CASCADE
           );`,
     );
