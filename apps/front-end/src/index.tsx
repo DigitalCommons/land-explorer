@@ -16,6 +16,7 @@ import "./tailwind.css";
 import "./index.css";
 import "./assets/styles/style.scss";
 import { TooltipProvider } from "./components/ui/tooltip";
+import constants from "./constants";
 
 initializeMixpanel();
 
@@ -26,7 +27,7 @@ createRoot(document.getElementById("root")!).render(
         <ErrorBoundary FallbackComponent={ErrorFallback}>
           <Routes>
             <Route path="/app" element={<MapApp />} />
-            <Route path="/app/my-account/*" element={<MyAccount />} />
+            {!constants.VITE_FEATURE_USE_BETTERAUTH ? <Route path="/app/my-account/*" element={<MyAccount />} /> : null }
             <Route path="/auth/*" element={<Authentication />} />
             <Route path="/" element={<Navigate to="/app" replace={true} />} />
             <Route path="*" element={<FourOhFour />} />
