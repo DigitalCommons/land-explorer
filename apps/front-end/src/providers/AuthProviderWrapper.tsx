@@ -2,24 +2,30 @@ import { AuthProvider } from "@/components/auth/auth-provider";
 import { authClient } from "@/lib/auth/auth-client";
 import { ComponentProps, PropsWithChildren } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { QueryClient } from "@tanstack/react-query";
 
 // Defined once at module level so React sees a stable component type across renders
 const RouterLink: ComponentProps<typeof AuthProvider>["Link"] = ({ href, ...props }) => <Link to={href} {...props} />;
 
-export default function AuthProviderWrapper({children}: PropsWithChildren) {
+type AuthProviderWrapperProps = {
+  client: QueryClient
+} & PropsWithChildren
+
+export default function AuthProviderWrapper({children, client}: AuthProviderWrapperProps) {
     const navigate = useNavigate();
 
     return (
-        <AuthProvider
+        <AuthProvider        
             authClient={authClient}
-            redirectTo="/app"            
+            queryClient={client}
+            redirectTo="app"            
             emailAndPassword={{ minPasswordLength: 6, rememberMe: true, requireEmailVerification: true }}
             viewPaths={{auth: {
                 signUp: "register",
                 signIn: "",
                 //forgotPassword: ""
                 //resetPassword: ""
-                //signOut: ""
+                signOut: "sign-out",
                 verifyEmail: "verify"
             }}}
             navigate={({ to, replace }) => navigate(to, {replace: replace})}
