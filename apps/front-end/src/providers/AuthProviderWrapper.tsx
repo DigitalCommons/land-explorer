@@ -1,8 +1,10 @@
 import { AuthProvider } from "@/components/auth/auth-provider";
 import { authClient } from "@/lib/auth/auth-client";
-import { PropsWithChildren } from "react";
+import { ComponentProps, PropsWithChildren } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
+// Defined once at module level so React sees a stable component type across renders
+const RouterLink: ComponentProps<typeof AuthProvider>["Link"] = ({ href, ...props }) => <Link to={href} {...props} />;
 
 export default function AuthProviderWrapper({children}: PropsWithChildren) {
     const navigate = useNavigate();
@@ -13,7 +15,7 @@ export default function AuthProviderWrapper({children}: PropsWithChildren) {
             redirectTo="/app"            
             emailAndPassword={{ minPasswordLength: 6 }}
             navigate={({ to, replace }) => navigate(to, {replace: replace})}
-            Link={({ href, ...props }) => <Link to={href} {...props} />}
+            Link={RouterLink}
         >
             {children}
         </AuthProvider>
