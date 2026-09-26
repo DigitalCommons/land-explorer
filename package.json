@@ -27,7 +27,7 @@
   "overrides": {
     "@types/jsonwebtoken": "9.0.1",
     "axios-cookiejar-support": {
-      "axios": "1.10.0"
+      "axios": "1.19.0"
     }
   }
 }
