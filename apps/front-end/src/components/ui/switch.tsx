@@ -59,7 +59,6 @@ function Switch({
     <SwitchPrimitive.Root
       data-slot="switch"
       data-size={size}
-      data-variant={variant}
       className={cn(switchVariants({ size, variant }), className)}
       {...props}
     >

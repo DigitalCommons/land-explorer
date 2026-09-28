@@ -5,7 +5,7 @@ import {
   FieldDescription,
   FieldTitle,
 } from "@/components/ui/field";
-import { ADMIN_BOUNDARY_LAYER_GROUP_IDS } from "../map/AdministrativeBoundaryTooltip";
+import { hasAdminBoundaryLayer } from "../../utils/adminBoundaries";
 import { useAppDispatch, useAppSelector } from "@/hooks/react-redux";
 import { autoSave } from "@/actions/MapActions";
 import { cn } from "@/lib/utils";
@@ -18,9 +18,7 @@ const AdminBoundaryOptions = () => {
     (state) => state.landDataLayers,
   );
 
-  const disabled = !landDataLayers.some((layerId) =>
-    ADMIN_BOUNDARY_LAYER_GROUP_IDS.includes(layerId),
-  );
+  const disabled = !hasAdminBoundaryLayer(landDataLayers);
 
   const toggle = () => {
     dispatch({ type: "TOGGLE_BOUNDARY_NAMES_ON_HOVER" });
@@ -45,12 +43,10 @@ const AdminBoundaryOptions = () => {
         )}
         onClick={(e) => {
           // the switch reports its own changes, so only handle clicks elsewhere on the row
-          if (
-            disabled ||
-            (e.target as HTMLElement).closest("[data-slot=switch]")
-          )
-            return;
-          toggle();
+          const onSwitch = (e.target as HTMLElement).closest(
+            "[data-slot=switch]",
+          );
+          if (!disabled && !onSwitch) toggle();
         }}
       >
         <FieldContent className="gap-1">

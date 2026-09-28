@@ -56,7 +56,9 @@ export default (
       const { mapLayers } = (action.payload as LoadMapPayload).data;
       return {
         landDataLayers: mapLayers.landDataLayers,
-        showBoundaryNamesOnHover: mapLayers.showBoundaryNamesOnHover ?? true,
+        showBoundaryNamesOnHover:
+          mapLayers.showBoundaryNamesOnHover ??
+          INITIAL_STATE.showBoundaryNamesOnHover,
       };
     }
     case "NEW_MAP":

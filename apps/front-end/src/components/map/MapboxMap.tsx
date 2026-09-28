@@ -32,12 +32,13 @@ import {
 } from "../../actions/MapActions";
 import FeedbackTab from "../common/FeedbackTab";
 import MapBeingEditedToast from "./MapBeingEditedToast";
-import AdministrativeBoundaryTooltip, {
+import AdministrativeBoundaryTooltip from "./AdministrativeBoundaryTooltip";
+import {
   ADMIN_BOUNDARY_FILL_LAYER_IDS,
-  ADMIN_BOUNDARY_LAYER_GROUP_IDS,
   AdminBoundaryRow,
   getAdminBoundaryRows,
-} from "./AdministrativeBoundaryTooltip";
+  hasAdminBoundaryLayer,
+} from "../../utils/adminBoundaries";
 import BaseLayerMenu from "../map-controls/BaseLayerMenu";
 import MapLayerKey from "../map-controls/MapLayerKey";
 import ConsentBanner from "./ConsentBanner";
@@ -323,7 +324,7 @@ const MapboxMap = () => {
     if (
       !map ||
       !showBoundaryNamesOnHover ||
-      !landDataLayers.some((id) => ADMIN_BOUNDARY_LAYER_GROUP_IDS.includes(id))
+      !hasAdminBoundaryLayer(landDataLayers)
     ) {
       setAdminBoundaryPopup(null);
       return;
