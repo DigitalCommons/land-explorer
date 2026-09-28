@@ -625,6 +625,8 @@ export type SaveMapData = {
     landDataLayers: string[];
     myDataLayers: string[];
     ownershipDisplay: string | null;
+    // absent on maps saved before the option existed
+    showBoundaryNamesOnHover?: boolean;
   };
   version: string;
 };

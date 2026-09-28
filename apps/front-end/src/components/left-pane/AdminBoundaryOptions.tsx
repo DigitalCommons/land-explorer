@@ -7,6 +7,7 @@ import {
 } from "@/components/ui/field";
 import { ADMIN_BOUNDARY_LAYER_GROUP_IDS } from "../map/AdministrativeBoundaryTooltip";
 import { useAppDispatch, useAppSelector } from "@/hooks/react-redux";
+import { autoSave } from "@/actions/MapActions";
 import { cn } from "@/lib/utils";
 
 const LABEL_ID = "show-boundary-names-label";
@@ -21,7 +22,10 @@ const AdminBoundaryOptions = () => {
     ADMIN_BOUNDARY_LAYER_GROUP_IDS.includes(layerId),
   );
 
-  const toggle = () => dispatch({ type: "TOGGLE_BOUNDARY_NAMES_ON_HOVER" });
+  const toggle = () => {
+    dispatch({ type: "TOGGLE_BOUNDARY_NAMES_ON_HOVER" });
+    dispatch(autoSave());
+  };
 
   return (
     <div
@@ -35,7 +39,8 @@ const AdminBoundaryOptions = () => {
       </div>
       <Field
         orientation="horizontal"
-        className={cn("box-border gap-2.5 pt-2 pr-[14px] pl-12 select-none md:pr-[31px]",
+        className={cn(
+          "box-border gap-2.5 pt-2 pr-[14px] pl-12 select-none md:pr-[31px]",
           !disabled && "cursor-pointer",
         )}
         onClick={(e) => {

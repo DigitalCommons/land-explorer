@@ -14,6 +14,8 @@ type LoadMapPayload = {
   data: {
     mapLayers: {
       landDataLayers: string[];
+      // absent on maps saved before the option existed
+      showBoundaryNamesOnHover?: boolean;
     };
   };
 };
@@ -50,12 +52,13 @@ export default (
         showBoundaryNamesOnHover: !state.showBoundaryNamesOnHover,
       };
     case "LOAD_MAP":
-    case "RELOAD_MAP":
+    case "RELOAD_MAP": {
+      const { mapLayers } = (action.payload as LoadMapPayload).data;
       return {
-        ...INITIAL_STATE,
-        landDataLayers: (action.payload as LoadMapPayload).data.mapLayers
-          .landDataLayers,
+        landDataLayers: mapLayers.landDataLayers,
+        showBoundaryNamesOnHover: mapLayers.showBoundaryNamesOnHover ?? true,
       };
+    }
     case "NEW_MAP":
       return INITIAL_STATE;
     default:
