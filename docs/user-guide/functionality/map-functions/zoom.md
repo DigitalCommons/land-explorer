@@ -7,3 +7,5 @@ There are three main ways to zoom in or out on maps using [LandExplorer](https:/
 3. You can use the + and - symbols in the bottom right hand corner.
 
 <figure><img src="../../.gitbook/assets/zoom.png" alt=""><figcaption></figcaption></figure>
+
+{% embed url="https://drive.google.com/file/d/1okSW5EBFi1vBjUcMAFCzf7vdwr21D2sS/view?usp=sharing" %}
