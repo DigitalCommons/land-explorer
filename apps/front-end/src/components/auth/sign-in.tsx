@@ -350,22 +350,22 @@ export function SignIn({
           {emailAndPassword?.enabled && emailAndPassword?.forgotPassword && (
             <Link
               href={`${basePaths.auth}/${viewPaths.auth.forgotPassword}`}
-              className="self-center text-sm underline-offset-4 hover:underline"
+              className={"self-center text-sm underline-offset-4 hover:underline text-primary "}
             >
               {localization.auth.forgotPasswordLink}
             </Link>
           )}
 
           {emailAndPassword?.enabled && (
-            <FieldDescription className="text-center">
+            <div className="text-center">
               {localization.auth.needToCreateAnAccount}{" "}
               <Link
                 href={`${basePaths.auth}/${viewPaths.auth.signUp}`}
-                className="underline underline-offset-4"
+                className="hover:underline underline-offset-4 text-primary"
               >
                 {localization.auth.signUp}
               </Link>
-            </FieldDescription>
+            </div>
           )}
         </div>
       </CardContent>
