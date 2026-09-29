@@ -13,6 +13,8 @@ import { proprietorRoutes } from "./routes/proprietors";
 import { setupWebsockets } from "./websockets/server";
 import { getCorsOrigins } from "./cors";
 import { isBetterAuthEnabled } from "./featureFlagUtils";
+import { toNodeHandler } from "better-auth/node";
+import { auth } from "./utils/auth";
 
 const AuthBearer = require("hapi-auth-bearer-token");
 const Inert = require("@hapi/inert");
@@ -73,6 +75,24 @@ export const init = async function (): Promise<Server> {
     });
 
     server.auth.default("simple");
+  }
+
+  if (isBetterAuthEnabled()) {
+    server.route({
+      method: "*",
+      path: "/api/auth/{path*}",
+      options: {
+        auth: false,
+        // Hand the raw, unconsumed request stream to better-auth's own node
+        // handler, which parses the body itself - if Hapi parses/buffers the
+        // payload first (the default), better-auth sees an empty stream.
+        payload: { parse: false, output: "stream" },
+      },
+      handler: async (request, h) => {      
+        await toNodeHandler(auth)(request.raw.req, request.raw.res);
+        return h.abandon;
+      },
+    });
   }
   
   server.route({
