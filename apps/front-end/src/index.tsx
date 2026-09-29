@@ -20,11 +20,38 @@ import constants from "./constants";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import AuthProviderWrapper from "./providers/AuthProviderWrapper";
 import { Toaster } from "./components/ui/sonner";
+import RequireAuth from "./components/layouts/RequireAuth";
 
 initializeMixpanel();
 
 // Create a client
 const queryClient = new QueryClient()
+
+const RoutesLegacy = () => {
+  return (
+    <Routes>
+      <Route path="/app" element={<MapApp />} />
+      <Route path="/app/my-account/*" element={<MyAccount />} />
+      <Route path="/auth/*" element={<Authentication />} />
+      <Route path="/" element={<Navigate to="/app" replace={true} />} />
+      <Route path="*" element={<FourOhFour />} />
+    </Routes>
+  )
+}
+
+const RoutesNew = () => {
+  return (
+    <Routes>
+      <Route element={<RequireAuth />}>
+        <Route path="/app" element={<MapApp />} />
+        <Route path="/app/my-account/*" element={<MyAccount />} /> {/* // TODO this will change} */}
+      </Route>
+      <Route path="/auth/*" element={<Authentication />} />
+      <Route path="/" element={<Navigate to="/app" replace={true} />} />
+      <Route path="*" element={<FourOhFour />} />
+    </Routes>
+  )
+}
 
 createRoot(document.getElementById("root")!).render(
   <QueryClientProvider client={queryClient}>    
@@ -33,13 +60,7 @@ createRoot(document.getElementById("root")!).render(
           <BrowserRouter>
             <AuthProviderWrapper>
               <ErrorBoundary FallbackComponent={ErrorFallback}>
-                <Routes>
-                  <Route path="/app" element={<MapApp />} />
-                  {!constants.VITE_FEATURE_USE_BETTERAUTH ? <Route path="/app/my-account/*" element={<MyAccount />} /> : null }
-                  <Route path="/auth/*" element={<Authentication />} />
-                  <Route path="/" element={<Navigate to="/app" replace={true} />} />
-                  <Route path="*" element={<FourOhFour />} />
-                </Routes>
+                {constants.VITE_FEATURE_USE_BETTERAUTH ? <RoutesNew/> : <RoutesLegacy/>}                
               </ErrorBoundary>
               <Toaster />
             </AuthProviderWrapper>
@@ -48,3 +69,5 @@ createRoot(document.getElementById("root")!).render(
       </Provider>    
   </QueryClientProvider>,
 );
+
+

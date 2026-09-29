@@ -15,9 +15,6 @@ import {
 } from "../actions/WebSocketActions";
 import constants from "@/constants";
 import { Spinner } from "@/components/ui/spinner";
-import { useSession } from "@better-auth-ui/react";
-import { authClient } from "@/lib/auth/auth-client";
-
 /**
  * Renders the map once the user's details have loaded, and a spinner until then.
  *
@@ -95,16 +92,10 @@ const MapAppLegacy = () => {
 };
 
 const MapAppBetterAuth = () => {
-  const { data: session } = useSession(authClient);
-
   const dispatch = useAppDispatch();
 
   useEffect(() => {
     (async () => {
-      if (!session) {
-        return; // This will be changed in a later PR to redirect to sign in page
-      }
-
       await dispatch(getUserDetails());
       dispatch(establishSocketConnection());
       dispatch(getAskForFeedback());
@@ -117,8 +108,6 @@ const MapAppBetterAuth = () => {
       }
     })();
   }, [dispatch]);
-
-
   return <MapAppShell />;
 };
 
