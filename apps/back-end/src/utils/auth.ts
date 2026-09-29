@@ -4,6 +4,7 @@ import {
   RESET_PASSWORD_EXPIRY_SECONDS,
   sendPasswordReset,
 } from "../emails/Email";
+import { postRegistrationFlow, preRegistrationFlow } from "../services/authUser";
 
 export const auth = betterAuth({
   database: createPool({
@@ -29,6 +30,14 @@ export const auth = betterAuth({
         required: false, // nullable
         unique: true,
         input: false,
+      },
+    },
+  },
+  databaseHooks: {
+    user: {
+      create: {
+        before: preRegistrationFlow,
+        after: postRegistrationFlow
       },
     },
   },
