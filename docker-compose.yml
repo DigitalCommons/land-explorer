@@ -89,7 +89,7 @@ services:
       # Tags errors with the deploy environment: dev, staging or production
       GLITCHTIP_ENVIRONMENT: ${GLITCHTIP_ENVIRONMENT:-}
       MIXPANEL_TOKEN: ${MIXPANEL_TOKEN:-}
-      ANALYTICS_PEPPER: ${ANALYTICS_PEPPER:-}      
+      ANALYTICS_PEPPER: ${ANALYTICS_PEPPER:-}
       FEATURE_USE_BETTERAUTH: ${FEATURE_USE_BETTERAUTH:-}
       BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET:-}
       BETTER_AUTH_URL: ${BETTER_AUTH_URL:-}
@@ -121,7 +121,7 @@ services:
       DB_USER: root
       DB_PASSWORD: ${MYSQL_ROOT_PASSWORD}
       DB_NAME: property_boundaries
-      SECRET: ${BOUNDARY_SERVICE_SECRET}      
+      SECRET: ${BOUNDARY_SERVICE_SECRET}
       MEILI_HOST: http://${SERVICE_NAME_MEILISEARCH:-meilisearch}:7700
       MEILI_MASTER_KEY: ${MEILI_MASTER_KEY}
       GOV_API_URL: ${GOV_API_URL:-}

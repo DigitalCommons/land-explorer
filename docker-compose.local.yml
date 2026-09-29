@@ -72,6 +72,7 @@ services:
       DATABASE_USER: root
       DATABASE_PASSWORD: devroot
       DATABASE_NAME: land_explorer
+
     depends_on:
       mysql:
         condition: service_healthy
@@ -101,8 +102,8 @@ services:
       TOKEN_KEY: dev-token-key-not-for-production
       TOKEN_EXPIRY_DAYS: "365"
       BOUNDARY_SERVICE_URL: http://pbs:4000
-      BOUNDARY_SERVICE_SECRET: devsecret    
-      FEATURE_USE_BETTERAUTH: false  
+      BOUNDARY_SERVICE_SECRET: devsecret
+      FEATURE_USE_BETTERAUTH: false
       BETTER_AUTH_SECRET: dev-better-auth-key-only-not-a-secret
       BETTER_AUTH_URL: http://localhost:28080
     ports:
@@ -153,7 +154,7 @@ services:
       DB_USER: root
       DB_PASSWORD: devroot
       DB_NAME: property_boundaries
-      SECRET: devsecret      
+      SECRET: devsecret
       MEILI_HOST: http://meilisearch:7700
       MEILI_MASTER_KEY: devmasterkey
     ports:
