@@ -93,6 +93,35 @@ export const setupWebsockets = (server: HapiServer): void => {
           userInitials: user?.initials ?? null,
         });
       }
+
+      console.log("User websocket connected");
+
+      socket.on("disconnecting", () => {
+        console.log("User websocket disconnecting");
+        leaveAllMaps(socket);
+      });
+
+      socket.on("currentMap", async (mapId) => {
+        if (mapId === null) {
+          // null map id means a new untitled map was opened
+          console.log(`User opened a new untitled map`);
+          leaveAllMaps(socket);
+        } else {
+          if (getCurrentMapId(socket) != mapId) {
+            console.log(`User opened map`);
+            leaveAllMaps(socket);
+            socket.join(`${mapId}`);
+          }
+
+          // Tell the user about who has the lock (or null if the map is unlocked)
+          const user = await getUserWithLockOrNull(mapId);
+          socket.emit("mapLock", {
+            mapId,
+            userId: user?.id ?? null,
+            userInitials: user?.initials ?? null,
+          });
+        }
+      });
     });
   });
 }
