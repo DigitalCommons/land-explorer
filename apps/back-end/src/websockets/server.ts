@@ -3,6 +3,8 @@ import { Server as HapiServer } from "@hapi/hapi";
 import { clearAllLocks, maybeUnlock, getUserWithLockOrNull } from "./locking";
 import jwt, { JwtPayload } from "jsonwebtoken";
 import { getCorsOrigins } from "../cors";
+import { isBetterAuthEnabled } from "../featureFlagUtils";
+import { auth } from "../utils/auth";
 
 /** The socket.io server object */
 export let io: SocketIOServer;
@@ -21,29 +23,51 @@ export const setupWebsockets = (server: HapiServer): void => {
     corsOrigins.length > 0 ? { cors: { origin: corsOrigins } } : {}
   );
 
+  if (!isBetterAuthEnabled()) {
+    io.use(async (socket, next) => {
+      try {
+        // implement authentication, using the same JWT that we use for Hapi API requests
+        // see the 'loginUser' function to see token content
+        const { token } = socket.handshake.auth;
+        const { user_id } = jwt.verify(
+          token,
+          process.env.TOKEN_KEY ?? ""
+        ) as JwtPayload;
+
+        // The client cannot see or edit socket.data so it is safe to just store this on connection
+        socket.data.userId = Number(user_id);
+        console.log("User websocket connected");
+        next();
+      } catch (err) {
+        // Reject the connection but never throw - an uncaught error here kills
+        // the whole process, so one client with a stale/invalid token would
+        // crash-loop the server
+        console.log("Failed authentication", err);
+        next(new Error("unauthorized"));
+      }
+    });
+  } else {
+    io.use(async (socket, next) => {
+      try {
+        // implement authentication, using the same JWT that we use for Hapi API requests
+        // see the 'loginUser' function to see token content        
+        const cookie = socket.handshake.headers.cookie ?? "";
+        const session = await auth.api.getSession({
+          headers: new Headers({cookie: cookie})
+        })
+        if (!session) return next(new Error("unauthorized"));
+
+        socket.data.userId = session.user.appUserId;
+        console.log("User websocket connected");
+        next();
+      } catch (err) {
+        console.log("Failed websocket authentication", err);
+        next(new Error("unauthorized"));
+      }
+    })
+  }
+
   io.on("connection", (socket) => {
-    try {
-      // implement authentication, using the same JWT that we use for Hapi API requests
-      // see the 'loginUser' function to see token content
-      const { token } = socket.handshake.auth;
-      const { user_id } = jwt.verify(
-        token,
-        process.env.TOKEN_KEY ?? ""
-      ) as JwtPayload;
-
-      // The client cannot see or edit socket.data so it is safe to just store this on connection
-      socket.data.userId = Number(user_id);
-    } catch (err) {
-      // Reject the connection but never throw - an uncaught error here kills
-      // the whole process, so one client with a stale/invalid token would
-      // crash-loop the server
-      console.log("Failed authentication", err);
-      socket.disconnect(true);
-      return;
-    }
-
-    console.log("User websocket connected");
-
     socket.on("disconnecting", () => {
       console.log("User websocket disconnecting");
       leaveAllMaps(socket);
@@ -71,7 +95,7 @@ export const setupWebsockets = (server: HapiServer): void => {
       }
     });
   });
-};
+}
 
 /**
  * For a given socket belonging to a user, return the map ID they are currently viewing or null.
