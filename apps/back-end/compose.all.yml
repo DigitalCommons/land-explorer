@@ -131,7 +131,7 @@ services:
       TOKEN_EXPIRY_DAYS: "365"
       BOUNDARY_SERVICE_URL: http://lx-pbs:4000
       BOUNDARY_SERVICE_SECRET: devsecret
-      MEILISEARCH_ENABLED: "true"
+      FEATURE_USE_BETTERAUTH: false
     ports:
       - "24000:4000"
     depends_on:
@@ -182,10 +182,9 @@ services:
       DB_USER: root
       DB_PASSWORD: devroot
       DB_NAME: property_boundaries
-      SECRET: devsecret
-      MEILISEARCH_ENABLED: "true"
+      SECRET: devsecret      
       MEILI_HOST: http://lx-meilisearch:7700
-      MEILI_MASTER_KEY: devmasterkey
+      MEILI_MASTER_KEY: devmasterkey      
     ports:
       - "24001:4000"
     depends_on:
