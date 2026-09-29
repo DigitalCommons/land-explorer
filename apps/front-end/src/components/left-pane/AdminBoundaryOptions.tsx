@@ -28,17 +28,17 @@ const AdminBoundaryOptions = () => {
   return (
     <div
       className={cn(
-        "-mt-px border-t-2 border-b border-border pt-5 pb-7",
+        "-mt-px border-t-2 border-t-[#ddd] border-b border-b-border bg-muted pt-5 pb-7",
         disabled && "opacity-50",
       )}
     >
-      <div className="pl-12 text-xs font-medium tracking-wide text-muted-foreground uppercase">
+      <div className="pl-12 text-xs font-medium tracking-wide text-[#6e7985] uppercase">
         Options
       </div>
       <Field
         orientation="horizontal"
         className={cn(
-          "box-border gap-2.5 pt-2 pr-[14px] pl-12 select-none md:pr-[31px]",
+          "box-border gap-2.5 bg-transparent pt-2 pr-[14px] pl-12 select-none md:pr-[31px]",
           !disabled && "cursor-pointer",
         )}
         onClick={(e) => {
@@ -49,11 +49,14 @@ const AdminBoundaryOptions = () => {
           if (!disabled && !onSwitch) toggle();
         }}
       >
-        <FieldContent className="gap-1">
-          <FieldTitle id={LABEL_ID} className="text-base font-normal">
+        <FieldContent className="gap-1 bg-transparent">
+          <FieldTitle
+            id={LABEL_ID}
+            className="bg-transparent text-base font-normal"
+          >
             Show boundary names on hover
           </FieldTitle>
-          <FieldDescription className="w-[calc(100%-10px)]">
+          <FieldDescription className="w-[calc(100%-10px)] bg-transparent text-[#6e7985]">
             Lists boundary names in a pop-up as you move over the map
           </FieldDescription>
         </FieldContent>
