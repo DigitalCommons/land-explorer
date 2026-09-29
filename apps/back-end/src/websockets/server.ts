@@ -4,6 +4,7 @@ import { clearAllLocks, maybeUnlock, getUserWithLockOrNull } from "./locking";
 import jwt, { JwtPayload } from "jsonwebtoken";
 import { getCorsOrigins } from "../cors";
 import { isBetterAuthEnabled } from "../featureFlagUtils";
+import { auth } from "../utils/auth";
 
 /** The socket.io server object */
 export let io: SocketIOServer;
@@ -23,7 +24,7 @@ export const setupWebsockets = (server: HapiServer): void => {
   );
 
   if (!isBetterAuthEnabled()) {
-    io.on("connection", (socket) => {
+    io.use(async (socket, next) => {
       try {
         // implement authentication, using the same JWT that we use for Hapi API requests
         // see the 'loginUser' function to see token content
@@ -35,45 +36,65 @@ export const setupWebsockets = (server: HapiServer): void => {
 
         // The client cannot see or edit socket.data so it is safe to just store this on connection
         socket.data.userId = Number(user_id);
+        console.log("User websocket connected");
+        next();
       } catch (err) {
         // Reject the connection but never throw - an uncaught error here kills
         // the whole process, so one client with a stale/invalid token would
         // crash-loop the server
         console.log("Failed authentication", err);
-        socket.disconnect(true);
-        return;
+        next(new Error("unauthorized"));
       }
-
-      console.log("User websocket connected");
-
-      socket.on("disconnecting", () => {
-        console.log("User websocket disconnecting");
-        leaveAllMaps(socket);
-      });
-
-      socket.on("currentMap", async (mapId) => {
-        if (mapId === null) {
-          // null map id means a new untitled map was opened
-          console.log(`User opened a new untitled map`);
-          leaveAllMaps(socket);
-        } else {
-          if (getCurrentMapId(socket) != mapId) {
-            console.log(`User opened map`);
-            leaveAllMaps(socket);
-            socket.join(`${mapId}`);
-          }
-
-          // Tell the user about who has the lock (or null if the map is unlocked)
-          const user = await getUserWithLockOrNull(mapId);
-          socket.emit("mapLock", {
-            mapId,
-            userId: user?.id ?? null,
-            userInitials: user?.initials ?? null,
-          });
-        }
-      });
     });
-  };
+  } else {
+    io.use(async (socket, next) => {
+      try {
+        // implement authentication, using the same JWT that we use for Hapi API requests
+        // see the 'loginUser' function to see token content        
+        const cookie = socket.handshake.headers.cookie ?? "";
+        const session = await auth.api.getSession({
+          headers: new Headers({cookie: cookie})
+        })
+        if (!session) return next(new Error("unauthorized"));
+
+        socket.data.userId = session.user.appUserId;
+        console.log("User websocket connected");
+        next();
+      } catch (err) {
+        console.log("Failed websocket authentication", err);
+        next(new Error("unauthorized"));
+      }
+    })
+  }
+
+  io.on("connection", (socket) => {
+    socket.on("disconnecting", () => {
+      console.log("User websocket disconnecting");
+      leaveAllMaps(socket);
+    });
+
+    socket.on("currentMap", async (mapId) => {
+      if (mapId === null) {
+        // null map id means a new untitled map was opened
+        console.log(`User opened a new untitled map`);
+        leaveAllMaps(socket);
+      } else {
+        if (getCurrentMapId(socket) != mapId) {
+          console.log(`User opened map`);
+          leaveAllMaps(socket);
+          socket.join(`${mapId}`);
+        }
+
+        // Tell the user about who has the lock (or null if the map is unlocked)
+        const user = await getUserWithLockOrNull(mapId);
+        socket.emit("mapLock", {
+          mapId,
+          userId: user?.id ?? null,
+          userInitials: user?.initials ?? null,
+        });
+      }
+    });
+  });
 }
 
 /**

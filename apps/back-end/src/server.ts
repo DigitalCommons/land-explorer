@@ -15,6 +15,7 @@ import { getCorsOrigins } from "./cors";
 import { isBetterAuthEnabled } from "./featureFlagUtils";
 import { toNodeHandler } from "better-auth/node";
 import { auth } from "./utils/auth";
+import * as Boom from "@hapi/boom";
 
 const AuthBearer = require("hapi-auth-bearer-token");
 const Inert = require("@hapi/inert");
@@ -75,9 +76,23 @@ export const init = async function (): Promise<Server> {
     });
 
     server.auth.default("simple");
-  }
+  } else {
+    server.auth.scheme("betterauth", () => {
+      return {
+        authenticate: async (request, h) => {
+          const headers: Headers = new Headers(request.headers as Record<string, string>);
+          const session = await auth.api.getSession({headers:headers});
+          if (!session) {
+            throw Boom.unauthorized(null, 'betterauth');
+          } else {                                    
+            return h.authenticated({ credentials: { user_id: session.user.appUserId } });
+          }
+        }
+    }});
 
-  if (isBetterAuthEnabled()) {
+    server.auth.strategy("session", "betterauth");   
+    server.auth.default("session");
+  
     server.route({
       method: "*",
       path: "/api/auth/{path*}",
