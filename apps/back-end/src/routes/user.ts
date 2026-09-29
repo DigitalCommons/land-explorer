@@ -28,6 +28,7 @@ import {
 } from "./user.types";
 import { computeAnalyticsConsent } from "../userAnalyticsConsent";
 import { isBetterAuthEnabled } from "../featureFlagUtils";
+import { signUpToMarketing } from "../clients/buttondown.client";
 
 //TODO: DELETE FUNCTION WHEN `FEATURE_USE_BETTERAUTH` ENV VAR IS REMOVED
 const RESET_PASSWORD_EXPIRY_HOURS = 24;
@@ -39,6 +40,7 @@ type RegisterRequest = Request & {
     password: string;
     firstName: string;
     lastName: string;
+    marketing: boolean;
   };
 };
 
@@ -60,6 +62,7 @@ async function registerUser(
     return h.response(validation.errors).code(400);
   }
 
+  signUpToMarketing(request.payload.marketing, request.payload.username)
   // create user on database
   let user = await createUser(request.payload);
 
