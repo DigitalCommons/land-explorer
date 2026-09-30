@@ -15,6 +15,7 @@
   },
   "author": "Hansen Salim",
   "dependencies": {
+    "@better-auth/core": "^1.7.6",
     "@faker-js/faker": "^6.0.0-beta.0",
     "@hapi/basic": "^6.0.0",
     "@hapi/boom": "^10.0.1",
@@ -58,7 +59,7 @@
     "@types/react": "^19.3.0",
     "@types/sinon": "^10.0.13",
     "@types/uuid": "^8.3.4",
-    "auth": "1.7.4",
+    "auth": "^1.7.6",
     "chai": "^4.3.7",
     "env-cmd": "^10.1.0",
     "mocha": "^10.2.0",
