@@ -31,14 +31,7 @@ RUN --mount=type=cache,target=/root/.npm npm ci -w apps/back-end
 
 COPY . .
 
-ARG FEATURE_USE_BETTERAUTH
-ARG BETTER_AUTH_SECRET
-ARG BETTER_AUTH_URL
-ENV FEATURE_USE_BETTERAUTH=${FEATURE_USE_BETTERAUTH} \
-    BETTER_AUTH_SECRET=${BETTER_AUTH_SECRET} \
-    BETTER_AUTH_URL=${BETTER_AUTH_URL}   
-
-    RUN npm run build -w apps/back-end
+RUN npm run build -w apps/back-end
 
 # ---- production deps stage ----
 # Fresh install without dev deps. Done in a stage derived from build because
@@ -57,7 +50,10 @@ FROM node:${NODE_VERSION}-alpine
 # deployed environments set CORS_ORIGINS to the front-end origin so the API
 # accepts its cross-origin requests (see src/server.ts).
 ENV NODE_ENV=production
-
+ARG FEATURE_USE_BETTERAUTH
+ARG BETTER_AUTH_URL
+ENV FEATURE_USE_BETTERAUTH=${FEATURE_USE_BETTERAUTH} \    
+    BETTER_AUTH_URL=${BETTER_AUTH_URL}  
 # Recreate the workspace layout: hoisted deps at /app/node_modules, the app
 # underneath at /app/apps/back-end so Node's resolution walks up to them.
 WORKDIR /app
@@ -78,7 +74,7 @@ COPY --from=build /app/apps/back-end/migrations ./migrations
 COPY --from=build /app/apps/back-end/seeders ./seeders
 COPY --from=build /app/apps/back-end/.sequelizerc ./.sequelizerc
 COPY --from=build /app/apps/back-end/src/utils ./src/utils
-
+ 
 # Writable dir for transient shapefile exports (see routes/map.ts downloadShapefile).
 RUN mkdir -p data && chown node:node data
 

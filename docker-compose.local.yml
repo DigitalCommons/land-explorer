@@ -86,6 +86,8 @@ services:
       dockerfile: apps/back-end/Dockerfile
       args:
         NODE_VERSION: ${NODE_VERSION:-24}
+        FEATURE_USE_BETTERAUTH: ${FEATURE_USE_BETTERAUTH:-}
+        BETTER_AUTH_URL: ${BETTER_AUTH_URL:-}
     container_name: lx-be
     env_file:
       - path: ./docker.env
@@ -103,9 +105,7 @@ services:
       TOKEN_EXPIRY_DAYS: "365"
       BOUNDARY_SERVICE_URL: http://pbs:4000
       BOUNDARY_SERVICE_SECRET: devsecret
-      FEATURE_USE_BETTERAUTH: false
       BETTER_AUTH_SECRET: dev-better-auth-key-only-not-a-secret
-      BETTER_AUTH_URL: http://localhost:28080
     ports:
       - "24000:4000"
     depends_on:
