@@ -69,11 +69,14 @@ services:
     restart: "no"
 
   back-end:
-    build: { context: ., dockerfile: apps/back-end/Dockerfile, args: { NODE_VERSION: "24" } }
-    args:
-      FEATURE_USE_BETTERAUTH: ${FEATURE_USE_BETTERAUTH:-}
-      BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET:-}
-      BETTER_AUTH_URL: ${BETTER_AUTH_URL:-}
+    build:
+      context: .
+      dockerfile: apps/back-end/Dockerfile
+      args:
+        NODE_VERSION: "24"
+        FEATURE_USE_BETTERAUTH: ${FEATURE_USE_BETTERAUTH:-}
+        BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET:-}
+        BETTER_AUTH_URL: ${BETTER_AUTH_URL:-}
     environment:
       NODE_ENV: production
       PORT: "4000"
