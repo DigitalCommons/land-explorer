@@ -30,7 +30,15 @@ COPY apps/property-boundaries-service/package.json apps/property-boundaries-serv
 RUN --mount=type=cache,target=/root/.npm npm ci -w apps/back-end
 
 COPY . .
-RUN npm run build -w apps/back-end
+
+ARG FEATURE_USE_BETTERAUTH
+ARG BETTER_AUTH_SECRET
+ARG BETTER_AUTH_URL
+ENV FEATURE_USE_BETTERAUTH=${FEATURE_USE_BETTERAUTH} \
+    BETTER_AUTH_SECRET=${BETTER_AUTH_SECRET} \
+    BETTER_AUTH_URL=${BETTER_AUTH_URL}   
+
+    RUN npm run build -w apps/back-end
 
 # ---- production deps stage ----
 # Fresh install without dev deps. Done in a stage derived from build because
