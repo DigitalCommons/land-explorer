@@ -3,10 +3,20 @@ import { createPool } from "mysql2/promise";
 import sgMail from "@sendgrid/mail";
 import { renderResetPasswordEmail } from "../emails/ResetPasswordEmail";
 import { logoAttachment } from "../emails/components/logo";
+import { EnvironmentType } from "../enums";
+import { getEnvironmentType } from "../helpers/environmentVarsHelper";
 
 const RESET_PASSWORD_EXPIRY_SECONDS = 60 * 60; // 1 hour (better-auth default)
 
+// Build time environment variables aren't working as expected for preview environments in coolify. 
+// The "production environemnt" env var (i.e.) dev is used instead of the "preview environment" env var
+// This is a work around for that issue
+const baseUrl = getEnvironmentType() === EnvironmentType.Preview
+  ? process.env.SERVICE_URL_FRONT_END
+  : process.env.BETTER_AUTH_URL;
+
 export const auth = betterAuth({
+  baseURL: baseUrl,
   database: createPool({
     host: process.env.DATABASE_HOST,
     database: process.env.DATABASE_NAME,

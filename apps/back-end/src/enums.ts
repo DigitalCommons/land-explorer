@@ -22,3 +22,11 @@ export enum ItemType {
   Polygon = 1,
   Line = 2,
 }
+
+export enum EnvironmentType {
+  Local = "local",
+  Preview = "preview",
+  Development = "development",
+  Staging = "staging",
+  Production = "production",
+}
