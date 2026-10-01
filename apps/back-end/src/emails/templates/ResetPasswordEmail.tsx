@@ -6,8 +6,8 @@ import {
   Paragraph,
   PrimaryButton,
   SignOff,
-} from "./components/Layout";
-import { LOGO_PREVIEW_SRC } from "./components/logo";
+} from "../components/Layout";
+import { LOGO_PREVIEW_SRC } from "../components/logo";
 
 export type ResetPasswordEmailProps = {
   name?: string;
