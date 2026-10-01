@@ -142,15 +142,15 @@ export function ForgotPassword({ className }: ForgotPasswordProps) {
         </form.AppForm>
 
         <div className="flex flex-col gap-3 items-center w-full mt-4">
-          <FieldDescription className="text-center">
+          <div className="text-center">
             {localization.auth.rememberYourPassword}{" "}
             <Link
               href={`${basePaths.auth}/${viewPaths.auth.signIn}`}
-              className="underline underline-offset-4"
+              className="text-primary hover:underline underline-offset-4"
             >
               {localization.auth.signIn}
             </Link>
-          </FieldDescription>
+          </div>
         </div>
       </CardContent>
     </Card>
