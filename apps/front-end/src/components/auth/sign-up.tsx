@@ -22,7 +22,6 @@ import { useMemo, useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import {
   Field,
-  FieldDescription,
   FieldError,
   FieldGroup,
   FieldLabel,
@@ -555,18 +554,18 @@ export function SignUp({
 
         {emailAndPassword?.enabled && (
           <div className="flex flex-col gap-3 items-center w-full mt-4">
-            <FieldDescription className="text-center">
+            <div className="text-center">
               {localization.auth.alreadyHaveAnAccount}{" "}
               <Link
                 href={getAuthLinkURL(
                   `${basePaths.auth}/${viewPaths.auth.signIn}`,
                   redirectTo
                 )}
-                className="underline underline-offset-4"
+                className="text-primary hover:underline underline-offset-4"
               >
                 {localization.auth.signIn}
               </Link>
-            </FieldDescription>
+            </div>
           </div>
         )}
       </CardContent>

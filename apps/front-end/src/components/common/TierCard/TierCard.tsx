@@ -32,8 +32,8 @@ const TierCard = ({ tierType, name, price, description, selected, detailsHref, o
       onClick={onSelect}
       onKeyDown={handleKeyDown}
       className={cn(
-        "relative flex-1 cursor-pointer gap-0 border-2 border-input py-0 shadow-[0_0_10px_rgba(0,0,0,0.1)] outline-none focus-visible:ring-3 focus-visible:ring-ring/50",
-        selected && "border-primary"
+        "relative flex-1 cursor-pointer gap-0 border-1 border-input py-0 outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50",
+        selected && "border-primary ring-3 ring-ring/50"
       )}
     >
       {selected && (
@@ -55,7 +55,7 @@ const TierCard = ({ tierType, name, price, description, selected, detailsHref, o
           target="_blank"
           rel="noreferrer"
           onClick={(event) => event.stopPropagation()}
-          className="relative mt-2 inline-block text-xs text-link underline! underline-offset-4"
+          className="text-primary relative mt-2 inline-block text-xs text-link hover:underline underline-offset-4"
         >
           View full tier details
         </a>
