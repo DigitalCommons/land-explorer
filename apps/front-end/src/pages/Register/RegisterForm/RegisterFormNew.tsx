@@ -75,10 +75,6 @@ const RegisterFormNew = () => {
     },
   });
 
-  const Captcha = plugins.find(
-    (plugin) => plugin.captchaComponent,
-  )?.captchaComponent;
-
   const {
     control,
     handleSubmit,
@@ -150,8 +146,7 @@ const RegisterFormNew = () => {
       </CardHeader>
       <CardContent className="px-6">
         <form onSubmit={handleSubmit(submitRegistration)}>
-          <RegisterFormFields control={control} />
-          {Captcha && <div className="mb-4 flex justify-center">{Captcha}</div>}
+          <RegisterFormFields control={control} />         
           <div className="flex justify-center gap-2.5 p-2.5">            
             <Button
               type="submit"
