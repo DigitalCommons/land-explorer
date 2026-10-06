@@ -61,8 +61,18 @@ export const usernameExist = async (username: string): Promise<Boolean> => {
  * Register user with data from API request.
  * Data should already be validated.
  */
-export const createUser = async (data: any) => {  
-  return await User.create({
+export const createUser = async (data: any) => {
+  return await User.create(toUserRow(data));
+};
+
+/**
+ * The `user` table row for a registration, keyed by column name. Shared by
+ * createUser and the Better Auth sign-up (services/authUser.ts), which writes
+ * the row inside its own transaction.
+ * Data should already be validated.
+ */
+export const toUserRow = (data: any) => {
+  return {
     username: data.username,
     password: hashPassword(data.password),
     enabled: 1,
@@ -82,7 +92,7 @@ export const createUser = async (data: any) => {
     account_type: data.accountType, // #157
     marketing: data.marketing,
     council_id: data.username.endsWith("rbkc.gov.uk") ? 1 : 0,
-  });
+  };
 };
 
 /**
