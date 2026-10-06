@@ -130,7 +130,7 @@ const RegisterFormNew = () => {
   };
 
   return (
-    <Card className="relative mx-auto mt-24 w-[calc(100vw-40px)] gap-6 shadow-[0_20px_60px_rgba(0,0,0,0.25)] md:w-190">
+    <Card className="relative mx-auto mt-12 w-[calc(100vw-40px)] md:w-190">
       <AuthPrompts view="signUp" />
       <CardHeader className="gap-2.5 px-6">
         <CardTitle className="text-2xl font-medium text-primary">
