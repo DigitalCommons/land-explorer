@@ -1,10 +1,12 @@
 import {
   authMutationKeys,
   authQueryKeys,
+  getAuthErrorMessage,
   getAuthErrorPresentation,
   isPasswordCompromisedError
 } from "@better-auth-ui/core"
 import { oneTapMutationKeys } from "@better-auth-ui/core/plugins/one-tap"
+import { useAuth } from "@better-auth-ui/react"
 import {
   matchMutation,
   matchQuery,
@@ -16,8 +18,20 @@ import { toast } from "sonner"
 
 export function ErrorToaster() {
   const queryClient = useQueryClient()
+  const { localization } = useAuth()
 
   useEffect(() => {
+    // Server failures carry no useful message (a raw 500 has an empty body),
+    // so they get Better Auth UI's friendly copy. 4xx messages come from our
+    // validation and are written for the user, so they're shown as they are.
+    const messageFor = (
+      err: BetterFetchError,
+      key?: readonly unknown[]
+    ) =>
+      err.error?.status >= 500 || !err.error?.message
+        ? getAuthErrorMessage(err, localization, key)
+        : err.error.message
+
     const queryCache = queryClient.getQueryCache()
     const previousQueryOnError = queryCache.config.onError
 
@@ -29,7 +43,9 @@ export function ErrorToaster() {
 
       const err = error as BetterFetchError
       if (err?.error?.code === "EMAIL_NOT_VERIFIED") return
-      if (err?.error) toast.error(err.error.message)
+      if (!err?.error) return
+      const message = messageFor(err, query.queryKey)
+      if (message) toast.error(message)
     }
 
     const mutationCache = queryClient.getMutationCache()
@@ -65,14 +81,15 @@ export function ErrorToaster() {
       ) {
         return
       }
-      toast.error(err.error?.message || err.message)
+      const message = messageFor(err, mutation.options.mutationKey)
+      if (message) toast.error(message)
     }
 
     return () => {
       queryCache.config.onError = previousQueryOnError
       mutationCache.config.onError = previousMutationOnError
     }
-  }, [queryClient])
+  }, [queryClient, localization])
 
   return null
 }
