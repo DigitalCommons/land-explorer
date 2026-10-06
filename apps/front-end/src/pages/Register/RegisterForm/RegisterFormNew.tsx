@@ -89,40 +89,40 @@ const RegisterFormNew = () => {
   const agree = useWatch({ control, name: "agree" });
 
   const submitRegistration = async (data: RegisterFormValues) => {
-    try {
-      await signUpEmail({
-        name: `${data.firstName} ${data.lastName}`.trim(),
-        email: data.email.trim(),
-        password: data.password,
-        ...toRegistrationDetails(data),
-        fetchOptions,
-      });
-    } catch (error) {
+      try {
+        await signUpEmail({
+          name: `${data.firstName} ${data.lastName}`.trim(),
+          email: data.email.trim(),
+          password: data.password,
+          ...toRegistrationDetails(data),
+          fetchOptions,
+        });
+      } catch (error) {
       resetFetchOptions();
 
-      // The haveIBeenPwned plugin rejects on the password itself,
-      // so it belongs against the field rather than in a toast.
-      if (isPasswordCompromisedError(error)) {
+        // The haveIBeenPwned plugin rejects on the password itself,
+        // so it belongs against the field rather than in a toast.
+        if (isPasswordCompromisedError(error)) {
         setError(
           "password",
           { type: "server", message: localization.auth.passwordCompromised },
           { shouldFocus: true },
-        );
-        return;
-      }
+          );
+          return;
+        }
 
-      const serverErrors = (error as BetterFetchError).error?.errors;
-      if (serverErrors && typeof serverErrors === "object") {
-        const { fieldErrors, unattributed } = mapServerErrors(
-          serverErrors as Record<string, string[]>,
-          data,
-        );
+        const serverErrors = (error as BetterFetchError).error?.errors;
+        if (serverErrors && typeof serverErrors === "object") {
+          const { fieldErrors, unattributed } = mapServerErrors(
+            serverErrors as Record<string, string[]>,
+            data,
+          );
         fieldErrors.forEach(([field, message], i) =>
           setError(field, { type: "server", message }, { shouldFocus: i === 0 }),
         );
         unattributed.forEach((message) => toast.error(message));
+        }
       }
-    }
   };
 
   return (
@@ -138,7 +138,10 @@ const RegisterFormNew = () => {
           tenants&rsquo; unions and community projects.
         </CardDescription>
         <Link
-          to="/auth"
+          to={getAuthLinkURL(
+            `${basePaths.auth}/${viewPaths.auth.signIn}`,
+            redirectTo,
+          )}
           className="absolute top-2.5 right-2.5 flex size-[25px] items-center justify-center rounded-full bg-[#D8D8D8] text-white hover:bg-[#D8D8D8]/80"
         >
           <FontAwesomeIcon icon={faXmark} className="size-3!" />
@@ -147,20 +150,20 @@ const RegisterFormNew = () => {
       <CardContent className="px-6">
         <form onSubmit={handleSubmit(submitRegistration)}>
           <RegisterFormFields control={control} />         
-          <div className="flex justify-center gap-2.5 p-2.5">            
+                <div className="flex justify-center gap-2.5 p-2.5">
             <Button
               type="submit"
               disabled={!agree || isSubmitting}
-              className={cn(
-                "rounded-full md:min-w-50",
-                // the spinner is the busy signal, keep the button solid
-                isSubmitting && "disabled:opacity-100",
-              )}
-            >
+                    className={cn(
+                      "rounded-full md:min-w-50",
+                      // the spinner is the busy signal, keep the button solid
+                      isSubmitting && "disabled:opacity-100",
+                    )}
+                  >
               {isSubmitting && <Spinner />}
               {isSubmitting ? "Registering…" : "Register"}
             </Button>
-          </div>
+                </div>
         </form>
         <div className="mt-4 text-center">
           {localization.auth.alreadyHaveAnAccount}{" "}
