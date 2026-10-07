@@ -19,14 +19,15 @@ export default function AuthProviderWrapper({children, client}: AuthProviderWrap
             authClient={authClient}
             queryClient={client}
             redirectTo="/app"            
-            emailAndPassword={{ minPasswordLength: 6, rememberMe: true }}
+            emailAndPassword={{ minPasswordLength: 6, rememberMe: true, requireEmailVerification: true }}
             viewPaths={{auth: {
                 signIn: "sign-in",
                 signUp: "register",
                 forgotPassword: "forgot-password",  
                 resetLinkSent: "reset-link-sent",    
                 resetPassword: "reset-password",          
-                signOut: "sign-out",               
+                signOut: "sign-out",     
+                verifyEmail: "verify-email"          
             }}}            
             navigate={({ to, replace }) => navigate(to, {replace: replace})}
             Link={RouterLink}
