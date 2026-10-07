@@ -18,7 +18,7 @@ export default function AuthProviderWrapper({children, client}: AuthProviderWrap
         <AuthProvider        
             authClient={authClient}
             queryClient={client}
-            redirectTo="app"            
+            redirectTo="/app"            
             emailAndPassword={{ minPasswordLength: 6, rememberMe: true, requireEmailVerification: true }}
             viewPaths={{auth: {
                 signUp: "register",
