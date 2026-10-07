@@ -87,7 +87,7 @@ async function insertAuthUser(
   const authUserId = generateId();
   await sequelize.query(
     `INSERT INTO auth_user (id, name, email, emailVerified, createdAt, updatedAt, appUserId)
-     VALUES (:id, :name, :email, true, :createdAt, NOW(3), :appUserId)`,
+     VALUES (:id, :name, :email, false, :createdAt, NOW(3), :appUserId)`,
     {
       replacements: {
         id: authUserId,
