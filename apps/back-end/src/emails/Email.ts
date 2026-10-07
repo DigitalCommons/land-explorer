@@ -3,6 +3,7 @@ import { renderResetPasswordEmail } from "./templates/ResetPasswordEmail";
 import { logoAttachment } from "./components/logo";
 import { User } from "better-auth";
 import { renderVerificationEmail } from "./templates/EmailVerificationEmail";
+import { renderRegisteredEmail } from "./templates/RegisteredEmail";
 
 export const RESET_PASSWORD_EXPIRY_SECONDS = 60 * 60; // 1 hour (better-auth default)
 export const VERIFICATION_EMAIL_EXPIRY_SECONDS = 60 * 60; // 1 hour (better-auth default)
@@ -76,6 +77,26 @@ export async function sendVerificationEmail(
           email: sender,
         },
         subject: "Verify your email",
+        html,
+        attachments: [logoAttachment()],
+      })
+      .catch((error) => console.error(error));
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+export async function sendRegisteredEmail(email: string, name: string, appUrl: string) {
+  try {
+    const html = await renderRegisteredEmail({ name, url: appUrl });
+    sgMail
+      .send({
+        to: email,
+        from: {
+          name: senderName,
+          email: sender,
+        },
+        subject: `${name}, you have registered on LandExplorer!`,
         html,
         attachments: [logoAttachment()],
       })
