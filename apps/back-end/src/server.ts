@@ -82,7 +82,7 @@ export const init = async function (): Promise<Server> {
         authenticate: async (request, h) => {
           const headers: Headers = new Headers(request.headers as Record<string, string>);
           const session = await auth.api.getSession({headers:headers});
-          if (!session) {
+          if (!session?.user.appUserId) {
             throw Boom.unauthorized(null, 'betterauth');
           } else {                                    
             return h.authenticated({ credentials: { user_id: session.user.appUserId } });

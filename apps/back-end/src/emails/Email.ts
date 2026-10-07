@@ -21,7 +21,7 @@ export async function sendPasswordReset(
   request?: Request,
 ) {
   try {
-    sgMail.send({
+    await sgMail.send({
       to: user.email,
       from: {
         name: senderName,
