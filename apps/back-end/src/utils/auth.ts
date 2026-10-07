@@ -7,8 +7,9 @@ import {
   RESET_PASSWORD_EXPIRY_SECONDS,
   sendPasswordReset,
   sendVerificationEmail,
+  VERIFICATION_EMAIL_EXPIRY_SECONDS,
 } from "../emails/Email";
-import { postRegistrationFlow, preRegistrationFlow } from "../services/authUser";
+import { postEmailVerificationFlow, postRegistrationFlow, preRegistrationFlow } from "../services/authUser";
 
 export const auth = betterAuth({
   database: createPool({
@@ -76,6 +77,9 @@ export const auth = betterAuth({
   emailVerification: {
     autoSignInAfterVerification: true,
     sendVerificationEmail: sendVerificationEmail,   
-    sendOnSignIn: true 
+    sendOnSignIn: true,
+    sendOnSignUp: true,
+    expiresIn: VERIFICATION_EMAIL_EXPIRY_SECONDS,
+    afterEmailVerification: postEmailVerificationFlow,
   }
 });
