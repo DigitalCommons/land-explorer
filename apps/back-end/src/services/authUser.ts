@@ -4,6 +4,7 @@ import { signUpToMarketing } from "../clients/buttondown.client";
 import { getUserById, migrateGuestUserMap, toUserRow, trackUserEvent } from "../queries/query";
 import { Event } from "../instrument";
 import { APP_USER_MODEL } from "../utils/appUserPlugin";
+import { sendRegisteredEmail } from "../emails/Email";
 
 // Our registration form signs up through this endpoint, sending the details we
 // keep on our own `user` table alongside Better Auth's name, email and password
@@ -62,8 +63,34 @@ export async function postRegistrationFlow(user: User & Record<string, unknown>,
       sharedMaps: mapsCount > 0,
     });
 
-    // success email will be sent after email verification
+    // success email is sent after email verification, in postEmailVerificationFlow
   } catch (error) {
     console.error("Post-registration steps failed for", user.email, error);
+  }
+}
+
+// Migrated users are verified too, but their createdAt is when they first
+// registered on the old system, so this stops them getting a welcome email.
+// A week leaves room for a new user to request another link before verifying.
+const NEW_SIGN_UP_WINDOW_MS = 7 * 24 * 60 * 60 * 1000;
+
+/**
+ * Runs after a user verifies their email. Sends new sign-ups the "successfully
+ * registered" email, which the old registration route sent straight away.
+ * @param user the user, now verified
+ */
+export async function postEmailVerificationFlow(user: User & Record<string, unknown>) {
+  if (!user.appUserId) return;
+  if (Date.now() - new Date(user.createdAt).getTime() > NEW_SIGN_UP_WINDOW_MS) return;
+
+  try {
+    const appUser = await getUserById(Number(user.appUserId));
+    sendRegisteredEmail(
+      user.email,
+      appUser.first_name,
+      `${process.env.BETTER_AUTH_URL}/app`,
+    );
+  } catch (error) {
+    console.error("Post-verification steps failed for", user.email, error);
   }
 }
