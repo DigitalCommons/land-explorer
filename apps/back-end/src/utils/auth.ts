@@ -6,6 +6,7 @@ import { APP_USER_MODEL, appUserPlugin } from "./appUserPlugin";
 import {
   RESET_PASSWORD_EXPIRY_SECONDS,
   sendPasswordReset,
+  sendVerificationEmail,
 } from "../emails/Email";
 import { postRegistrationFlow, preRegistrationFlow } from "../services/authUser";
 
@@ -63,6 +64,7 @@ export const auth = betterAuth({
   plugins: [appUserPlugin()],
   emailAndPassword: {
     enabled: true,
+    requireEmailVerification: true,
     minPasswordLength: 6,
     resetPasswordTokenExpiresIn: RESET_PASSWORD_EXPIRY_SECONDS,
     // signs the user out on every device, in case the reset is to lock someone else
@@ -72,6 +74,11 @@ export const auth = betterAuth({
     password: {
       hash: (password: string) => bcrypt.hash(password, 10),      
       verify: (data: {hash: string; password: string;}) => bcrypt.compare(data.password, data.hash)
-    }
+    }    
+  },
+  emailVerification: {
+    autoSignInAfterVerification: true,
+    sendVerificationEmail: sendVerificationEmail,   
+    sendOnSignIn: true 
   }
 });
