@@ -8,6 +8,7 @@ import {
   SignOff,
 } from "../components/Layout";
 import { LOGO_PREVIEW_SRC } from "../components/logo";
+import { formatExpiry } from "../helper";
 
 export type ResetPasswordEmailProps = {
   name?: string;
@@ -15,11 +16,6 @@ export type ResetPasswordEmailProps = {
   expiryMinutes: number;
   logoSrc?: string;
 };
-
-const formatExpiry = (minutes: number) =>
-  minutes % 60 === 0
-    ? `${minutes / 60} hour${minutes === 60 ? "" : "s"}`
-    : `${minutes} minutes`;
 
 const ResetPasswordEmail = ({ name, url, expiryMinutes, logoSrc }: ResetPasswordEmailProps) => {
   const expiry = formatExpiry(expiryMinutes);
