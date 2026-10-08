@@ -32,9 +32,11 @@ export const getRequest = (endpoint: string, signal?: AbortSignal) => {
 
       console.error(`There was an error in ${endpoint} GET request`, err);
 
-      if (err.response?.status === 401) {
-        await dispatch(sessionTimedOut());
-      }
+      if (!constants.VITE_FEATURE_USE_BETTERAUTH) {
+        if (err.response?.status === 401) {
+          await dispatch(sessionTimedOut());
+        }
+      }      
     }
     return null;
   };
@@ -63,8 +65,10 @@ export const postRequest = (endpoint: string, body: any) => {
     } catch (err: any) {
       console.error(`There was an error in ${endpoint} POST request`, err);
 
-      if (err.response?.status === 401) {
-        await dispatch(sessionTimedOut());
+      if (!constants.VITE_FEATURE_USE_BETTERAUTH) {
+        if (err.response?.status === 401) {
+          await dispatch(sessionTimedOut());
+        }
       }
     }
     return false;

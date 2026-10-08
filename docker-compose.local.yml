@@ -72,6 +72,7 @@ services:
       DATABASE_USER: root
       DATABASE_PASSWORD: devroot
       DATABASE_NAME: land_explorer
+
     depends_on:
       mysql:
         condition: service_healthy
@@ -102,7 +103,9 @@ services:
       TOKEN_EXPIRY_DAYS: "365"
       BOUNDARY_SERVICE_URL: http://pbs:4000
       BOUNDARY_SERVICE_SECRET: devsecret
-      MEILISEARCH_ENABLED: "true"
+      FEATURE_USE_BETTERAUTH: false
+      BETTER_AUTH_SECRET: dev-better-auth-key-only-not-a-secret
+      BETTER_AUTH_URL: http://localhost:28080
     ports:
       - "24000:4000"
     depends_on:
@@ -152,7 +155,6 @@ services:
       DB_PASSWORD: devroot
       DB_NAME: property_boundaries
       SECRET: devsecret
-      MEILISEARCH_ENABLED: "true"
       MEILI_HOST: http://meilisearch:7700
       MEILI_MASTER_KEY: devmasterkey
     ports:
@@ -197,9 +199,10 @@ services:
         VITE_GEOCODER_TOKEN: ${VITE_GEOCODER_TOKEN:?missing - download docker.env from Bitwarden and run with --env-file docker.env}
         VITE_MAPBOX_TOKEN: ${VITE_MAPBOX_TOKEN:?missing - download docker.env from Bitwarden and run with --env-file docker.env}
         VITE_USER_GUIDE_URL: ${VITE_USER_GUIDE_URL:-}
+        VITE_TIERS_URL: ${VITE_TIERS_URL:-}
         VITE_MIXPANEL_TOKEN: ${VITE_MIXPANEL_TOKEN:-}
         VITE_MIXPANEL_PEPPER: ${VITE_MIXPANEL_PEPPER:-}
-        VITE_FEATURE_HISTORIC_OWNERSHIP: ${VITE_FEATURE_HISTORIC_OWNERSHIP:-}
+        VITE_FEATURE_USE_BETTERAUTH: ${VITE_FEATURE_USE_BETTERAUTH:-}
     container_name: lx-fe
     ports:
       - "28080:80"

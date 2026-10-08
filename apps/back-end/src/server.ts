@@ -6,12 +6,16 @@ import "./instrument";
 import * as Sentry from "@sentry/node";
 import Hapi from "@hapi/hapi";
 import { Request, Server } from "@hapi/hapi";
-import { userRoutes } from "./routes/user";
+import { userAuthRoutes, userRoutes } from "./routes/user";
 import { mapRoutes } from "./routes/map";
 import { dataGroupRoutes } from "./routes/datagroup";
 import { proprietorRoutes } from "./routes/proprietors";
 import { setupWebsockets } from "./websockets/server";
 import { getCorsOrigins } from "./cors";
+import { isBetterAuthEnabled } from "./featureFlagUtils";
+import { toNodeHandler } from "better-auth/node";
+import { auth } from "./utils/auth";
+import * as Boom from "@hapi/boom";
 
 const AuthBearer = require("hapi-auth-bearer-token");
 const Inert = require("@hapi/inert");
@@ -50,28 +54,62 @@ export const init = async function (): Promise<Server> {
   await server.register(AuthBearer);
   await server.register(Inert);
 
-  server.auth.strategy("simple", "bearer-access-token", {
-    allowQueryToken: true, // optional, false by default
-    validate: async (request: any, token: string, h: any) => {
-      let isValid = false;
-      let credentials = {};
+  if (!isBetterAuthEnabled()) {
+    server.auth.strategy("simple", "bearer-access-token", {
+      allowQueryToken: true, // optional, false by default
+      validate: async (request: any, token: string, h: any) => {
+        let isValid = false;
+        let credentials = {};
 
-      try {
-        // see the loginUser function to see token content
-        const decodedToken = jwt.verify(token, process.env.TOKEN_KEY);
+        try {
+          // see the loginUser function to see token content
+          const decodedToken = jwt.verify(token, process.env.TOKEN_KEY);
 
-        isValid = true;
-        credentials = { user_id: decodedToken.user_id };
-      } catch (err) {
-        console.log("Failed authentication", err);
-      }
+          isValid = true;
+          credentials = { user_id: decodedToken.user_id };
+        } catch (err) {
+          console.log("Failed authentication", err);
+        }
 
-      return { isValid, credentials };
-    },
-  });
+        return { isValid, credentials };
+      },
+    });
 
-  server.auth.default("simple");
+    server.auth.default("simple");
+  } else {
+    server.auth.scheme("betterauth", () => {
+      return {
+        authenticate: async (request, h) => {
+          const headers: Headers = new Headers(request.headers as Record<string, string>);
+          const session = await auth.api.getSession({headers:headers});
+          if (!session) {
+            throw Boom.unauthorized(null, 'betterauth');
+          } else {                                    
+            return h.authenticated({ credentials: { user_id: session.user.appUserId } });
+          }
+        }
+    }});
 
+    server.auth.strategy("session", "betterauth");   
+    server.auth.default("session");
+  
+    server.route({
+      method: "*",
+      path: "/api/auth/{path*}",
+      options: {
+        auth: false,
+        // Hand the raw, unconsumed request stream to better-auth's own node
+        // handler, which parses the body itself - if Hapi parses/buffers the
+        // payload first (the default), better-auth sees an empty stream.
+        payload: { parse: false, output: "stream" },
+      },
+      handler: async (request, h) => {      
+        await toNodeHandler(auth)(request.raw.req, request.raw.res);
+        return h.abandon;
+      },
+    });
+  }
+  
   server.route({
     method: "GET",
     path: "/",
@@ -82,6 +120,7 @@ export const init = async function (): Promise<Server> {
   });
 
   server.route(userRoutes);
+  server.route(userAuthRoutes())
   server.route(mapRoutes);
   server.route(dataGroupRoutes);
   server.route(proprietorRoutes);

@@ -3,3 +3,4 @@ node_modules/
 .env
 docker.env
 data/shapefiles/
+better-auth_migrations
