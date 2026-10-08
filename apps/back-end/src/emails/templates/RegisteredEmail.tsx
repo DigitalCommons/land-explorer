@@ -19,7 +19,7 @@ const RegisteredEmail = ({ name, url, logoSrc }: RegisteredEmailProps) => (
     preview="Thank you for registering with LandExplorer."
     logoSrc={logoSrc}
   >
-    <EmailHeading>Welcome to LandExplorer</EmailHeading>
+    <EmailHeading>Welcome to LandExplorer!</EmailHeading>
     <Paragraph>{name ? `Dear ${name},` : "Hi,"}</Paragraph>
     <Paragraph>
       Thank you for registering with LandExplorer. Your email address is verified and your
