@@ -2,29 +2,34 @@ import { Action } from "../types";
 
 type LandDataLayersState = {
   landDataLayers: string[];
+  showBoundaryNamesOnHover: boolean;
 };
 
 const INITIAL_STATE: LandDataLayersState = {
   landDataLayers: [],
+  showBoundaryNamesOnHover: true,
 };
 
 type LoadMapPayload = {
   data: {
     mapLayers: {
       landDataLayers: string[];
+      // absent on maps saved before the option existed
+      showBoundaryNamesOnHover?: boolean;
     };
   };
 };
 
 type LandDataLayersAction =
   | (Action<string> & { type: "TOGGLE_LAND_DATA_LAYER" })
+  | (Action & { type: "TOGGLE_BOUNDARY_NAMES_ON_HOVER" })
   | (Action<LoadMapPayload> & { type: "LOAD_MAP" | "RELOAD_MAP" })
   | (Action & { type: "NEW_MAP" })
   | Action;
 
 export default (
   state: LandDataLayersState = INITIAL_STATE,
-  action: LandDataLayersAction
+  action: LandDataLayersAction,
 ): LandDataLayersState => {
   let landDataLayers: string[];
   switch (action.type) {
@@ -41,12 +46,21 @@ export default (
         landDataLayers,
       };
     }
-    case "LOAD_MAP":
-    case "RELOAD_MAP":
+    case "TOGGLE_BOUNDARY_NAMES_ON_HOVER":
       return {
-        landDataLayers: (action.payload as LoadMapPayload).data.mapLayers
-          .landDataLayers,
+        ...state,
+        showBoundaryNamesOnHover: !state.showBoundaryNamesOnHover,
       };
+    case "LOAD_MAP":
+    case "RELOAD_MAP": {
+      const { mapLayers } = (action.payload as LoadMapPayload).data;
+      return {
+        landDataLayers: mapLayers.landDataLayers,
+        showBoundaryNamesOnHover:
+          mapLayers.showBoundaryNamesOnHover ??
+          INITIAL_STATE.showBoundaryNamesOnHover,
+      };
+    }
     case "NEW_MAP":
       return INITIAL_STATE;
     default:
