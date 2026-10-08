@@ -33,7 +33,6 @@ Then set FRONT_END_HOSTNAME= the front-end domain (bakes into the FE image at bu
 -   SENDGRID_API_KEY - required to send email
 -   MIXPANEL_TOKEN, ANALYTICS_PEPPER, VITE_MIXPANEL_TOKEN, VITE_MIXPANEL_PEPPER - leave off for non-production - stores analytics data if consent given
 -   GOV_API_URL, GOV_API_KEY, OS_NGD_API_URL, OS_NGD_API_KEY, MAPBOX_GEOCODER_TOKEN\ - required for PBS pipeline, each is an API key requiring an account or subscription - see [api-keys.md](api-keys.md) re: OS_NGD_API_KEY
--   VITE_FEATURE_HISTORIC_OWNERSHIP - boolean value to turn on/off the historic ownership feature
 -   VITE_FEATURE_USE_BETTERAUTH - boolean value to turn on/off betterAuth feature in the frontend
 -   FEATURE_USE_BETTERAUTH - boolean value to turn on/off betterAuth feature in the backend
 -   BETTER_AUTH_SECRET - secret value set in the backend. generate with `openssl rand -base64 32`
