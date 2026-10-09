@@ -34,8 +34,8 @@ RUN npm run build -w apps/back-end
 
 # ---- production deps stage ----
 # Fresh install without dev deps. Done in a stage derived from build because
-# compiling bcrypt needs the toolchain. sequelize-cli is a dev dep but needed
-# to run migrations at deploy time; pinned to the major version in package.json.
+# compiling bcrypt needs the toolchain. sequelize-cli is a dev deps but 
+# needed to run migrations at deploy time; pinned to versions in package.json.
 # mkdir guarantees the workspace-local node_modules exists for the COPY below.
 FROM build AS proddeps
 RUN --mount=type=cache,target=/root/.npm npm ci -w apps/back-end --omit=dev \
@@ -69,6 +69,7 @@ COPY --from=build /app/apps/back-end/config ./config
 COPY --from=build /app/apps/back-end/migrations ./migrations
 COPY --from=build /app/apps/back-end/seeders ./seeders
 COPY --from=build /app/apps/back-end/.sequelizerc ./.sequelizerc
+COPY --from=build /app/apps/back-end/src/utils ./src/utils
 
 # Writable dir for transient shapefile exports (see routes/map.ts downloadShapefile).
 RUN mkdir -p data && chown node:node data
