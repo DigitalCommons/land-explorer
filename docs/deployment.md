@@ -37,6 +37,8 @@ Then set FRONT_END_HOSTNAME= the front-end domain (bakes into the FE image at bu
 -   FEATURE_USE_BETTERAUTH - boolean value to turn on/off betterAuth feature in the backend
 -   BETTER_AUTH_SECRET - secret value set in the backend. generate with `openssl rand -base64 32`
 -   BETTER_AUTH_URL - base url of app. set in the backend
+-   VITE_USER_GUIDE_URL, VITE_LAND_OWNERSHIP_PROCESS_URL - public doc links shown in the app, see docker.env.example for the current values
+
 ## Databases — seed vs full copy
 
 Migrations run as one-shot services (be-migrate, pbs-migrate) before the apps.

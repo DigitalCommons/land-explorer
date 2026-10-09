@@ -19,6 +19,7 @@ interface ImportMetaEnv {
   readonly VITE_MIXPANEL_TOKEN: string | undefined;
   readonly VITE_MIXPANEL_PEPPER: string | undefined;
   readonly VITE_USER_GUIDE_URL: string;
+  readonly VITE_LAND_OWNERSHIP_PROCESS_URL: string;
 }
 
 interface ImportMeta {
