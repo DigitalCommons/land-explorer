@@ -6,8 +6,10 @@ import { APP_USER_MODEL, appUserPlugin } from "./appUserPlugin";
 import {
   RESET_PASSWORD_EXPIRY_SECONDS,
   sendPasswordReset,
+  sendVerificationEmail,
+  VERIFICATION_EMAIL_EXPIRY_SECONDS,
 } from "../emails/Email";
-import { postRegistrationFlow, preRegistrationFlow } from "../services/authUser";
+import { postEmailVerificationFlow, postRegistrationFlow, preRegistrationFlow } from "../services/authUser";
 
 export const auth = betterAuth({
   database: createPool({
@@ -63,12 +65,21 @@ export const auth = betterAuth({
   plugins: [appUserPlugin()],
   emailAndPassword: {
     enabled: true,
+    requireEmailVerification: true,
     minPasswordLength: 6,
     resetPasswordTokenExpiresIn: RESET_PASSWORD_EXPIRY_SECONDS,
     sendResetPassword: sendPasswordReset,
     password: {
       hash: (password: string) => bcrypt.hash(password, 10),      
       verify: (data: {hash: string; password: string;}) => bcrypt.compare(data.password, data.hash)
-    }
+    }    
+  },
+  emailVerification: {
+    autoSignInAfterVerification: true,
+    sendVerificationEmail: sendVerificationEmail,   
+    sendOnSignIn: true,
+    sendOnSignUp: true,
+    expiresIn: VERIFICATION_EMAIL_EXPIRY_SECONDS,
+    afterEmailVerification: postEmailVerificationFlow,
   }
 });
