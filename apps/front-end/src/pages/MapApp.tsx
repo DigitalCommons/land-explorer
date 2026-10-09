@@ -5,7 +5,6 @@ import MapboxMap from "../components/map/MapboxMap";
 import TopBar from "../components/top-bar/TopBar";
 import Tooltips from "../components/common/Tooltips";
 import ControlButtons from "../components/map-controls/ControlButtons";
-import Spinner from "../components/common/Spinner";
 import * as Auth from "../utils/Auth";
 import { getMyMaps, openMap } from "../actions/MapActions";
 import { getUserDetails, getAskForFeedback } from "../actions/UserActions";
@@ -14,13 +13,49 @@ import {
   establishSocketConnection,
   closeSocketConnection,
 } from "../actions/WebSocketActions";
+import constants from "@/constants";
+import { Spinner } from "@/components/ui/spinner";
+/**
+ * Renders the map once the user's details have loaded, and a spinner until then.
+ *
+ * Both auth variants below share this, so the only thing that differs between
+ * them is how the session is established.
+ */
+const MapAppShell = () => {
+  const user = useAppSelector((state) => state.user);
 
+  // If user details have been populated, render map, else render loading spinner
+  if (user.populated) {
+    /*
+            Tooltips - hover tooltips for buttons
+            MapboxMap - MapboxGL instance, drawing tools, left pane, ui etc.
+            TopBar - navigation bar at top of page
+            Controls - map and layer controls in bottom right of app
+         */
+    return (
+      <div className="h-screen min-h-screen flex flex-col">
+        <MapboxMap />
+        <TopBar limited={false} />
+        <NoConnectionToast />
+        <ControlButtons />
+        <Tooltips />
+      </div>
+    );
+  } else {
+    return (
+      <div className="h-screen min-h-screen flex flex-col items-center justify-center grow">
+        <TopBar limited={true} />
+        <Spinner className="text-primary size-8 items-center"></Spinner>
+      </div>   
+    );
+  }
+};
 
-const MapApp = () => {
+// TODO: Remove this component as part of the clean up of VITE_FEATURE_USE_BETTERAUTH feature flag
+const MapAppLegacy = () => {
   const authenticated = useAppSelector(
     (state) => state.authentication.authenticated
   );
-  const user = useAppSelector((state) => state.user);
 
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
@@ -53,34 +88,33 @@ const MapApp = () => {
     })();
   }, [authenticated]);
 
-
-  // If user details have been populated, render map, else render loading spinner
-  if (user.populated) {
-    /*
-            Tooltips - hover tooltips for buttons
-            MapboxMap - MapboxGL instance, drawing tools, left pane, ui etc.
-            TopBar - navigation bar at top of page
-            Controls - map and layer controls in bottom right of app
-         */
-    return (
-      <div>
-        <MapboxMap />
-        <TopBar limited={false} />
-        <NoConnectionToast />
-        <ControlButtons />
-        <Tooltips />
-      </div>
-    );
-  } else {
-    return (
-      <div className="full-height overflow-y">
-        <TopBar limited={true} />
-        <div className="centered">
-          <Spinner />
-        </div>
-      </div>
-    );
-  }
+  return <MapAppShell />;
 };
+
+const MapAppBetterAuth = () => {
+  const dispatch = useAppDispatch();
+
+  useEffect(() => {
+    (async () => {
+      await dispatch(getUserDetails());
+      dispatch(establishSocketConnection());
+      dispatch(getAskForFeedback());
+      await dispatch(getMyMaps());
+
+      // Open the map that was previously open if the page was refreshed
+      const storedMapId = parseInt(sessionStorage.getItem("currentMapId") ?? "");
+      if (storedMapId) {
+        await dispatch(openMap(storedMapId));
+      }
+    })();
+  }, [dispatch]);
+  return <MapAppShell />;
+};
+
+// The flag is a build-time constant, so pick the variant once at module load.
+// Branching inside a single component would mean calling hooks conditionally.
+const MapApp = constants.VITE_FEATURE_USE_BETTERAUTH
+  ? MapAppBetterAuth
+  : MapAppLegacy;
 
 export default MapApp;
