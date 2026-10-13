@@ -13,6 +13,6 @@ export default function RequireAuth() {
       </div>
     ) 
   }
-  if (!session) return <Navigate to="/auth" replace />
+  if (!session) return <Navigate to="/auth/sign-in" replace />
   return <Outlet />
 }

@@ -3,7 +3,7 @@ export const authClient = createAuthClient({
     fetchOptions: {
         onError: (ctx) => {
             if (ctx.response.status === 401) {
-            window.location.href = "/auth"
+            window.location.href = "/auth/sign-in"
         }},             
     }
 })
