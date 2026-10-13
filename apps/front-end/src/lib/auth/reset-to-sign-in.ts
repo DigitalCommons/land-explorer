@@ -5,8 +5,8 @@ import { optOutAndResetAnalyticsUser } from "@/analytics";
  * out or it expired or was revoked.
  *
  * This is a full page load rather than a client-side navigation, so nothing of
- * theirs stays in memory (Redux store, websocket, timers) for whoever signs in
- * next. Browser storage survives the reload, so their entries are cleared here.
+ * theirs stays in memory for whoever signs in next. 
+ * Browser storage survives the reload, so their entries are cleared here.
  */
 export function resetToSignIn() {
   // Otherwise the next user to sign in on this tab would try to reopen the map
