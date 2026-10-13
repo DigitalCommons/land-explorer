@@ -32,9 +32,19 @@ function AuthResultView({ className, fallbackIntent }: AuthResultProps) {
     setResult(parseAuthResult(window.location.search, fallbackIntent))
   }, [fallbackIntent])
 
-  const message = getAuthResultMessage(result, localization)
+  // The verify-email page can only resend to an address this tab signed up or
+  // signed in with, and an emailed link usually opens a new tab. Signing in
+  // sends a fresh link, so send expired verification links there instead
+  const isExpiredVerificationLink =
+    result.reason === "expiredLink" && result.flow === "emailVerification"
+  const message = isExpiredVerificationLink
+    ? {
+        title: localization.auth.callbackExpiredLinkTitle,
+        description: "Sign in and we'll email you a new verification link."
+      }
+    : getAuthResultMessage(result, localization)
   const action = (() => {
-    switch (result.action) {
+    switch (isExpiredVerificationLink ? "signIn" : result.action) {
       case "accountSettings":
         return {
           label: localization.auth.callbackViewAccountSettings,
