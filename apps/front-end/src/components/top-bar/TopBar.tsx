@@ -8,12 +8,16 @@ import ProfilePic from "./ProfilePic";
 import { useAppDispatch, useAppSelector } from "@/hooks/react-redux";
 import SearchBar from "./SearchBar/SearchBar";
 import iconHamburger from "../../assets/img/icon-hamburger.svg";
+import constants from "@/constants";
+import { UserButton } from "@/components/auth/user/user-button";
+import { useMediaQuery } from "usehooks-ts";
 
 type Props = {
   limited?: boolean;
 };
 
-const TopBar = ({ limited }: Props) => {
+//TODO: This will be removed when VITE_FEATURE_USE_BETTERAUTH is removed
+const LegacyTopBar = ({ limited }: Props) => {
   const dispatch = useAppDispatch();
   const user = useAppSelector((state) => state.user);
   const [searchExpanded, setSearchExpanded] = useState(false);
@@ -69,5 +73,50 @@ const TopBar = ({ limited }: Props) => {
     </div>
   );
 };
+
+const TopBarNew = ({ limited }: Props) => {
+  const user = useAppSelector((state) => state.user);
+  const [searchExpanded, setSearchExpanded] = useState(false);
+  const matches = useMediaQuery("(min-width: 1200px)");
+
+  if (!limited && user.populated) {
+    return (
+      <div className="flex gap-10 items-center py-2 bg-background z-[100003] shadow-lg">
+        <Link className="ml-6" to="/app">
+          <img className="lg:hidden size-10" src="./logo-green.svg" />
+          <img className="hidden lg:block h-10" src="./logo-green-text.svg" />
+        </Link>
+        <div className="flex justify-center grow gap-5">
+          <div className="flex items-center">
+            <MapMenu />
+            <MapTitleBar expanded={!searchExpanded} />
+          </div>
+          <SearchBar
+            expanded={searchExpanded}
+            setExpanded={setSearchExpanded}
+          />
+        </div>
+        <div className="px-5 flex">
+          <UserButton
+            className="max-w-60"
+            size={matches ? "default" : "icon"}
+            sideOffset={12}
+          />
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex gap-10 items-center py-2 bg-background z-[100003] shadow-lg">
+      <Link className="ml-6" to="/app">
+        <img className="lg:hidden size-10" src="./logo-green.svg" />
+        <img className="hidden lg:block h-10" src="./logo-green-text.svg" />
+      </Link>
+    </div>
+  );
+};
+
+const TopBar = constants.VITE_FEATURE_USE_BETTERAUTH ? TopBarNew : LegacyTopBar;
 
 export default TopBar;
