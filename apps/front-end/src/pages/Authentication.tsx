@@ -12,6 +12,7 @@ import { SignOut } from "@/components/auth/sign-out";
 import ForgottenPasswordPage from "./ForgottenPasswordPage";
 import ResetLinkSentPage from "./ResetLinkSentPage";
 import ResetPasswordPage from "./ResetPasswordPage";
+import SignUpPage from "./SignUpPage";
 
 const Authentication = () => {
   const [image, setImage] = useState(0);
@@ -41,7 +42,7 @@ const Authentication = () => {
             <Routes>
                 <Route index element={<Navigate to="sign-in" replace />} />
                 <Route path="/sign-in" element={<Login updateBgImage={updateBgImage}/>} />
-                <Route path="/register" element={<Register updateBgImage={updateBgImage} />} />
+                <Route path="/register" element={<SignUpPage updateBgImage={updateBgImage} />} />
                 <Route path="/forgot-password" element={<ForgottenPasswordPage updateBgImage={updateBgImage} />} />
                 <Route path="/reset-link-sent" element={<ResetLinkSentPage updateBgImage={updateBgImage} />} />
                 <Route path="/reset-password" element={<ResetPasswordPage updateBgImage={updateBgImage} />} />

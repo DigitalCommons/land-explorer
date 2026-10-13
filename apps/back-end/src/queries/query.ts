@@ -62,40 +62,17 @@ export const usernameExist = async (username: string): Promise<Boolean> => {
  * Data should already be validated.
  */
 export const createUser = async (data: any) => {
-  if (data.marketing) {
-    axios
-      .post(
-        "https://api.buttondown.email/v1/subscribers",
-        {
-          email: data.username,
-          referrer_url: "https://app.landexplorer.coop/register",
-        },
-        {
-          headers: {
-            Authorization: `Token ${process.env.BUTTONDOWN_API_KEY}`,
-          },
-        }
-      )
-      // If someone is already subscribed to the newsletter ignore it
-      .catch((err) => {
-        const code = err?.response?.data?.code;
-        if (code === "email_already_exists") {
-          console.log("Buttondown: already subscribed:", data.username);
-        } else {
-          // If we get any other buttondown error log it as an error
-          //   but continue so the app doesn't crash and restart -
-          //   prevously the unhandledRejection handler would kill
-          //   the server mid registration
-          console.error(
-            "Buttondown subscribe failed for",
-            data.username,
-            code ?? err?.message
-          );
-        }
-      });
-  }
+  return await User.create(toUserRow(data));
+};
 
-  return await User.create({
+/**
+ * The `user` table row for a registration, keyed by column name. Shared by
+ * createUser and the Better Auth sign-up (services/authUser.ts), which writes
+ * the row inside its own transaction.
+ * Data should already be validated.
+ */
+export const toUserRow = (data: any) => {
+  return {
     username: data.username,
     password: hashPassword(data.password),
     enabled: 1,
@@ -115,7 +92,7 @@ export const createUser = async (data: any) => {
     account_type: data.accountType, // #157
     marketing: data.marketing,
     council_id: data.username.endsWith("rbkc.gov.uk") ? 1 : 0,
-  });
+  };
 };
 
 /**

@@ -83,8 +83,8 @@ const TopBarNew = ({ limited }: Props) => {
     return (
       <div className="flex gap-10 items-center py-2 bg-background z-[100003] shadow-lg">
         <Link className="ml-6" to="/app">
-          <img className="lg:hidden size-10" src="./logo-green.svg" />
-          <img className="hidden lg:block h-10" src="./logo-green-text.svg" />
+          <img className="lg:hidden size-10" src="/logo-green.svg" />
+          <img className="hidden lg:block h-10" src="/logo-green-text.svg" />
         </Link>
         <div className="flex justify-center grow gap-5">
           <div className="flex items-center">
@@ -110,8 +110,8 @@ const TopBarNew = ({ limited }: Props) => {
   return (
     <div className="flex gap-10 items-center py-2 bg-background z-[100003] shadow-lg">
       <Link className="ml-6" to="/app">
-        <img className="lg:hidden size-10" src="./logo-green.svg" />
-        <img className="hidden lg:block h-10" src="./logo-green-text.svg" />
+        <img className="lg:hidden size-10" src="/logo-green.svg" />
+        <img className="hidden lg:block h-10" src="/logo-green-text.svg" />
       </Link>
     </div>
   );
