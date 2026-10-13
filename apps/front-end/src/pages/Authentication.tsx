@@ -14,6 +14,7 @@ import ResetLinkSentPage from "./ResetLinkSentPage";
 import ResetPasswordPage from "./ResetPasswordPage";
 import SignUpPage from "./SignUpPage";
 import VerifyEmailPage from "./VerifyEmailPage";
+import AuthCallbackPage from "./AuthCallbackPage";
 
 const Authentication = () => {
   const [image, setImage] = useState(0);
@@ -48,6 +49,7 @@ const Authentication = () => {
                 <Route path="/reset-link-sent" element={<ResetLinkSentPage updateBgImage={updateBgImage} />} />
                 <Route path="/reset-password" element={<ResetPasswordPage updateBgImage={updateBgImage} />} />
                 <Route path="/verify-email" element={<VerifyEmailPage updateBgImage={updateBgImage}/>}/>
+                <Route path="/callback" element={<AuthCallbackPage updateBgImage={updateBgImage}/>}/>
                 <Route path="/sign-out" element={<SignOut />} />
                 <Route path="/*" element={<FourOhFour withTopBar={false}/>} />
             </Routes>
