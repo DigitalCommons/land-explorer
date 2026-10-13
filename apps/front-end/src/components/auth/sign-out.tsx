@@ -1,6 +1,7 @@
 import { useAuth, useSignOut } from "@better-auth-ui/react"
 import { useEffect, useRef } from "react"
 import { Spinner } from "@/components/ui/spinner"
+import { resetToSignIn } from "@/lib/auth/reset-to-sign-in"
 import { cn } from "@/lib/utils"
 
 export type SignOutProps = {
@@ -14,20 +15,11 @@ export type SignOutProps = {
  * @returns The spinner shown during sign-out
  */
 export function SignOut({ className }: SignOutProps) {
-  const { authClient, basePaths, navigate, viewPaths } = useAuth()
+  const { authClient } = useAuth()
 
   const { mutate: signOut } = useSignOut(authClient, {
-    onError: () => {
-      navigate({
-        to: `${basePaths.auth}/${viewPaths.auth.signIn}`,
-        replace: true
-      })
-    },
-    onSuccess: () =>
-      navigate({
-        to: `${basePaths.auth}/${viewPaths.auth.signIn}`,
-        replace: true
-      })
+    onError: () => resetToSignIn(),
+    onSuccess: () => resetToSignIn()
   })
 
   const hasSignedOut = useRef(false)
