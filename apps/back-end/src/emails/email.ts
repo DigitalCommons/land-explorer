@@ -1,6 +1,6 @@
 import sgMail from "@sendgrid/mail";
 import { renderResetPasswordEmail } from "./templates/ResetPasswordEmail";
-import { logoAttachment } from "./components/logo";
+import { logoAttachment } from "./logoAttachment";
 import { User } from "better-auth";
 import { renderVerificationEmail } from "./templates/EmailVerificationEmail";
 import { renderRegisteredEmail } from "./templates/RegisteredEmail";
@@ -66,7 +66,7 @@ export async function sendVerificationEmail(
       expiryMinutes: VERIFICATION_EMAIL_EXPIRY_SECONDS / 60,
     });
     // Not awaited - Better Auth waits for this function, so waiting on SendGrid
-    // would make a registered email respond slower than an unknown one. The
+    // would make a verification email respond slower than an unknown one. The
     // catch stops a failed send becoming an unhandledRejection, which exits
     // the server in server.ts
     sgMail
