@@ -4,7 +4,7 @@ import { signUpToMarketing } from "../clients/buttondown.client";
 import { getUserById, migrateGuestUserMap, toUserRow, trackUserEvent } from "../queries/query";
 import { Event } from "../instrument";
 import { APP_USER_MODEL } from "../utils/appUserPlugin";
-import { sendRegisteredEmail } from "../emails/Email";
+import { sendRegisteredEmail } from "../emails/email";
 
 // Our registration form signs up through this endpoint, sending the details we
 // keep on our own `user` table alongside Better Auth's name, email and password

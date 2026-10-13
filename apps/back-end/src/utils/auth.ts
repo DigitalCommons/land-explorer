@@ -8,7 +8,7 @@ import {
   sendPasswordReset,
   sendVerificationEmail,
   VERIFICATION_EMAIL_EXPIRY_SECONDS,
-} from "../emails/Email";
+} from "../emails/email";
 import { postEmailVerificationFlow, postRegistrationFlow, preRegistrationFlow } from "../services/authUser";
 
 export const auth = betterAuth({
