@@ -3,8 +3,7 @@ import { useEffect } from "react";
 
 type AuthCallbackPageProps = { updateBgImage: (n: number) => void };
 
-// Where verification email links land, so no session check: a verified user
-// is signed in by now, an expired link's user is not, and both see the result
+// Where verification email links land and expired password reset links.
 export default function AuthCallbackPage({ updateBgImage }: AuthCallbackPageProps) {
   useEffect(() => {
     updateBgImage(0);
