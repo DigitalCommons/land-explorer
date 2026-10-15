@@ -8,9 +8,6 @@ import { renderRegisteredEmail } from "./templates/RegisteredEmail";
 export const RESET_PASSWORD_EXPIRY_SECONDS = 60 * 60; // 1 hour (better-auth default)
 export const VERIFICATION_CODE_EXPIRY_SECONDS = 15 * 60;
 
-const VERIFICATION_CALLBACK_URL = "/auth/callback?flow=email_verification&result=email_verified&redirectTo=/app";
-// Better Auth sends both a valid link (adding ?token=) and an expired one (adding
-// ?error=) here, so it has to be the page with the form, not /auth/callback
 const RESET_PASSWORD_CALLBACK_URL = "/auth/reset-password?flow=password-reset";
 
 sgMail.setApiKey(process.env.SENDGRID_API_KEY || '');
