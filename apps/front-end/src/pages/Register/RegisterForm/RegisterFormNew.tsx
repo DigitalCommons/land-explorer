@@ -91,7 +91,11 @@ const RegisterFormNew = () => {
   const submitRegistration = async (data: RegisterFormValues) => {
     try {
       await signUpEmail({
-        name: `${data.firstName} ${data.lastName}`.trim(),
+        // trim each part, so padding around either name doesn't end up mid-string
+        name: [data.firstName, data.lastName]
+          .map((part) => part.trim())
+          .filter(Boolean)
+          .join(" "),
         email: data.email.trim(),
         password: data.password,
         ...toRegistrationDetails(data),

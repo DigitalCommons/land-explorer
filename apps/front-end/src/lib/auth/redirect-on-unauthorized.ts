@@ -1,5 +1,6 @@
 import axios from "axios";
 import { authClient } from "./auth-client";
+import { resetToSignIn } from "./reset-to-sign-in";
 
 /**
  * Sends the user to sign in when a back-end API call returns 401, i.e. their
@@ -19,7 +20,7 @@ export function redirectOnUnauthorized() {
       // Clear the session first: it may still be valid to Better Auth but have
       // no linked app user, and the sign-in page would send us straight back
       await authClient.signOut();
-      window.location.href = "/auth/sign-in";
+      resetToSignIn();
     }
     return Promise.reject(error);
   });
