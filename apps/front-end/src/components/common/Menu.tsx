@@ -3,8 +3,8 @@ import { Button } from "../ui/button";
 import { Button as ButtonPrimitive } from "@base-ui/react/button";
 import { cn } from "@/lib/utils";
 
-export const Menu = ({children}: PropsWithChildren) => {
-  return (<div className="flex flex-col bg-muted p-4 gap-2 -my-4 -ml-4">
+export const Menu = ({children, className}: PropsWithChildren<{ className?: string }>) => {
+  return (<div className={cn("flex flex-col bg-muted p-4 gap-2 -my-4 -ml-4", className)}>
     {children}
   </div>);
 }
