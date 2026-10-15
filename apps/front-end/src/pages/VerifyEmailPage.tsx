@@ -3,12 +3,12 @@ import { authClient } from "@/lib/auth/auth-client";
 import { useSession } from "@better-auth-ui/react";
 import { useEffect } from "react";
 import { Navigate } from "react-router-dom";
-import { VerifyEmail } from "@/components/auth/verify-email";
+import { VerifyEmailOtp } from "@/components/auth/email-otp/verify-email-otp";
 
 type VerifyEmailProps = { updateBgImage: (n: number) => void };
 
 export default function VerifyEmailPage({ updateBgImage }: VerifyEmailProps) {
-  // A refetch on window focus remounts VerifyEmail and restarts its resend cooldown
+  // A refetch on window focus remounts VerifyEmailOtp and restarts its resend cooldown
   const { data: session, isPending } = useSession(authClient, { refetchOnWindowFocus: false });
 
   useEffect(() => {
@@ -20,7 +20,7 @@ export default function VerifyEmailPage({ updateBgImage }: VerifyEmailProps) {
 
   return (
     <div className="relative flex grow justify-center items-center">
-      <VerifyEmail />
+      <VerifyEmailOtp />
     </div>
   );
 }

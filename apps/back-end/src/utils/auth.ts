@@ -1,4 +1,5 @@
 import { betterAuth } from "better-auth";
+import { emailOTP } from "better-auth/plugins";
 import { generateId } from "@better-auth/core/utils/id";
 import { createPool } from "mysql2/promise";
 import bcrypt from 'bcrypt';
@@ -6,8 +7,8 @@ import { APP_USER_MODEL, appUserPlugin } from "./appUserPlugin";
 import {
   RESET_PASSWORD_EXPIRY_SECONDS,
   sendPasswordReset,
-  sendVerificationEmail,
-  VERIFICATION_EMAIL_EXPIRY_SECONDS,
+  sendVerificationOTP,
+  VERIFICATION_CODE_EXPIRY_SECONDS,
 } from "../emails/email";
 import { postEmailVerificationFlow, postRegistrationFlow, preRegistrationFlow } from "../services/authUser";
 
@@ -62,7 +63,24 @@ export const auth = betterAuth({
   account: {
     modelName: "auth_account",
   },
-  plugins: [appUserPlugin()],
+  plugins: [
+    appUserPlugin(),
+    emailOTP({
+      overrideDefaultEmailVerification: true,
+      sendVerificationOTP,
+      expiresIn: VERIFICATION_CODE_EXPIRY_SECONDS,
+      // users must sign up through /sign-up/email, where preRegistrationFlow
+      // creates their row in our user table
+      disableSignUp: true,
+    }),
+  ],
+  // The emailOTP plugin also adds code sign-in and code password reset, which we don't use currently
+  disabledPaths: [
+    "/sign-in/email-otp",
+    "/email-otp/request-password-reset",
+    "/forget-password/email-otp",
+    "/email-otp/reset-password",
+  ],
   emailAndPassword: {
     enabled: true,
     requireEmailVerification: true,
@@ -74,12 +92,11 @@ export const auth = betterAuth({
       verify: (data: {hash: string; password: string;}) => bcrypt.compare(data.password, data.hash)
     }    
   },
+  // The verification email itself comes from the emailOTP plugin above
   emailVerification: {
     autoSignInAfterVerification: true,
-    sendVerificationEmail: sendVerificationEmail,   
     sendOnSignIn: true,
     sendOnSignUp: true,
-    expiresIn: VERIFICATION_EMAIL_EXPIRY_SECONDS,
     afterEmailVerification: postEmailVerificationFlow,
   }
 });

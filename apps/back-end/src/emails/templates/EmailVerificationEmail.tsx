@@ -1,10 +1,10 @@
-import { Link, render } from "react-email";
+import type { CSSProperties } from "react";
+import { render, Section, Text } from "react-email";
 import {
   BRAND_GREEN,
   EmailHeading,
   Layout,
   Paragraph,
-  PrimaryButton,
   SignOff,
 } from "../components/Layout";
 import { LOGO_PREVIEW_SRC } from "../components/logo";
@@ -13,34 +13,30 @@ import { formatExpiry } from "../helper";
 export type VerificationEmailProps = {
   name?: string;
   email: string;
-  url: string;
+  code: string;
   expiryMinutes: number;
   logoSrc?: string;
 };
 
-const VerificationEmailEmail = ({ name, email, url, expiryMinutes, logoSrc }: VerificationEmailProps) => {
+// The user types the code on the verify page they were sent to after signing up or in
+const VerificationEmailEmail = ({ name, email, code, expiryMinutes, logoSrc }: VerificationEmailProps) => {
   const expiry = formatExpiry(expiryMinutes);
 
   return (
     <Layout
-      preview={`Verify email address for LandExplorer. This link expires in ${expiry}.`}
+      preview={`Your code to verify your LandExplorer email address. It expires in ${expiry}.`}
       logoSrc={logoSrc}
     >
       <EmailHeading>Verify email address</EmailHeading>
       <Paragraph>{name ? `Dear ${name},` : "Hi,"}</Paragraph>
       <Paragraph>
-        {`Click the button below to verify your email address ${email} for your LandExplorer account.`}
+        {`Enter this code in LandExplorer to verify your email address ${email}:`}
       </Paragraph>
-      <PrimaryButton href={url}>Verify Email address</PrimaryButton>
+      <Section style={codeBox}>
+        <Text style={codeText}>{code}</Text>
+      </Section>
       <Paragraph muted>
-        If the button doesn't work, copy and paste this link into your browser:
-        <br />
-        <Link href={url} style={{ color: BRAND_GREEN, wordBreak: "break-all" }}>
-          {url}
-        </Link>
-      </Paragraph>
-      <Paragraph muted>
-        {`This link expires in ${formatExpiry(expiryMinutes)}.`}
+        {`This code expires in ${expiry}.`}
       </Paragraph>
       <Paragraph muted>
         If you didn't request this email, you can safely ignore it. Someone else might have typed your email address by mistake.
@@ -50,12 +46,30 @@ const VerificationEmailEmail = ({ name, email, url, expiryMinutes, logoSrc }: Ve
   );
 };
 
+const codeBox: CSSProperties = {
+  margin: "6px 0 24px",
+  padding: "12px 0",
+  backgroundColor: "#f4f6f5",
+  borderRadius: "6px",
+  textAlign: "center",
+};
+
+const codeText: CSSProperties = {
+  margin: 0,
+  fontFamily: "'Courier New', Courier, monospace",
+  fontSize: "32px",
+  lineHeight: "40px",
+  fontWeight: "bold",
+  letterSpacing: "8px",
+  color: BRAND_GREEN,
+};
+
 // This is for the dev server
 VerificationEmailEmail.PreviewProps = {
   name: "Laura",
   email: "laura@email.com",
-  url: "https://localhost:28080/auth/verify-email?token=abc123",
-  expiryMinutes: 60,
+  code: "123456",
+  expiryMinutes: 15,
   logoSrc: LOGO_PREVIEW_SRC,
 } satisfies VerificationEmailProps;
 
