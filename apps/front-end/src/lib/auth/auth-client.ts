@@ -1,6 +1,7 @@
 import { createAuthClient } from "better-auth/react"
 import { emailOTPClient } from "better-auth/client/plugins"
 import { resetToSignIn } from "./reset-to-sign-in"
+
 export const authClient = createAuthClient({
     // email verification uses codes, see the emailOTP plugin in the back-end's utils/auth.ts
     plugins: [emailOTPClient()],
