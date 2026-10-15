@@ -21,15 +21,15 @@ const DetailsPanel = () => {
 }
 
 const EmailPanel = () => {
-  return ( <div className="w-full"><ChangeEmail /></div>)
+  return ( <div>Change Email</div>)
 }
 
 const PasswordPanel = () => {
-  return (<div>password</div>)
+  return (<div>Password</div>)
 }
 
 const PrivacyPanel = () => {
-  return (<div>privacy</div>)
+  return (<div>Privacy</div>)
 }
 
 
