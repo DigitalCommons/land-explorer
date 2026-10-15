@@ -11,8 +11,6 @@ import { ShieldLock, User } from "lucide-react";
 import { UserView } from "../auth/user/user-view";
 import { Menu, MenuContent, MenuHeader, MenuItem } from "../common/Menu";
 import { ComponentType, useState } from "react";
-import { ChangeEmail } from "../auth/settings/account/change-email";
-
 
 type UserAccountSection = "details" | "email" | "password" | "privacy";
 
