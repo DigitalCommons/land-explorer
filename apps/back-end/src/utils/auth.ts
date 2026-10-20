@@ -10,7 +10,12 @@ import {
   sendVerificationOTP,
   VERIFICATION_CODE_EXPIRY_SECONDS,
 } from "../emails/email";
-import { postEmailVerificationFlow, postRegistrationFlow, preRegistrationFlow } from "../services/authUser";
+import {
+  confirmPasswordForEmailChange,
+  postEmailVerificationFlow,
+  postRegistrationFlow,
+  preRegistrationFlow,
+} from "../services/authUser";
 
 export const auth = betterAuth({
   database: createPool({
@@ -31,7 +36,9 @@ export const auth = betterAuth({
     cookiePrefix: "lx",
   },
   user: {
-    modelName: "auth_user",        
+    modelName: "auth_user",
+    // changeEmail is left off, which disables Better Auth's link-based /change-email.
+    // Users change their email with codes through the emailOTP plugin below instead
     additionalFields: {
       appUserId: {
         type: "number",
@@ -41,6 +48,9 @@ export const auth = betterAuth({
         input: false,
       },
     },
+  },
+  hooks: {
+    before: confirmPasswordForEmailChange,
   },
   databaseHooks: {
     user: {
@@ -66,7 +76,10 @@ export const auth = betterAuth({
   plugins: [
     appUserPlugin(),
     emailOTP({
-      overrideDefaultEmailVerification: true,
+      overrideDefaultEmailVerification: true, 
+      changeEmail: {
+        enabled: true,
+      },
       sendVerificationOTP,
       expiresIn: VERIFICATION_CODE_EXPIRY_SECONDS,
       // users must sign up through /sign-up/email, where preRegistrationFlow
@@ -98,5 +111,6 @@ export const auth = betterAuth({
     sendOnSignIn: true,
     sendOnSignUp: true,
     afterEmailVerification: postEmailVerificationFlow,
-  }
+  },
+  
 });
