@@ -12,6 +12,7 @@ import { UserView } from "../auth/user/user-view";
 import { Menu, MenuContent, MenuHeader, MenuItem } from "../common/Menu";
 import { ComponentType, useState } from "react";
 import { cn } from "@/lib/utils";
+import { ChangeEmailOtp } from "../auth/email-otp/change-email-otp";
 
 type UserAccountSection = "details" | "email" | "password" | "privacy";
 
@@ -20,7 +21,7 @@ const DetailsPanel = () => {
 }
 
 const EmailPanel = () => {
-  return ( <div>Change Email</div>)
+  return ( <div className="w-full"><ChangeEmailOtp/></div>)
 }
 
 const PasswordPanel = () => {
@@ -86,7 +87,9 @@ export default function UserAccountPage() {
                 </Button>
                 <DialogTitle>My Account</DialogTitle>
               </div>
-              <Panel/>
+              <div className="pt-12">
+                <Panel/>
+              </div>
             </div>
           </div>
         <DialogFooter>
