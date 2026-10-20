@@ -4,11 +4,11 @@ import {
   validateStringLength,
 } from "@better-auth-ui/core";
 import {
+  changeEmailOtpOptions,
   type EmailOtpAuthClient,
   requestEmailChangeOtpOptions,
 } from "@better-auth-ui/core/plugins/email-otp";
 import { useAuth, useAuthPlugin, useSession } from "@better-auth-ui/react";
-import { useChangeEmailOtp } from "@better-auth-ui/react/plugins/email-otp";
 import { useSelector } from "@tanstack/react-form";
 import { useMutation } from "@tanstack/react-query";
 import { CircleCheckIcon } from "lucide-react";
@@ -21,9 +21,11 @@ import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { getAuthErrorDisplayMessage } from "@/lib/auth/auth-error-message";
 import { emailOtpPlugin } from "@/lib/auth/email-otp-plugin";
+import { useResendCooldown } from "@/lib/auth/use-resend-cooldown";
 import { cn } from "cn";
 import {
   isAuthFormFieldInvalid,
+  runAuthFormAction,
   setAuthFormServerError,
   submitAuthForm,
   useAuthForm,
@@ -95,40 +97,69 @@ export function ChangeEmailOtp({ className }: ChangeEmailOtpProps) {
     initialChangeEmailState,
   );
 
+  const { cooldown, isCoolingDown, startCooldown } = useResendCooldown();
+
   // useMutation directly rather than useRequestEmailChangeOtp, whose options
   // can't set meta: errors such as a wrong password show in the form, so
   // ErrorToaster needs to leave them alone
+  const requestOptions = requestEmailChangeOtpOptions(otpClient);
   const { mutateAsync: requestEmailChangeOtp, isPending: isRequesting } =
     useMutation({
-      ...requestEmailChangeOtpOptions(otpClient),
-      meta: { errorPresentation: "inline" },
+      ...requestOptions,
+      meta: { ...requestOptions.meta, errorPresentation: "inline" },
       onError: (error) => {
-        // without validating, which would add a "required" error to this one
-        form.setFieldValue("password", "", { dontValidate: true });
+        const isWrongPassword = getAuthErrorCode(error) === "INVALID_PASSWORD";
+        // Only cleared when it's wrong, as resending a code reuses it. Without
+        // validating, which would add a "required" error to this one
+        if (isWrongPassword) {
+          form.setFieldValue("password", "", { dontValidate: true });
+        }
         // Better Auth UI's copy for this code talks about sign-in details
-        const message =
-          getAuthErrorCode(error) === "INVALID_PASSWORD"
-            ? "Incorrect password. Please try again."
-            : getAuthErrorDisplayMessage(error, localization);
+        const message = isWrongPassword
+          ? "Incorrect password. Please try again."
+          : getAuthErrorDisplayMessage(error, localization);
         if (message) setAuthFormServerError(form, message, message);
       },
       onSuccess: (_data, { newEmail }) => {
+        form.setFieldValue("code", "");
+        startCooldown();
         dispatch({ type: "changeRequested", newEmail });
       },
     });
 
-  const { mutateAsync: changeEmailOtp, isPending: isChanging } =
-    useChangeEmailOtp(otpClient, {
-      // Better Auth UI refetches the session before this runs, so the rest of
-      // the app shows the new address by the time the confirmation does
-      onError: () => form.setFieldValue("code", ""),
-      onSuccess: (_data, { newEmail }) => {
-        form.reset();
-        dispatch({ type: "emailChanged", newEmail });
-      },
-    });
+  // useMutation directly for the same reason, so a wrong or expired code shows
+  // in the form
+  const changeEmailOptions = changeEmailOtpOptions(otpClient);
+  const { mutateAsync: changeEmailOtp, isPending: isChanging } = useMutation({
+    ...changeEmailOptions,
+    meta: { ...changeEmailOptions.meta, errorPresentation: "inline" },
+    onError: (error) => {
+      form.setFieldValue("code", "");
+      const errorCode = getAuthErrorCode(error);
+      const message =
+        errorCode === "INVALID_OTP"
+          ? "This code is invalid. Please try again."
+          : errorCode === "OTP_EXPIRED"
+            ? "This code has expired. Please request a new code."
+            : getAuthErrorDisplayMessage(error, localization);
+      if (message) setAuthFormServerError(form, message, message);
+    },
+    onSuccess: (_data, { newEmail }) => {
+      form.reset();
+      dispatch({ type: "emailChanged", newEmail });
+    },
+  });
 
   const isPending = isRequesting || isChanging;
+
+  // The back end checks the password before sending a code to the new address
+  // (confirmPasswordForEmailChange). Better Auth's types don't include it, so
+  // it's added to the request body through fetchOptions
+  const sendCode = (password: string) =>
+    requestEmailChangeOtp({
+      newEmail: state.newEmail,
+      fetchOptions: { body: { password } },
+    });
 
   const form = useAuthForm({
     defaultValues: { code: "", email: "", password: "" },
@@ -139,13 +170,7 @@ export function ChangeEmailOtp({ className }: ChangeEmailOtpProps) {
       }
 
       if (state.step === "password") {
-        // The back end checks the password before sending a code to the new
-        // address (confirmPasswordForEmailChange). Better Auth's types don't
-        // include it, so it's added to the request body through fetchOptions
-        await requestEmailChangeOtp({
-          newEmail: state.newEmail,
-          fetchOptions: { body: { password: value.password } },
-        });
+        await sendCode(value.password);
         return;
       }
 
@@ -319,6 +344,25 @@ export function ChangeEmailOtp({ className }: ChangeEmailOtpProps) {
                   <form.AuthFormServerError />
 
                   <OpenEmailButton email={state.newEmail} variant="secondary" />
+
+                  {/* Reuses the password from the previous step */}
+                  <Button
+                    type="button"
+                    variant="outline"
+                    disabled={isPending || isCoolingDown}
+                    onClick={() =>
+                      void runAuthFormAction(form, () =>
+                        sendCode(form.getFieldValue("password")),
+                      )
+                    }
+                  >
+                    {isCoolingDown
+                      ? localization.auth.resendIn.replace(
+                          "{{seconds}}",
+                          String(cooldown),
+                        )
+                      : localization.auth.resend}
+                  </Button>
                 </div>
               )}
 
