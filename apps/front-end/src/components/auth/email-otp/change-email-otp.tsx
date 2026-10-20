@@ -1,4 +1,8 @@
-import { getAuthErrorCode } from "@better-auth-ui/core";
+import {
+  getAuthErrorCode,
+  validateEmailAddress,
+  validateStringLength,
+} from "@better-auth-ui/core";
 import {
   type EmailOtpAuthClient,
   requestEmailChangeOtpOptions,
@@ -19,6 +23,7 @@ import { getAuthErrorDisplayMessage } from "@/lib/auth/auth-error-message";
 import { emailOtpPlugin } from "@/lib/auth/email-otp-plugin";
 import { cn } from "cn";
 import {
+  isAuthFormFieldInvalid,
   setAuthFormServerError,
   submitAuthForm,
   useAuthForm,
@@ -98,7 +103,8 @@ export function ChangeEmailOtp({ className }: ChangeEmailOtpProps) {
       ...requestEmailChangeOtpOptions(otpClient),
       meta: { errorPresentation: "inline" },
       onError: (error) => {
-        form.setFieldValue("password", "");
+        // without validating, which would add a "required" error to this one
+        form.setFieldValue("password", "", { dontValidate: true });
         // Better Auth UI's copy for this code talks about sign-in details
         const message =
           getAuthErrorCode(error) === "INVALID_PASSWORD"
@@ -178,42 +184,57 @@ export function ChangeEmailOtp({ className }: ChangeEmailOtpProps) {
       </h2>
 
       <form.AppForm>
-        <form.AuthFormRoot>
+        {/* The fields' validators show errors under them, rather than the
+            browser's own bubbles */}
+        <form.AuthFormRoot noValidate>
           <Card className={cn(className)}>
             <CardContent className="flex flex-col gap-6">
               {state.step === "email" && (
-                <form.AppField name="email">
-                  {(field) => (
-                    <Field>
-                      <FieldLabel htmlFor="email">
-                        {localization.auth.email}
-                      </FieldLabel>
+                <form.AppField
+                  name="email"
+                  validators={{
+                    onChange: ({ value }) =>
+                      validateEmailAddress(value, {
+                        invalidMessage: localization.auth.invalidEmail,
+                        requiredMessage: localization.auth.fieldRequired,
+                      }),
+                  }}
+                >
+                  {(field) => {
+                    const isInvalid = isAuthFormFieldInvalid(field.state.meta);
+                    return (
+                      <Field data-invalid={isInvalid}>
+                        <FieldLabel htmlFor="email">
+                          {localization.auth.email}
+                        </FieldLabel>
 
-                      {session ? (
-                        <Input
-                          key={currentEmail}
-                          id="email"
-                          name="email"
-                          type="email"
-                          autoComplete="email"
-                          value={field.state.value}
-                          placeholder={localization.auth.emailPlaceholder}
-                          disabled={isPending}
-                          required
-                          onBlur={field.handleBlur}
-                          onChange={(event) =>
-                            field.handleChange(event.target.value)
-                          }
-                        />
-                      ) : (
-                        <Skeleton>
-                          <Input className="invisible" />
-                        </Skeleton>
-                      )}
+                        {session ? (
+                          <Input
+                            key={currentEmail}
+                            id="email"
+                            name="email"
+                            type="email"
+                            autoComplete="email"
+                            value={field.state.value}
+                            placeholder={localization.auth.emailPlaceholder}
+                            disabled={isPending}
+                            required
+                            onBlur={field.handleBlur}
+                            onChange={(event) =>
+                              field.handleChange(event.target.value)
+                            }
+                            aria-invalid={isInvalid}
+                          />
+                        ) : (
+                          <Skeleton>
+                            <Input className="invisible" />
+                          </Skeleton>
+                        )}
 
-                      <field.AuthFormFieldError />
-                    </Field>
-                  )}
+                        <field.AuthFormFieldError />
+                      </Field>
+                    );
+                  }}
                 </form.AppField>
               )}
 
@@ -223,34 +244,48 @@ export function ChangeEmailOtp({ className }: ChangeEmailOtpProps) {
                     {`Enter your password to change your email address to ${state.newEmail}.`}
                   </p>
 
-                  <form.AppField name="password">
-                    {(field) => (
-                      <Field>
-                        <FieldLabel htmlFor="password">
-                          {localization.settings.currentPassword}
-                        </FieldLabel>
+                  <form.AppField
+                    name="password"
+                    validators={{
+                      onChange: ({ value }) =>
+                        validateStringLength(value, {
+                          requiredMessage: localization.auth.fieldRequired,
+                        }),
+                    }}
+                  >
+                    {(field) => {
+                      const isInvalid = isAuthFormFieldInvalid(
+                        field.state.meta,
+                      );
+                      return (
+                        <Field data-invalid={isInvalid}>
+                          <FieldLabel htmlFor="password">
+                            {localization.settings.currentPassword}
+                          </FieldLabel>
 
-                        <Input
-                          autoFocus
-                          id="password"
-                          name="password"
-                          type="password"
-                          autoComplete="current-password"
-                          value={field.state.value}
-                          placeholder={
-                            localization.settings.currentPasswordPlaceholder
-                          }
-                          disabled={isPending}
-                          required
-                          onBlur={field.handleBlur}
-                          onChange={(event) =>
-                            field.handleChange(event.target.value)
-                          }
-                        />
+                          <Input
+                            autoFocus
+                            id="password"
+                            name="password"
+                            type="password"
+                            autoComplete="current-password"
+                            value={field.state.value}
+                            placeholder={
+                              localization.settings.currentPasswordPlaceholder
+                            }
+                            disabled={isPending}
+                            required
+                            onBlur={field.handleBlur}
+                            onChange={(event) =>
+                              field.handleChange(event.target.value)
+                            }
+                            aria-invalid={isInvalid}
+                          />
 
-                        <field.AuthFormFieldError />
-                      </Field>
-                    )}
+                          <field.AuthFormFieldError />
+                        </Field>
+                      );
+                    }}
                   </form.AppField>
 
                   <form.AuthFormServerError />
