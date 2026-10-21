@@ -4,7 +4,6 @@ import { useAppDispatch, useAppSelector } from "@/hooks/react-redux";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import * as Auth from "../utils/Auth";
 import Spinner from "../components/common/Spinner";
-import TopBar from "../components/top-bar/TopBar";
 import constants from "../constants";
 
 // TODO: Remove this component as part of the clean up of VITE_FEATURE_USE_BETTERAUTH feature flag - dont forget
