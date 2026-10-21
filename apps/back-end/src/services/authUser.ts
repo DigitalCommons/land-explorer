@@ -1,4 +1,4 @@
-import { APIError, GenericEndpointContext, User, getCurrentAdapter } from "better-auth";
+import { APIError, GenericEndpointContext, User, email, getCurrentAdapter } from "better-auth";
 import { createAuthMiddleware, getSessionFromCtx } from "better-auth/api";
 import { tryGetCurrentAuthEndpointContext } from "@better-auth/core/context";
 import { Validation } from "../validation";
@@ -79,6 +79,25 @@ export async function postRegistrationFlow(user: User & Record<string, unknown>,
 
 
 /**
+ * Checks an address someone wants to change their email to, throwing if it's
+ * invalid, too long or another account already uses it. The code covers all
+ * of those, and the message says which, so the form can show it as it is.
+ * @param newEmail the address to change to
+ */
+async function assertValidNewEmail(newEmail: unknown) {
+  // our validation calls the email "username"
+  const validation = new Validation();
+  await validation.validateChangeEmail({ username: newEmail });
+  if (validation.fail()) {
+    throw new APIError("BAD_REQUEST", {
+      message: validation.errors.username?.[0] ?? "Please provide a valid email.",
+      code: "INVALID_NEW_EMAIL",
+      errors: validation.errors,
+    });
+  }
+}
+
+/**
  * Runs before Better Auth's endpoints. Before a code is sent to change someone's email,
  * checks the password the change-email form sends alongside the new address, so
  * someone using a signed-in device can't take over the account. The emailOTP plugin
@@ -102,7 +121,34 @@ export const confirmPasswordForEmailChange = createAuthMiddleware(async (ctx) =>
       code: "INVALID_PASSWORD",
     });
   }
+
+  // After the password check, so only the account owner can find out whether
+  // another account uses an address
+  await assertValidNewEmail(ctx.body?.newEmail);
 });
+
+/**
+ * Runs before Better Auth updates an auth_user. When a user changes their email,
+ * updates the username on our User table to match, as that's their email there.
+ *
+ * @param data the auth_user fields being changed
+ * @param ctx the request context
+ */
+export async function preEmailChangeFlow(data: Partial<User> & Record<string, unknown>, ctx: GenericEndpointContext | null) {
+  if (ctx?.path !== CHANGE_EMAIL_PATH || !data.email) return;
+  // checked again here in case another account took the address after the code was sent
+  await assertValidNewEmail(data.email);
+
+  const appUserId = (ctx.context.session?.user as Record<string, unknown> | undefined)?.appUserId;
+  if (!appUserId) return;
+
+  const adapter = await getCurrentAdapter(ctx.context.adapter);
+  await adapter.update({
+    model: APP_USER_MODEL,
+    where: [{ field: "id", value: Number(appUserId) }],
+    update: { username: data.email },
+  });
+}
 
 
 
