@@ -14,6 +14,7 @@ import {
   confirmPasswordForEmailChange,
   postEmailVerificationFlow,
   postRegistrationFlow,
+  preEmailChangeFlow,
   preRegistrationFlow,
 } from "../services/authUser";
 
@@ -54,9 +55,12 @@ export const auth = betterAuth({
   },
   databaseHooks: {
     user: {
-      create: {        
+      create: {
         before: preRegistrationFlow,
         after: postRegistrationFlow
+      },
+      update: {
+        before: preEmailChangeFlow,
       },
     },
   },

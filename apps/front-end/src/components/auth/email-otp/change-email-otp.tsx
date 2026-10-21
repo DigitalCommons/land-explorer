@@ -107,8 +107,20 @@ export function ChangeEmailOtp({ className }: ChangeEmailOtpProps) {
     useMutation({
       ...requestOptions,
       meta: { ...requestOptions.meta, errorPresentation: "inline" },
-      onError: (error) => {
-        const isWrongPassword = getAuthErrorCode(error) === "INVALID_PASSWORD";
+      onError: (error, { newEmail }) => {
+        const errorCode = getAuthErrorCode(error);
+        // The back end found a problem with the new address, such as another
+        // account already using it, so go back to the email step to show it
+        if (errorCode === "INVALID_NEW_EMAIL") {
+          dispatch({ type: "restarted" });
+          form.setFieldValue("password", "", { dontValidate: true });
+          form.setFieldValue("email", newEmail, { dontValidate: true });
+          const message = getAuthErrorDisplayMessage(error, localization);
+          if (message) setAuthFormServerError(form, message, message);
+          return;
+        }
+
+        const isWrongPassword = errorCode === "INVALID_PASSWORD";
         // Only cleared when it's wrong, as resending a code reuses it. Without
         // validating, which would add a "required" error to this one
         if (isWrongPassword) {
@@ -257,6 +269,7 @@ export function ChangeEmailOtp({ className }: ChangeEmailOtpProps) {
                         )}
 
                         <field.AuthFormFieldError />
+                        <form.AuthFormServerError />
                       </Field>
                     );
                   }}
