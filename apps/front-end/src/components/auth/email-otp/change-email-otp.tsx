@@ -11,6 +11,7 @@ import {
 import { useAuth, useAuthPlugin, useSession } from "@better-auth-ui/react";
 import { useSelector } from "@tanstack/react-form";
 import { useMutation } from "@tanstack/react-query";
+import type { BetterFetchError } from "better-auth/react";
 import { CircleCheckIcon } from "lucide-react";
 import { useEffect, useReducer } from "react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -19,6 +20,8 @@ import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Field, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
+import { getUserDetails } from "@/actions/UserActions";
+import { useAppDispatch } from "@/hooks/react-redux";
 import { getAuthErrorDisplayMessage } from "@/lib/auth/auth-error-message";
 import { emailOtpPlugin } from "@/lib/auth/email-otp-plugin";
 import { useResendCooldown } from "@/lib/auth/use-resend-cooldown";
@@ -98,6 +101,18 @@ export function ChangeEmailOtp({ className }: ChangeEmailOtpProps) {
   );
 
   const { cooldown, isCoolingDown, startCooldown } = useResendCooldown();
+  const appDispatch = useAppDispatch();
+
+  // The back end found a problem with the new address, such as another account
+  // already using it, so go back to the email step to show it there
+  const showNewEmailError = (error: BetterFetchError, newEmail: string) => {
+    dispatch({ type: "restarted" });
+    form.setFieldValue("code", "");
+    form.setFieldValue("password", "", { dontValidate: true });
+    form.setFieldValue("email", newEmail, { dontValidate: true });
+    const message = getAuthErrorDisplayMessage(error, localization);
+    if (message) setAuthFormServerError(form, message, message);
+  };
 
   // useMutation directly rather than useRequestEmailChangeOtp, whose options
   // can't set meta: errors such as a wrong password show in the form, so
@@ -109,14 +124,8 @@ export function ChangeEmailOtp({ className }: ChangeEmailOtpProps) {
       meta: { ...requestOptions.meta, errorPresentation: "inline" },
       onError: (error, { newEmail }) => {
         const errorCode = getAuthErrorCode(error);
-        // The back end found a problem with the new address, such as another
-        // account already using it, so go back to the email step to show it
         if (errorCode === "INVALID_NEW_EMAIL") {
-          dispatch({ type: "restarted" });
-          form.setFieldValue("password", "", { dontValidate: true });
-          form.setFieldValue("email", newEmail, { dontValidate: true });
-          const message = getAuthErrorDisplayMessage(error, localization);
-          if (message) setAuthFormServerError(form, message, message);
+          showNewEmailError(error, newEmail);
           return;
         }
 
@@ -145,9 +154,16 @@ export function ChangeEmailOtp({ className }: ChangeEmailOtpProps) {
   const { mutateAsync: changeEmailOtp, isPending: isChanging } = useMutation({
     ...changeEmailOptions,
     meta: { ...changeEmailOptions.meta, errorPresentation: "inline" },
-    onError: (error) => {
-      form.setFieldValue("code", "");
+    onError: (error, { newEmail }) => {
       const errorCode = getAuthErrorCode(error);
+      // Checked again when the code is entered, in case another account took
+      // the address after it was sent. The code is used up by then
+      if (errorCode === "INVALID_NEW_EMAIL") {
+        showNewEmailError(error, newEmail);
+        return;
+      }
+
+      form.setFieldValue("code", "");
       const message =
         errorCode === "INVALID_OTP"
           ? "This code is invalid. Please try again."
@@ -159,6 +175,9 @@ export function ChangeEmailOtp({ className }: ChangeEmailOtpProps) {
     onSuccess: (_data, { newEmail }) => {
       form.reset();
       dispatch({ type: "emailChanged", newEmail });
+      // The rest of the app keeps the email as the user's username in the store,
+      // and analytics identifies the user with it
+      appDispatch(getUserDetails());
     },
   });
 

@@ -1,4 +1,4 @@
-import { APIError, GenericEndpointContext, User, email, getCurrentAdapter } from "better-auth";
+import { APIError, GenericEndpointContext, User, getCurrentAdapter } from "better-auth";
 import { createAuthMiddleware, getSessionFromCtx } from "better-auth/api";
 import { tryGetCurrentAuthEndpointContext } from "@better-auth/core/context";
 import { Validation } from "../validation";
@@ -77,7 +77,6 @@ export async function postRegistrationFlow(user: User & Record<string, unknown>,
   }
 }
 
-
 /**
  * Checks an address someone wants to change their email to, throwing if it's
  * invalid, too long or another account already uses it. The code covers all
@@ -149,8 +148,6 @@ export async function preEmailChangeFlow(data: Partial<User> & Record<string, un
     update: { username: data.email },
   });
 }
-
-
 
 /**
  * Runs after a user verifies their email. Sends new sign-ups the "successfully
