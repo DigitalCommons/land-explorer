@@ -13,7 +13,7 @@ const Register = ({ updateBgImage }: Props) => {
   }, []);
 
   return (
-    <div className="box-border h-screen overflow-y-scroll pb-50">      
+    <div className="box-border h-full overflow-y-scroll pb-50">
       <Dialog open={registerSuccess}>
         <DialogContent
           showCloseButton={false}

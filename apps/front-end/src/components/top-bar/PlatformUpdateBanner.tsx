@@ -9,8 +9,9 @@ const PlatformUpdateBanner = () => {
   return (
     <Alert
       variant="warning"
+      className="rounded-none border-x-0 border-t-0 px-5"
     >
-      <TriangleAlertIcon/>
+      <TriangleAlertIcon />
       <AlertTitle>Review your email</AlertTitle>
       <AlertDescription>
         We’re switching LandExplorer to a new login system soon. When it goes

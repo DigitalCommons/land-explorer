@@ -33,10 +33,10 @@ const MapAppShell = () => {
             TopBar - navigation bar at top of page
             PlatformUpdateBanner - warning under the top bar about the upcoming
               login change, so only shown while still on the legacy auth
-            Controls - map and layer controls in bottom right of app           
+            Controls - map and layer controls in bottom right of app
          */
     return (
-      <div className="h-screen min-h-screen flex flex-col">        
+      <div className="flex h-dvh flex-col">
         <TopBar limited={false} />
         {!constants.VITE_FEATURE_USE_BETTERAUTH && <PlatformUpdateBanner />}
         <main className="relative min-h-0 flex-1 overflow-hidden">
@@ -49,7 +49,7 @@ const MapAppShell = () => {
     );
   } else {
     return (
-      <div className="h-screen min-h-screen flex flex-col items-center justify-center grow">
+      <div className="flex h-dvh flex-col">
         <TopBar limited={true} />
         <main className="relative flex min-h-0 flex-1 items-center justify-center overflow-hidden">
           <Spinner className="text-primary size-8"></Spinner>

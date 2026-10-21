@@ -39,7 +39,7 @@ const ResetPassword = ({ updateBgImage }: Props) => {
     return (
       <div
         style={{
-          minHeight: "100vh",
+          height: "100%",
           overflowY: "scroll",
         }}
       >
@@ -74,7 +74,7 @@ const ResetPassword = ({ updateBgImage }: Props) => {
     return (
       <div
         style={{
-          minHeight: "100vh",
+          height: "100%",
         }}
       >
         <div

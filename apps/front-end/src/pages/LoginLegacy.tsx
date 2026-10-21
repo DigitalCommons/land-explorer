@@ -90,7 +90,7 @@ const LoginLegacy = ({ updateBgImage }: Props) => {
   return (
     <div
       style={{
-        minHeight: "100vh",
+        height: "100%",
       }}
     >
       <div
