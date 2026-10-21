@@ -3,7 +3,9 @@ import { useAppDispatch, useAppSelector } from "@/hooks/react-redux";
 import { useNavigate } from "react-router-dom";
 import MapboxMap from "../components/map/MapboxMap";
 import TopBar from "../components/top-bar/TopBar";
-import PlatformUpdateBanner from "../components/top-bar/PlatformUpdateBanner";
+import PlatformUpdateBanner, {
+  PLATFORM_UPDATE_BANNER_STORAGE_KEY,
+} from "../components/top-bar/PlatformUpdateBanner";
 import Tooltips from "../components/common/Tooltips";
 import ControlButtons from "../components/map-controls/ControlButtons";
 import * as Auth from "../utils/Auth";
@@ -90,6 +92,7 @@ const MapAppLegacy = () => {
         Auth.removeToken();
         dispatch(closeSocketConnection());
         sessionStorage.removeItem("currentMapId");
+        sessionStorage.removeItem(PLATFORM_UPDATE_BANNER_STORAGE_KEY);
         console.log("no token, redirecting to login page");
         navigate("/auth", { replace: true });
       }
