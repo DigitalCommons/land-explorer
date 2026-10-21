@@ -58,7 +58,7 @@ const PlatformUpdateBanner = () => {
           live, you’ll be asked to log in again and verify your email address.
           If you no longer have access to the email you signed up with, update
           it in{" "}
-          <Link to="/app/my-account" className="underline">
+          <Link to="/app/my-account/email" className="underline">
             My Account
           </Link>{" "}
           before the switch, or you may lose access to your account.
