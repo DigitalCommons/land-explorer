@@ -80,7 +80,7 @@ export const auth = betterAuth({
   plugins: [
     appUserPlugin(),
     emailOTP({
-      overrideDefaultEmailVerification: true, 
+      overrideDefaultEmailVerification: true,
       changeEmail: {
         enabled: true,
       },
@@ -116,5 +116,4 @@ export const auth = betterAuth({
     sendOnSignUp: true,
     afterEmailVerification: postEmailVerificationFlow,
   },
-  
 });
