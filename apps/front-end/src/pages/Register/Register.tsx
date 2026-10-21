@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import TopBar from "../../components/top-bar/TopBar";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import RegisterForm from "./RegisterForm/RegisterForm";
 
@@ -14,8 +13,7 @@ const Register = ({ updateBgImage }: Props) => {
   }, []);
 
   return (
-    <div className="box-border h-screen overflow-y-scroll pb-50">
-      <TopBar limited={true} />
+    <div className="box-border h-screen overflow-y-scroll pb-50">      
       <Dialog open={registerSuccess}>
         <DialogContent
           showCloseButton={false}

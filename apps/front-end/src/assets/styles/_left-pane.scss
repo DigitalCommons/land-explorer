@@ -1,9 +1,9 @@
 .left-pane {
   width: 72px;
-  position: fixed;
+  position: absolute;
   left: 0;
   bottom: 0;
-  top: 68px;
+  top: 0;
   background: white;
   box-shadow: 3px 0 6px 0 rgba(0, 0, 0, 0.16);
   z-index: 100001;
@@ -161,8 +161,8 @@
   border-radius: 50%;
   height: 50px;
   width: 50px;
-  position: fixed;
-  top: 84px;
+  position: absolute;
+  top: 16px;
   left: 12px;
   z-index: 2;
   background-image: url("../img/icon-cog.svg");

@@ -3,6 +3,7 @@ import { useAppDispatch, useAppSelector } from "@/hooks/react-redux";
 import { useNavigate } from "react-router-dom";
 import MapboxMap from "../components/map/MapboxMap";
 import TopBar from "../components/top-bar/TopBar";
+import PlatformUpdateBanner from "../components/top-bar/PlatformUpdateBanner";
 import Tooltips from "../components/common/Tooltips";
 import ControlButtons from "../components/map-controls/ControlButtons";
 import * as Auth from "../utils/Auth";
@@ -30,23 +31,30 @@ const MapAppShell = () => {
             Tooltips - hover tooltips for buttons
             MapboxMap - MapboxGL instance, drawing tools, left pane, ui etc.
             TopBar - navigation bar at top of page
-            Controls - map and layer controls in bottom right of app
+            PlatformUpdateBanner - warning under the top bar about the upcoming
+              login change, so only shown while still on the legacy auth
+            Controls - map and layer controls in bottom right of app           
          */
     return (
-      <div className="h-screen min-h-screen flex flex-col">
-        <MapboxMap />
+      <div className="h-screen min-h-screen flex flex-col">        
         <TopBar limited={false} />
-        <NoConnectionToast />
-        <ControlButtons />
-        <Tooltips />
+        {!constants.VITE_FEATURE_USE_BETTERAUTH && <PlatformUpdateBanner />}
+        <main className="relative min-h-0 flex-1 overflow-hidden">
+          <MapboxMap />
+          <NoConnectionToast />
+          <ControlButtons />
+          <Tooltips />
+        </main>
       </div>
     );
   } else {
     return (
       <div className="h-screen min-h-screen flex flex-col items-center justify-center grow">
         <TopBar limited={true} />
-        <Spinner className="text-primary size-8 items-center"></Spinner>
-      </div>   
+        <main className="relative flex min-h-0 flex-1 items-center justify-center overflow-hidden">
+          <Spinner className="text-primary size-8"></Spinner>
+        </main>
+      </div>
     );
   }
 };

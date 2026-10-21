@@ -20,7 +20,6 @@ const TopBar = ({ limited }: Props) => {
 
   return !limited && user.populated ? (
     <div>
-      <div className="topbar-shadow"></div>
       <div className="topbar">
         <Link to="/app">
           <div className="logo" />
@@ -50,7 +49,6 @@ const TopBar = ({ limited }: Props) => {
     </div>
   ) : (
     <div>
-      <div className="topbar-shadow"></div>
       <div className="topbar">
         <Link to="/app">
           <div className="logo" />

@@ -94,7 +94,6 @@ const LoginLegacy = ({ updateBgImage }: Props) => {
         minHeight: "100vh",
       }}
     >
-      <TopBar limited={true} />
       <div
         style={{
           left: "50%",

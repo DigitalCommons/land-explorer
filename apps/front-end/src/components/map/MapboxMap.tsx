@@ -373,16 +373,15 @@ const MapboxMap = () => {
   }, [map, landDataLayers, debouncedMouseMove]);
 
   return (
-    <div>
+    <>
       {/* This is the ReactMapbox instance we created at the top of the file */}
       <Map
         ref={mapRef}
         style={style}
         detectRetina={true}
         containerStyle={{
-          height: "100vh",
-          width: "100vw",
-          position: "fixed",
+          height: "100%",
+          width: "100%",
           background:
             baseLayer === "aerial"
               ? "#091324"
@@ -517,7 +516,7 @@ const MapboxMap = () => {
             </>
           )}
       </div>
-    </div>
+    </>
   );
 };
 
