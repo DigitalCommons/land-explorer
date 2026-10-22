@@ -1,13 +1,15 @@
 "use client"
 
 import { getAuthLinkURL } from "@better-auth-ui/core"
-import type { EmailOtpAuthClient } from "@better-auth-ui/core/plugins/email-otp"
-import { useAuth, useAuthPlugin } from "@better-auth-ui/react"
 import {
-  useSendVerificationOtp,
-  useVerifyEmailOtp
-} from "@better-auth-ui/react/plugins/email-otp"
+  type EmailOtpAuthClient,
+  sendVerificationOtpOptions,
+  verifyEmailOtpOptions
+} from "@better-auth-ui/core/plugins/email-otp"
+import { useAuth, useAuthPlugin } from "@better-auth-ui/react"
 import { useSelector } from "@tanstack/react-form"
+import { useMutation } from "@tanstack/react-query"
+import type { BetterFetchError } from "better-auth/react"
 import { useEffect, useState } from "react"
 import { toast } from "sonner"
 
@@ -26,13 +28,19 @@ import {
   FieldLabel
 } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
+import { getFriendlyAuthErrorMessage } from "@/lib/auth/auth-error-message"
 import { emailOtpPlugin } from "@/lib/auth/email-otp-plugin"
 import {
   RESEND_COOLDOWN_SECONDS,
   useResendCooldown
 } from "@/lib/auth/use-resend-cooldown"
 import { cn } from "cn"
-import { runAuthFormAction, submitAuthForm, useAuthForm } from "../auth-form"
+import {
+  runAuthFormAction,
+  setAuthFormServerError,
+  submitAuthForm,
+  useAuthForm
+} from "../auth-form"
 import { OpenEmailButton } from "../open-email-button"
 import { OtpField } from "../otp-field"
 import { useIsHydrated } from "../use-is-hydrated"
@@ -87,8 +95,25 @@ export function VerifyEmailOtp({ className }: VerifyEmailOtpProps) {
     if (pendingEmail) startCooldown(RESEND_COOLDOWN_SECONDS)
   }, [startCooldown])
 
+  // Errors render inside the card rather than as a toast, so they stay next
+  // to the code the user is typing and don't vanish before they're read
+  const showInlineError = (error: unknown, key?: readonly unknown[]) => {
+    const message = getFriendlyAuthErrorMessage(
+      error as BetterFetchError,
+      localization,
+      key
+    )
+    if (message) setAuthFormServerError(form, message, message)
+  }
+
+  // The library hooks don't accept `meta`, so the core options are used
+  // directly to opt out of the global error toaster while keeping their own meta
+  const sendOptions = sendVerificationOtpOptions(otpClient)
   const { mutateAsync: sendVerificationOtp, isPending: isSending } =
-    useSendVerificationOtp(otpClient, {
+    useMutation({
+      ...sendOptions,
+      meta: { ...sendOptions.meta, errorPresentation: "inline" },
+      onError: (error) => showInlineError(error, sendOptions.mutationKey),
       onSuccess: (_data, { email: sentTo }) => {
         sessionStorage.setItem(VERIFY_EMAIL_STORAGE_KEY, sentTo)
         setEmail(sentTo)
@@ -97,9 +122,15 @@ export function VerifyEmailOtp({ className }: VerifyEmailOtpProps) {
       }
     })
 
+  const verifyOptions = verifyEmailOtpOptions(otpClient)
   const { mutateAsync: verifyEmailOtp, isPending: isVerifying } =
-    useVerifyEmailOtp(otpClient, {
-      onError: () => form.setFieldValue("code", ""),
+    useMutation({
+      ...verifyOptions,
+      meta: { ...verifyOptions.meta, errorPresentation: "inline" },
+      onError: (error) => {
+        form.setFieldValue("code", "")
+        showInlineError(error, verifyOptions.mutationKey)
+      },
       onSuccess: () => {
         sessionStorage.removeItem(VERIFY_EMAIL_STORAGE_KEY)
         toast.success(emailOtpLocalization.emailVerified)
@@ -195,7 +226,8 @@ export function VerifyEmailOtp({ className }: VerifyEmailOtpProps) {
                 </form.AppField>
               )}
 
-     
+              <form.AuthFormServerError />
+
               <div className="flex flex-col gap-3">
                 <form.AuthFormSubmitButton
                   isPending={isPending}
