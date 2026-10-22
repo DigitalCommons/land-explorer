@@ -1,6 +1,7 @@
 import { betterAuth } from "better-auth";
 import { generateId } from "@better-auth/core/utils/id";
 import { createPool } from "mysql2/promise";
+import bcrypt from 'bcrypt';
 import { APP_USER_MODEL, appUserPlugin } from "./appUserPlugin";
 import {
   RESET_PASSWORD_EXPIRY_SECONDS,
@@ -27,7 +28,7 @@ export const auth = betterAuth({
     cookiePrefix: "lx",
   },
   user: {
-    modelName: "auth_user",    
+    modelName: "auth_user",        
     additionalFields: {
       appUserId: {
         type: "number",
@@ -65,5 +66,9 @@ export const auth = betterAuth({
     minPasswordLength: 6,
     resetPasswordTokenExpiresIn: RESET_PASSWORD_EXPIRY_SECONDS,
     sendResetPassword: sendPasswordReset,
-  },
+    password: {
+      hash: (password: string) => bcrypt.hash(password, 10),      
+      verify: (data: {hash: string; password: string;}) => bcrypt.compare(data.password, data.hash)
+    }
+  }
 });
