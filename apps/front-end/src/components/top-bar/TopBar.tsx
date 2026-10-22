@@ -79,7 +79,7 @@ const TopBarNew = ({ limited }: Props) => {
 
   if (!limited && user.populated) {
     return (
-      <div className="flex gap-10 items-center py-2 bg-background z-[100003] shadow-lg">
+      <div className="relative z-[30] flex gap-10 items-center py-2 bg-background shadow-lg">
         <Link className="ml-6" to="/app">
           <img className="lg:hidden size-10" src="/logo-green.svg" />
           <img className="hidden lg:block h-10" src="/logo-green-text.svg" />
@@ -106,7 +106,7 @@ const TopBarNew = ({ limited }: Props) => {
   }
 
   return (
-    <div className="flex gap-10 items-center py-2 bg-background z-[100003] shadow-lg">
+    <div className="relative z-[30] flex gap-10 items-center py-2 bg-background shadow-lg">
       <Link className="ml-6" to="/app">
         <img className="lg:hidden size-10" src="/logo-green.svg" />
         <img className="hidden lg:block h-10" src="/logo-green-text.svg" />

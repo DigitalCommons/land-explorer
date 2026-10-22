@@ -12,6 +12,7 @@ import { UserView } from "../auth/user/user-view";
 import { Menu, MenuContent, MenuHeader, MenuItem } from "../common/Menu";
 import { ComponentType, useState } from "react";
 import { cn } from "@/lib/utils";
+import { ChangeEmailOtp } from "../auth/email-otp/change-email-otp";
 
 type UserAccountSection = "details" | "email" | "password" | "privacy";
 
@@ -20,7 +21,7 @@ const DetailsPanel = () => {
 }
 
 const EmailPanel = () => {
-  return ( <div>Change Email</div>)
+  return ( <div className="w-full"><ChangeEmailOtp/></div>)
 }
 
 const PasswordPanel = () => {
@@ -58,7 +59,7 @@ export default function UserAccountPage() {
       onOpenChange={() => void 0}
     >
       <DialogContent
-        className="overflow-hidden w-2xl sm:max-w-[calc(100%-2rem)] max-h-[calc(100dvh-2rem)]"
+        className="overflow-hidden w-4xl h-[min(40rem,calc(100dvh-2rem))] sm:max-w-[calc(100%-2rem)] grid-rows-[minmax(0,1fr)_auto]"
         showCloseButton={false}
       >
           <div className="flex min-h-0">
@@ -86,7 +87,9 @@ export default function UserAccountPage() {
                 </Button>
                 <DialogTitle>My Account</DialogTitle>
               </div>
-              <Panel/>
+              <div className="pt-12">
+                <Panel/>
+              </div>
             </div>
           </div>
         <DialogFooter>
