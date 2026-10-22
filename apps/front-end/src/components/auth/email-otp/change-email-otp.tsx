@@ -12,13 +12,19 @@ import { useAuth, useAuthPlugin, useSession } from "@better-auth-ui/react";
 import { useSelector } from "@tanstack/react-form";
 import { useMutation } from "@tanstack/react-query";
 import type { BetterFetchError } from "better-auth/react";
-import { CircleCheckIcon } from "lucide-react";
-import { useEffect, useReducer } from "react";
+import { CircleCheckIcon, Eye, EyeOff } from "lucide-react";
+import { useEffect, useReducer, useState } from "react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Field, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupButton,
+  InputGroupInput,
+} from "@/components/ui/input-group";
 import { Skeleton } from "@/components/ui/skeleton";
 import { getUserDetails } from "@/actions/UserActions";
 import { useAppDispatch } from "@/hooks/react-redux";
@@ -101,6 +107,7 @@ export function ChangeEmailOtp({ className }: ChangeEmailOtpProps) {
   );
 
   const { cooldown, isCoolingDown, startCooldown } = useResendCooldown();
+  const [isPasswordVisible, setIsPasswordVisible] = useState(false);
   const appDispatch = useAppDispatch();
 
   // The back end found a problem with the new address, such as another account
@@ -313,24 +320,47 @@ export function ChangeEmailOtp({ className }: ChangeEmailOtpProps) {
                             {localization.settings.currentPassword}
                           </FieldLabel>
 
-                          <Input
-                            autoFocus
-                            id="password"
-                            name="password"
-                            type="password"
-                            autoComplete="current-password"
-                            value={field.state.value}
-                            placeholder={
-                              localization.settings.currentPasswordPlaceholder
-                            }
-                            disabled={isPending}
-                            required
-                            onBlur={field.handleBlur}
-                            onChange={(event) =>
-                              field.handleChange(event.target.value)
-                            }
-                            aria-invalid={isInvalid}
-                          />
+                          <InputGroup>
+                            <InputGroupInput
+                              autoFocus
+                              id="password"
+                              name="password"
+                              type={isPasswordVisible ? "text" : "password"}
+                              autoComplete="current-password"
+                              value={field.state.value}
+                              placeholder={
+                                localization.settings.currentPasswordPlaceholder
+                              }
+                              disabled={isPending}
+                              required
+                              onBlur={field.handleBlur}
+                              onChange={(event) =>
+                                field.handleChange(event.target.value)
+                              }
+                              aria-invalid={isInvalid}
+                            />
+
+                            <InputGroupAddon align="inline-end">
+                              <InputGroupButton
+                                size="icon-xs"
+                                aria-label={
+                                  isPasswordVisible
+                                    ? localization.auth.hidePassword
+                                    : localization.auth.showPassword
+                                }
+                                title={
+                                  isPasswordVisible
+                                    ? localization.auth.hidePassword
+                                    : localization.auth.showPassword
+                                }
+                                onClick={() =>
+                                  setIsPasswordVisible((visible) => !visible)
+                                }
+                              >
+                                {isPasswordVisible ? <EyeOff /> : <Eye />}
+                              </InputGroupButton>
+                            </InputGroupAddon>
+                          </InputGroup>
 
                           <field.AuthFormFieldError />
                         </Field>
