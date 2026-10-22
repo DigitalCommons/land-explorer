@@ -124,7 +124,7 @@ function DialogTitle({ className, ...props }: DialogPrimitive.Title.Props) {
       data-slot="dialog-title"
       className={cn(
         "shadcn-scope",
-        "font-semibold! font-heading text-base leading-none font-medium",
+        "font-heading text-base leading-none font-semibold",
         className
       )}
       {...props}

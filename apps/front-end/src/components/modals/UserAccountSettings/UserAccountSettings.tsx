@@ -2,7 +2,8 @@ import { useAppDispatch, useAppSelector } from "@/hooks/react-redux";
 import {
   Dialog,
   DialogContent,
-  DialogFooter,  
+  DialogFooter,
+  DialogTitle,
 } from "../../ui/dialog";
 import { closeModal } from "@/actions/ModalActions";
 import { Button } from "../../ui/button";
@@ -30,6 +31,14 @@ const EmailPanel = () => {
 
 const PasswordPanel = () => {
   return <div>Password</div>;
+};
+
+// Shown as the dialog's title, so it always has an accessible name
+const titles: Record<UserAccountSection, string> = {
+  details: "Details",
+  email: "Change email",
+  password: "Password",
+  privacy: "Privacy Settings",
 };
 
 const panels: Record<UserAccountSection, ComponentType> = {
@@ -117,9 +126,12 @@ export default function UserAccountPage() {
               >
                 <ChevronLeft />
               </Button>
+              <DialogTitle>{titles[section]}</DialogTitle>
             </div>
 
-            <Panel />
+            <div className="pt-6">
+              <Panel />
+            </div>
           </div>
         </div>
         <DialogFooter>

@@ -41,7 +41,6 @@ import {
 import { OpenEmailButton } from "../open-email-button";
 import { OtpField } from "../otp-field";
 import { getFriendlyAuthErrorMessage } from "@/lib/auth/auth-error-message";
-import { DialogTitle } from "@/components/ui/dialog";
 
 type ChangeEmailStep = "email" | "password" | "code" | "changed";
 
@@ -235,11 +234,7 @@ export function ChangeEmailOtp({ className }: ChangeEmailOtpProps) {
   }, [currentEmail, form]);
 
   return (
-    <div className="space-y-12">
-      <DialogTitle>
-        {localization.settings.changeEmail}
-      </DialogTitle>
-
+    <div>
       <form.AppForm>
         {/* The fields' validators show errors under them, rather than the
             browser's own bubbles */}
