@@ -14,6 +14,8 @@ import PrivacySettings from "@/pages/PrivacySettings";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faShieldHalved } from "@fortawesome/free-solid-svg-icons";
 
+// TODO: Delete this when we remove VITE_FEATURE_USE_BETTERAUTH
+
 type AccountViewProps = { initials: string };
 
 const AccountView = ({ initials }: AccountViewProps) => {
