@@ -372,17 +372,25 @@ const MapboxMap = () => {
     };
   }, [map, landDataLayers, debouncedMouseMove]);
 
+  // mapbox only resizes on window resize, so also resize when the map's
+  // container changes size (e.g. the banner above it is dismissed)
+  useEffect(() => {
+    if (!map) return;
+    const observer = new ResizeObserver(() => map.resize());
+    observer.observe(map.getContainer());
+    return () => observer.disconnect();
+  }, [map]);
+
   return (
-    <div>
+    <>
       {/* This is the ReactMapbox instance we created at the top of the file */}
       <Map
         ref={mapRef}
         style={style}
         detectRetina={true}
         containerStyle={{
-          height: "100vh",
-          width: "100vw",
-          position: "fixed",
+          height: "100%",
+          width: "100%",
           background:
             baseLayer === "aerial"
               ? "#091324"
@@ -517,7 +525,7 @@ const MapboxMap = () => {
             </>
           )}
       </div>
-    </div>
+    </>
   );
 };
 

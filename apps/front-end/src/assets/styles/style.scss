@@ -103,7 +103,7 @@ h6 {
 }
 
 .os-accreditation {
-  position: fixed;
+  position: absolute;
   bottom: 0;
   right: 0;
   background: white;
@@ -299,9 +299,9 @@ h6 {
 
 .toast {
   z-index: 99999;
-  position: fixed;
+  position: absolute;
   width: 300px;
-  top: 90px;
+  top: 22px;
   left: calc(50% - 114px);
   text-align: center;
   font-weight: bold;
