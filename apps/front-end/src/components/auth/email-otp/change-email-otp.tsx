@@ -22,7 +22,6 @@ import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { getUserDetails } from "@/actions/UserActions";
 import { useAppDispatch } from "@/hooks/react-redux";
-import { getAuthErrorDisplayMessage } from "@/lib/auth/auth-error-message";
 import { emailOtpPlugin } from "@/lib/auth/email-otp-plugin";
 import { useResendCooldown } from "@/lib/auth/use-resend-cooldown";
 import { cn } from "cn";
@@ -35,6 +34,7 @@ import {
 } from "../auth-form";
 import { OpenEmailButton } from "../open-email-button";
 import { OtpField } from "../otp-field";
+import { getFriendlyAuthErrorMessage } from "@/lib/auth/auth-error-message";
 
 type ChangeEmailStep = "email" | "password" | "code" | "changed";
 
@@ -110,7 +110,7 @@ export function ChangeEmailOtp({ className }: ChangeEmailOtpProps) {
     form.setFieldValue("code", "");
     form.setFieldValue("password", "", { dontValidate: true });
     form.setFieldValue("email", newEmail, { dontValidate: true });
-    const message = getAuthErrorDisplayMessage(error, localization);
+    const message = getFriendlyAuthErrorMessage(error, localization);
     if (message) setAuthFormServerError(form, message, message);
   };
 
@@ -136,9 +136,7 @@ export function ChangeEmailOtp({ className }: ChangeEmailOtpProps) {
           form.setFieldValue("password", "", { dontValidate: true });
         }
         // Better Auth UI's copy for this code talks about sign-in details
-        const message = isWrongPassword
-          ? "Incorrect password. Please try again."
-          : getAuthErrorDisplayMessage(error, localization);
+        const message = getFriendlyAuthErrorMessage(error, localization);
         if (message) setAuthFormServerError(form, message, message);
       },
       onSuccess: (_data, { newEmail }) => {
@@ -164,12 +162,7 @@ export function ChangeEmailOtp({ className }: ChangeEmailOtpProps) {
       }
 
       form.setFieldValue("code", "");
-      const message =
-        errorCode === "INVALID_OTP"
-          ? "This code is invalid. Please try again."
-          : errorCode === "OTP_EXPIRED"
-            ? "This code has expired. Please request a new code."
-            : getAuthErrorDisplayMessage(error, localization);
+      const message = getFriendlyAuthErrorMessage(error, localization);
       if (message) setAuthFormServerError(form, message, message);
     },
     onSuccess: (_data, { newEmail }) => {
