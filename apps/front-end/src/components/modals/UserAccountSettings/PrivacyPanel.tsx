@@ -30,22 +30,24 @@ export const PrivacyPanel = () => {
     },
   });
 
-  const analyticsConsented = form.watch("analytics")
+  const { isSubmitting } = form.formState;
 
-  async function onSubmit(data: z.infer<typeof formSchema>) {    
+  async function onSubmit(data: z.infer<typeof formSchema>) {
     const success = await dispatch(
       setAnalyticsConsent(data.analytics),
     );
     if (!success) {
+      // Nothing was saved, so put the switch back to the saved choice
+      form.setValue("analytics", analyticsConsent ?? false);
       toast.error("Failed to save privacy settings. Please try again.");
     } else {
       toast.success("Successfully updated privacy settings");
-    }  }
+    }
+  }
 
   return (
     <div className="flex flex-col gap-3">
-      <h1 className="!text-foreground text-base mb-3">Privacy Settings</h1>
-      <Alert className="text-nowrap" variant="info">
+      <Alert variant="info">
         <InfoIcon />
         <AlertDescription>
           We use pseudonymous analytics to understand how people use Land
@@ -68,13 +70,15 @@ export const PrivacyPanel = () => {
                           Allow Analytics
                         </FieldLabel>
                         <FieldDescription>
-                          {`You currently have analytics ${!analyticsConsented ? "disabled" : "enabled"}`}
+                          {`You currently have analytics ${analyticsConsent ? "enabled" : "disabled"}`}
                         </FieldDescription>
                       </FieldContent>
                       <Switch
                         id="allow-analytics"
                         name={field.name}
                         checked={field.value}
+                        // One save at a time, so an earlier one can't finish last
+                        disabled={isSubmitting}
                         onCheckedChange={(checked) => {
                           // Update field value in react-hook-form state
                           field.onChange(checked)
