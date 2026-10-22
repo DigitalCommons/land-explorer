@@ -12,25 +12,14 @@ import { UserView } from "../../auth/user/user-view";
 import { Menu, MenuContent, MenuHeader, MenuItem } from "../../common/Menu";
 import { ComponentType, useState } from "react";
 import { cn } from "@/lib/utils";
-import { ChangeEmailOtp } from "../../auth/email-otp/change-email-otp";
 import { PrivacyPanel } from "./PrivacyPanel";
+import { ChangeEmailOtp } from "@/components/auth/email-otp/change-email-otp";
+import { ChangePassword } from "@/components/auth/settings/security/change-password";
 
 type UserAccountSection = "details" | "email" | "password" | "privacy";
 
 const DetailsPanel = () => {
   return <div>Details</div>;
-};
-
-const EmailPanel = () => {
-  return (
-    <div className="w-full">
-      <ChangeEmailOtp />
-    </div>
-  );
-};
-
-const PasswordPanel = () => {
-  return <div>Password</div>;
 };
 
 // Shown as the dialog's title, so it always has an accessible name
@@ -43,8 +32,8 @@ const titles: Record<UserAccountSection, string> = {
 
 const panels: Record<UserAccountSection, ComponentType> = {
   details: DetailsPanel,
-  email: EmailPanel,
-  password: PasswordPanel,
+  email: ChangeEmailOtp,
+  password: ChangePassword,
   privacy: PrivacyPanel,
 };
 
@@ -64,7 +53,7 @@ export default function UserAccountPage() {
   return (
     <Dialog open={open} onOpenChange={() => void 0}>
       <DialogContent
-        className="overflow-hidden w-4xl h-[min(40rem,calc(100dvh-2rem))] sm:max-w-[calc(100%-2rem)] grid-rows-[minmax(0,1fr)_auto]"
+        className="overflow-hidden w-4xl h-[min(30rem,calc(100dvh-2rem))] sm:max-w-[calc(100%-2rem)] grid-rows-[minmax(0,1fr)_auto]"
         showCloseButton={false}
       >
         <div className="flex min-h-0">
