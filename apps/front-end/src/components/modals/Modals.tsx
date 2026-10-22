@@ -10,6 +10,7 @@ import FeedbackForm from "./FeedbackForm";
 import FeedbackPopUp from "./FeedbackPopUp";
 import FeedbackSuccess from "./FeedbackSuccess";
 import UserGuidePrompt from "./UserGuidePrompt";
+import UserAccountSettings from "./UserAccountSettings";
 
 const Modals = () => (
   <div>
@@ -25,6 +26,7 @@ const Modals = () => (
     <FeedbackPopUp />
     <FeedbackSuccess />
     <UserGuidePrompt />
+    <UserAccountSettings />
   </div>
 );
 
