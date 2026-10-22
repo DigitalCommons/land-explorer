@@ -70,6 +70,7 @@ COPY --from=build /app/apps/back-end/migrations ./migrations
 COPY --from=build /app/apps/back-end/seeders ./seeders
 COPY --from=build /app/apps/back-end/.sequelizerc ./.sequelizerc
 COPY --from=build /app/apps/back-end/src/utils ./src/utils
+COPY --from=build /app/apps/back-end/src/emails/static ./src/emails/static
 
 # Writable dir for transient shapefile exports (see routes/map.ts downloadShapefile).
 RUN mkdir -p data && chown node:node data

@@ -1,7 +1,6 @@
 import {
   authMutationKeys,
   authQueryKeys,
-  getAuthErrorMessage,
   getAuthErrorPresentation,
   isPasswordCompromisedError
 } from "@better-auth-ui/core"
@@ -16,21 +15,17 @@ import type { BetterFetchError } from "better-auth/react"
 import { useEffect } from "react"
 import { toast } from "sonner"
 
+import { getFriendlyAuthErrorMessage } from "@/lib/auth/auth-error-message"
+
 export function ErrorToaster() {
   const queryClient = useQueryClient()
   const { localization } = useAuth()
 
   useEffect(() => {
-    // Server failures carry no useful message (a raw 500 has an empty body),
-    // so they get Better Auth UI's friendly copy. 4xx messages come from our
-    // validation and are written for the user, so they're shown as they are.
     const messageFor = (
       err: BetterFetchError,
       key?: readonly unknown[]
-    ) =>
-      err.error?.status >= 500 || !err.error?.message
-        ? getAuthErrorMessage(err, localization, key)
-        : err.error.message
+    ) => getFriendlyAuthErrorMessage(err, localization, key)
 
     const queryCache = queryClient.getQueryCache()
     const previousQueryOnError = queryCache.config.onError
