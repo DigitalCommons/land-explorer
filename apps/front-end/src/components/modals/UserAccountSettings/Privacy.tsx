@@ -20,7 +20,7 @@ const formSchema = z.object({
   analytics: z.boolean(),
 });
 
-export const PrivacyPanel = () => {
+export const Privacy = () => {
   const dispatch = useAppDispatch();
   const { analyticsConsent } = useAppSelector((state) => state.user);
   const form = useForm<z.infer<typeof formSchema>>({
