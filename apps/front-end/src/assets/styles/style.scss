@@ -44,9 +44,11 @@ body {
   overflow: hidden;
 }
 
+// :where() keeps the exclusion at zero specificity, so these stay plain
+// element selectors that class-based heading styles can still override
 body,
 h1, h2, h3, h4, h5, h6 {
-  &:not(.shadcn-scope *) {
+  &:not(:where(.shadcn-scope *)) {
     font-family: Lato;
     font-weight: 400;
     color: $secondaryColor;

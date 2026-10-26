@@ -102,6 +102,7 @@ type UserAction =
   | (Action<boolean> & { type: "USER_ANALYTICS_CONSENT_STATUS" })
   | (Action<UserGuideStatusData> & { type: "USER_GUIDE_PROMPT_SEEN" })
   | (Action<OrgDetails> & { type: "USER_ORGANISATION_DETAILS_UPDATED" })
+  | (Action<OrgAddress> & { type: "USER_ORGANISATION_ADDRESS_UPDATED" })
   | Action;
 
 export default (state: User = getInitialState(), action: UserAction): User => {
