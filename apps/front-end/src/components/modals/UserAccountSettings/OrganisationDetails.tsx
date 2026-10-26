@@ -26,7 +26,9 @@ import {
 } from "@/components/ui/select";
 import { toast } from "sonner";
 
-const ORG_TYPES = [
+type Option = { value: string; label: string };
+
+const ORG_TYPES: Option[] = [
   {value: "", label: "Not specified"},
   { value: "academic-institution", label: "Academic institution" },
   { value: "community-group", label: "Community group" },
@@ -37,7 +39,7 @@ const ORG_TYPES = [
   { value: "other", label: "Other" },
 ];
 
-const ORG_ACTIVITIES = [
+const ORG_ACTIVITIES: Option[] = [
   {value: "", label: "Not specified"},
   { value: "amenity-recreation", label: "Amenity and recreation" },
   { value: "community-development", label: "Community development" },
@@ -68,14 +70,13 @@ const ORG_ACTIVITIES = [
 const organisationDetailsSchema = z
   .object({
     orgName: z.string().max(100, "Must not exceed 100 characters"),
-    orgType: z
-      .literal(
-        ORG_TYPES.map((x) => x.value),
-        { error: "hello" },
-      ),
-    orgTypeOther: z.string().trim(),
+    orgType: z.literal(ORG_TYPES.map((x) => x.value)),
+    orgTypeOther: z.string().trim().max(100, "Must not exceed 100 characters"),
     orgActivity: z.literal(ORG_ACTIVITIES.map((x) => x.value)),
-    orgActivityOther: z.string().trim(),
+    orgActivityOther: z
+      .string()
+      .trim()
+      .max(100, "Must not exceed 100 characters"),
     orgNumber: z.string().max(100, "Must not exceed 100 characters"),
   })
   .superRefine((data, ctx) => {
@@ -83,14 +84,14 @@ const organisationDetailsSchema = z
       ctx.addIssue({
         code: "custom",
         path: ["orgTypeOther"],
-        message: "Please specify",
+        message: "Please specify your organisation type",
       });
     }
     if (data.orgActivity === "other" && !data.orgActivityOther) {
       ctx.addIssue({
         code: "custom",
         path: ["orgActivityOther"],
-        message: "Please specify",
+        message: "Please specify your organisation activity",
       });
     }
   });
@@ -293,6 +294,7 @@ export const OrganisationDetails = () => {
                             {...field}
                             value={field.value ?? ""}
                             id="orgTypeOther"
+                            maxLength={101}
                             disabled={orgType !== "other"}
                             aria-invalid={fieldState.invalid}
                           />
@@ -374,6 +376,7 @@ export const OrganisationDetails = () => {
                             {...field}
                             value={field.value ?? ""}
                             id="orgActivityOther"
+                            maxLength={101}
                             disabled={orgActivity !== "other"}
                             aria-invalid={fieldState.invalid}
                           />
