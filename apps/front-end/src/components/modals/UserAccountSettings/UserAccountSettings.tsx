@@ -7,7 +7,7 @@ import {
 } from "../../ui/dialog";
 import { closeModal } from "@/actions/ModalActions";
 import { Button } from "../../ui/button";
-import { ChevronLeft, ShieldLock, User } from "lucide-react";
+import { ChevronLeft, ShieldLock, User, UserRoundGroup } from "lucide-react";
 import { UserView } from "../../auth/user/user-view";
 import { Menu, MenuContent, MenuHeader, MenuItem } from "../../common/Menu";
 import { ComponentType, useState } from "react";
@@ -15,34 +15,42 @@ import { cn } from "@/lib/utils";
 import { PrivacyPanel } from "./PrivacyPanel";
 import { ChangeEmailOtp } from "@/components/auth/email-otp/change-email-otp";
 import { ChangePassword } from "@/components/auth/settings/security/change-password";
+import { OrganisationDetails } from "./OrganisationPanel";
+import { UserProfile } from "@/components/auth/settings/account/user-profile";
 
-type UserAccountSection = "details" | "email" | "password" | "privacy";
-
-const DetailsPanel = () => {
-  return <div>Details</div>;
-};
+type UserAccountSection =
+  | "userProfile"
+  | "email"
+  | "password"
+  | "privacy"
+  | "orgDetails"
+  
 
 // Shown as the dialog's title, so it always has an accessible name
 const titles: Record<UserAccountSection, string> = {
-  details: "Details",
+  userProfile: "User Profile",
   email: "Change email",
   password: "Password",
   privacy: "Privacy Settings",
+  orgDetails: "Organisation Details",
+  
 };
 
 const panels: Record<UserAccountSection, ComponentType> = {
-  details: DetailsPanel,
+  userProfile: UserProfile,
   email: ChangeEmailOtp,
   password: ChangePassword,
   privacy: PrivacyPanel,
+  orgDetails: OrganisationDetails,
+  
 };
 
-export default function UserAccountPage() {
+export default function UserAccountSettings() {
   const dispatch = useAppDispatch();
   const { open } = useAppSelector(
     (state) => state.modal["userAccountSettings"],
   );
-  const [section, setSection] = useState<UserAccountSection>("details");
+  const [section, setSection] = useState<UserAccountSection>("userProfile");
   // On small screens only one of the menu or the panel is shown at a time
   const [showPanel, setShowPanel] = useState(false);
   const Panel = panels[section];
@@ -53,7 +61,7 @@ export default function UserAccountPage() {
   return (
     <Dialog open={open} onOpenChange={() => void 0}>
       <DialogContent
-        className="overflow-hidden w-4xl h-[min(30rem,calc(100dvh-2rem))] sm:max-w-[calc(100%-2rem)] grid-rows-[minmax(0,1fr)_auto]"
+        className="overflow-hidden w-4xl h-[min(40rem,calc(100dvh-2rem))] sm:max-w-[calc(100%-2rem)] grid-rows-[minmax(0,1fr)_auto]"
         showCloseButton={false}
       >
         <div className="flex min-h-0">
@@ -70,10 +78,10 @@ export default function UserAccountPage() {
             </MenuHeader>
             <MenuContent>
               <MenuItem
-                onClick={() => selectSection("details")}
-                active={section === "details"}
+                onClick={() => selectSection("userProfile")}
+                active={section === "userProfile"}
               >
-                Details
+                User Profile
               </MenuItem>
               <MenuItem
                 onClick={() => selectSection("email")}
@@ -98,6 +106,16 @@ export default function UserAccountPage() {
             >
               Privacy Settings
             </MenuItem>
+            <MenuHeader>
+              <UserRoundGroup className="size-4" />
+              Organisation
+            </MenuHeader>
+            <MenuItem
+              onClick={() => selectSection("orgDetails")}
+              active={section === "orgDetails"}
+            >
+              Details
+            </MenuItem>            
           </Menu>
           <div
             className={cn(

@@ -5,6 +5,7 @@ import {
   optOutAndResetAnalyticsUser,
 } from "@/analytics";
 import { UserGuideStatusData } from "@/types/user";
+import { OrgDetails } from "@/reducers/UserReducer";
 
 export const getUserDetails = () => {
   return async (dispatch: AppDispatch) => {
@@ -97,5 +98,22 @@ export const setUserGuidePromptSeen = (
         payload: userGuideStatusData,
       });
     }
+  };
+};
+
+export const updateOrganisationDetails = (details: OrgDetails) => {
+  return async (dispatch: AppDispatch) => {
+    const success = await dispatch(
+      postRequest("/api/userOrganisation/details", details),
+    );
+
+    if (success) {
+      dispatch({
+        type: "USER_ORGANISATION_DETAILS_UPDATED",
+        payload: details,
+      });
+    }
+
+    return success;
   };
 };
