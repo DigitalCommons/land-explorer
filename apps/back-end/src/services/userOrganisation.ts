@@ -2,24 +2,33 @@ import { ResponseObject, ResponseToolkit } from "@hapi/hapi";
 import { LoggedInRequest } from "../routes/request_types";
 import { User } from "../queries/database";
 
-export type UpdateOrgDetailsModel = {
-  organisation: string;
-  organisationNumber: string;
-  organisationType: string;
-  organisationActivity: string;  
+export type UpdateOrgDetailsRequest = LoggedInRequest & {
+  payload: {
+    organisation: string;
+    organisationNumber: string;
+    organisationType: string;
+    organisationActivity: string;  
+  }
 };
 
-export async function updateUserOrganisationDetails(request: LoggedInRequest,
+export type UpdateOrgAddressRequest = LoggedInRequest & {
+  payload: {
+    address1: string;
+    address2: string;
+    city: string;
+    postcode: string;  
+  }
+};
+
+export async function updateUserOrganisationDetails(request: UpdateOrgDetailsRequest,
   h: ResponseToolkit): Promise<ResponseObject>  {
   
-  let payload: any = request.payload;
-
-  await User.update(
+   await User.update(
     {
-      organisation: payload.organisation,
-      organisation_number: payload.organisationNumber,
-      organisation_type: payload.organisationType,
-      organisation_activity: payload.organisationActivity,
+      organisation: request.payload.organisation,
+      organisation_number: request.payload.organisationNumber,
+      organisation_type: request.payload.organisationType,
+      organisation_activity: request.payload.organisationActivity,
     },
     {
       where: {
@@ -29,3 +38,22 @@ export async function updateUserOrganisationDetails(request: LoggedInRequest,
 
   return h.response().code(200);
 }
+
+export async function updateUserOrganisationAddress(request: UpdateOrgAddressRequest,
+  h: ResponseToolkit): Promise<ResponseObject>  {    
+
+  await User.update(
+    {
+      address1: request.payload.address1,
+      address2: request.payload.address2,
+      city: request.payload.city,
+      postcode: request.payload.postcode
+    },
+    {
+      where: {
+        id: request.auth.credentials.user_id,
+      },
+    });
+
+  return h.response().code(200);
+  }
