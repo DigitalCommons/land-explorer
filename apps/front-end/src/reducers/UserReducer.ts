@@ -37,6 +37,15 @@ export type OrgDetails = Pick<
   | "organisationActivity"
 >;
 
+export type OrgAddress = Pick<
+  User,
+  | "address1"
+  | "address2"
+  | "city"
+  | "postcode"
+>;
+
+
 type UserPayload = {
   id: string;
   firstName: string;
@@ -131,6 +140,11 @@ export default (state: User = getInitialState(), action: UserAction): User => {
         ...state,
         ...(action.payload as OrgDetails),
       };
+    case "USER_ORGANISATION_ADDRESS_UPDATED":
+      return {
+        ...state,
+        ...(action.payload as OrgAddress),
+      }
     default:
       return state;
   }
