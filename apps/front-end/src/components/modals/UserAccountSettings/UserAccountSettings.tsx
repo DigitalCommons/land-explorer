@@ -12,10 +12,11 @@ import { UserView } from "../../auth/user/user-view";
 import { Menu, MenuContent, MenuHeader, MenuItem } from "../../common/Menu";
 import { ComponentType, useState } from "react";
 import { cn } from "@/lib/utils";
-import { PrivacyPanel } from "./PrivacyPanel";
+import { Privacy } from "./Privacy";
 import { ChangeEmailOtp } from "@/components/auth/email-otp/change-email-otp";
 import { ChangePassword } from "@/components/auth/settings/security/change-password";
-import { OrganisationDetails } from "./OrganisationPanel";
+import { OrganisationDetails } from "./OrganisationDetails";
+import { OrganisationAddress } from "./OrganisationAddress";
 import { UserProfile } from "@/components/auth/settings/account/user-profile";
 
 type UserAccountSection =
@@ -24,7 +25,7 @@ type UserAccountSection =
   | "password"
   | "privacy"
   | "orgDetails"
-  
+  | "orgAddress";
 
 // Shown as the dialog's title, so it always has an accessible name
 const titles: Record<UserAccountSection, string> = {
@@ -33,16 +34,16 @@ const titles: Record<UserAccountSection, string> = {
   password: "Password",
   privacy: "Privacy Settings",
   orgDetails: "Organisation Details",
-  
+  orgAddress: "Organisation Address",
 };
 
 const panels: Record<UserAccountSection, ComponentType> = {
   userProfile: UserProfile,
   email: ChangeEmailOtp,
   password: ChangePassword,
-  privacy: PrivacyPanel,
+  privacy: Privacy,
   orgDetails: OrganisationDetails,
-  
+  orgAddress: OrganisationAddress,
 };
 
 export default function UserAccountSettings() {
@@ -115,7 +116,13 @@ export default function UserAccountSettings() {
               active={section === "orgDetails"}
             >
               Details
-            </MenuItem>            
+            </MenuItem>
+            <MenuItem
+              onClick={() => selectSection("orgAddress")}
+              active={section === "orgAddress"}
+            >
+              Address
+            </MenuItem>
           </Menu>
           <div
             className={cn(
