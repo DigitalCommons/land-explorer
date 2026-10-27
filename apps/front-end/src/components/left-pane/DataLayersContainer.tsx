@@ -20,7 +20,10 @@ const DataLayersContainer = ({ children, title, settings }: Props) => {
     <div>
       <div
         className="relative flex cursor-pointer flex-row justify-between bg-[#eff0f2] px-[25px]"
-        onClick={() => setExpanded(!expanded)}
+        onClick={() => {
+          setExpanded(!expanded);
+          setSettingsOpen(false);
+        }}
       >
         <h4 className="font-bold">{title}</h4>
         <div className="absolute top-1/2 right-3 flex -translate-y-1/2 items-center gap-3">
@@ -33,10 +36,11 @@ const DataLayersContainer = ({ children, title, settings }: Props) => {
                 aria-controls={panelId}
                 onClick={(e) => {
                   e.stopPropagation();
+                  setExpanded(true);
                   setSettingsOpen(!settingsOpen);
                 }}
                 className={cn(
-                  "cursor-pointer border-0 bg-transparent p-0 text-[#78838f]/80",
+                  "relative cursor-pointer border-0 bg-transparent p-0 text-[#78838f]/80 after:absolute after:-inset-2",
                   settingsOpen && "text-primary",
                 )}
               >
