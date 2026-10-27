@@ -1,4 +1,4 @@
-import { Switch } from "@/components/ui/switch";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Field,
   FieldContent,
@@ -26,44 +26,31 @@ const AdminBoundaryOptions = () => {
   };
 
   return (
-    <div
-      className={cn(
-        "-mt-px border-t-2 border-t-[#ddd] border-b border-b-border bg-muted pt-5 pb-7",
-        disabled && "opacity-50",
-      )}
-    >
-      <div className="pl-12 text-xs font-medium tracking-wide text-[#6e7985] uppercase">
-        Options
-      </div>
+    <div className="px-4 py-3">
       <Field
         orientation="horizontal"
         className={cn(
-          "box-border gap-2.5 bg-transparent pt-2 pr-[14px] pl-12 select-none md:pr-[31px]",
-          !disabled && "cursor-pointer",
+          "gap-3 rounded-lg border border-border p-3 select-none",
+          disabled ? "opacity-50" : "cursor-pointer",
         )}
         onClick={(e) => {
-          // the switch reports its own changes, so only handle clicks elsewhere on the row
-          const onSwitch = (e.target as HTMLElement).closest(
-            "[data-slot=switch]",
+          // the checkbox reports its own changes, so only handle clicks elsewhere on the card
+          const onCheckbox = (e.target as HTMLElement).closest(
+            "[data-slot=checkbox]",
           );
-          if (!disabled && !onSwitch) toggle();
+          if (!disabled && !onCheckbox) toggle();
         }}
       >
-        <FieldContent className="gap-1 bg-transparent">
-          <FieldTitle
-            id={LABEL_ID}
-            className="bg-transparent text-base font-normal"
-          >
+        <FieldContent className="gap-1">
+          <FieldTitle id={LABEL_ID} className="text-base font-normal">
             Show boundary names on hover
           </FieldTitle>
-          <FieldDescription className="w-[calc(100%-10px)] bg-transparent text-[#6e7985]">
+          <FieldDescription>
             Lists boundary names in a pop-up as you move over the map
           </FieldDescription>
         </FieldContent>
-        <Switch
+        <Checkbox
           aria-labelledby={LABEL_ID}
-          variant="legacy"
-          className="mt-1 data-disabled:opacity-100"
           checked={showBoundaryNamesOnHover}
           disabled={disabled}
           onCheckedChange={toggle}

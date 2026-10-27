@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import { useAppDispatch, useAppSelector } from "@/hooks/react-redux";
 import LeftPaneTray from "./LeftPaneTray";
 import LeftPaneToggle from "./LeftPaneToggle";
@@ -8,49 +8,8 @@ import AdminBoundaryOptions from "./AdminBoundaryOptions";
 import { toggleDataGroup } from "../../actions/DataGroupActions";
 import { togglePropertyDisplay } from "../../actions/LandOwnershipActions";
 import LeftPaneNotification from "./left-pane-notification/LeftPaneNotification";
-import iconChevron from "../../assets/img/icon-chevron.svg";
+import DataLayersContainer from "./DataLayersContainer";
 import { LEFT_PANE_TRAY, LeftPaneTrayId } from "../../reducers/LeftPaneReducer";
-
-type DataLayersContainerProps = {
-  children: React.ReactNode;
-  title: string;
-};
-
-const DataLayersContainer = ({ children, title }: DataLayersContainerProps) => {
-  const [expanded, setExpanded] = useState(true);
-
-  return (
-    <div>
-      <div
-        className="data-section-title"
-        onClick={() => setExpanded(!expanded)}
-      >
-        <h4 style={{ fontWeight: "bold" }}>{title}</h4>
-        <div
-          style={{
-            position: "absolute",
-            top: "50%",
-            transform: "translateY(-50%)",
-            right: "12px",
-            width: "24px",
-            height: "24px",
-            textAlign: "center",
-          }}
-        >
-          <img
-            src={iconChevron}
-            alt=""
-            style={{
-              transformOrigin: "center",
-              transform: expanded ? "rotate(180deg)" : "rotate(0deg)",
-            }}
-          />
-        </div>
-      </div>
-      {expanded && children}
-    </div>
-  );
-};
 
 type Props = {
   open: boolean;
@@ -196,7 +155,10 @@ const LeftPaneLandData = ({ open, active, onClose }: Props) => {
           onToggle={() => dispatch(togglePropertyDisplay("unregistered"))}
         />
       </DataLayersContainer>
-      <DataLayersContainer title={"Administrative Boundaries"}>
+      <DataLayersContainer
+        title={"Administrative Boundaries"}
+        settings={<AdminBoundaryOptions />}
+      >
         <LandDataLayerToggle title="Wards" layerId="wards-cu4dni" />
         <LandDataLayerToggle title="Parishes" layerId="parish" />
         <LandDataLayerToggle
@@ -212,7 +174,6 @@ const LeftPaneLandData = ({ open, active, onClose }: Props) => {
           layerId="devolved-powers"
         />
         <LandDataLayerToggle title="Counties" layerId="county-4ef4ik" />
-        <AdminBoundaryOptions />
       </DataLayersContainer>
       {userGroupTitlesAndIDs &&
         userGroupTitlesAndIDs.map((userGroup) => (
