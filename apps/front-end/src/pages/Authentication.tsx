@@ -17,15 +17,17 @@ const Authentication = () => {
   };
 
     return (
-        <div className="h-screen min-h-screen flex flex-col">
+        <div className="flex h-dvh flex-col">
             <TopBar limited={true} />
             <BackgroundImage image={image} />
-            <Routes>
-                {!constants.VITE_FEATURE_USE_BETTERAUTH ? <Route path="/" element={<LoginLegacy updateBgImage={updateBgImage} />} /> : <Route path="/" element={<Login updateBgImage={updateBgImage}/>} />  }
-                <Route path="/register" element={<Register updateBgImage={updateBgImage} />} />
-                {!constants.VITE_FEATURE_USE_BETTERAUTH ? <Route path="/reset-password" element={<ResetPassword updateBgImage={updateBgImage} />} /> : null }
-                <Route path="/*" element={<FourOhFour />} />
-            </Routes>
+            <main className="relative flex min-h-0 flex-1 flex-col">
+                <Routes>
+                    {!constants.VITE_FEATURE_USE_BETTERAUTH ? <Route path="/" element={<LoginLegacy updateBgImage={updateBgImage} />} /> : <Route path="/" element={<Login updateBgImage={updateBgImage}/>} />  }
+                    <Route path="/register" element={<Register updateBgImage={updateBgImage} />} />
+                    {!constants.VITE_FEATURE_USE_BETTERAUTH ? <Route path="/reset-password" element={<ResetPassword updateBgImage={updateBgImage} />} /> : null }
+                    <Route path="/*" element={<FourOhFour withTopBar={false} />} />
+                </Routes>
+            </main>
         </div>
     );
 }

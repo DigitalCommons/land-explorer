@@ -166,6 +166,46 @@ const MapboxMap = () => {
     }
   }, [activeTool, activeDrawing, currentMarker]);
 
+  // mapbox-gl-draw cancels the click on every touchend, so fire it ourselves on a tap (#138)
+  useEffect(() => {
+    if (!map) return;
+
+    let start: { point: any; time: number } | null = null;
+
+    const onTouchStart = (e: any) => {
+      start =
+        e.points.length === 1 ? { point: e.point, time: Date.now() } : null;
+    };
+
+    const onTouchEnd = (e: any) => {
+      const tap = start;
+      start = null;
+
+      // a pan, a pinch or a long press isn't a tap
+      if (
+        !tap ||
+        e.points.length !== 1 ||
+        Date.now() - tap.time > 500 ||
+        tap.point.dist(e.point) > 10
+      ) {
+        return;
+      }
+
+      map.fire("click", {
+        point: e.point,
+        lngLat: e.lngLat,
+        originalEvent: e.originalEvent,
+      });
+    };
+
+    map.on("touchstart", onTouchStart);
+    map.on("touchend", onTouchEnd);
+    return () => {
+      map.off("touchstart", onTouchStart);
+      map.off("touchend", onTouchEnd);
+    };
+  }, [map]);
+
   /**
    * This takes the feature created by mapbox-gl-draw and creates a copy of it and stores it in the
    * redux store, so that it can be rendered as a React GeoJSON component
@@ -336,17 +376,25 @@ const MapboxMap = () => {
     };
   }, [map, landDataLayers, showBoundaryNamesOnHover, debouncedMouseMove]);
 
+  // mapbox only resizes on window resize, so also resize when the map's
+  // container changes size (e.g. the banner above it is dismissed)
+  useEffect(() => {
+    if (!map) return;
+    const observer = new ResizeObserver(() => map.resize());
+    observer.observe(map.getContainer());
+    return () => observer.disconnect();
+  }, [map]);
+
   return (
-    <div>
+    <>
       {/* This is the ReactMapbox instance we created at the top of the file */}
       <Map
         ref={mapRef}
         style={style}
         detectRetina={true}
         containerStyle={{
-          height: "100vh",
-          width: "100vw",
-          position: "fixed",
+          height: "100%",
+          width: "100%",
           background:
             baseLayer === "aerial"
               ? "#091324"
@@ -481,7 +529,7 @@ const MapboxMap = () => {
             </>
           )}
       </div>
-    </div>
+    </>
   );
 };
 

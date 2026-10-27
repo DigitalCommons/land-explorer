@@ -1,14 +1,12 @@
 .topbar {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
+  position: relative;
   height: 68px;
   background-color: #fbfbfb;
   display: flex;
   align-items: center;
   justify-content: space-between;
   z-index: 100003;
+  box-shadow: 0 3px 6px 0 rgba(0, 0, 0, 0.16);
 
   .logo {
     background-image: url("../img/logo-green.svg");
@@ -26,17 +24,6 @@
       width: 230px;
     }
   }
-}
-
-.topbar-shadow {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 68px;
-  background-color: #fbfbfb;
-  box-shadow: 0 3px 6px 0 rgba(0, 0, 0, 0.16);
-  z-index: 100002;
 }
 
 .topbar-middle {

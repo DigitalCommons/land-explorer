@@ -24,6 +24,7 @@ import {
 import { SearchAlert, CircleX } from "lucide-react";
 import { Label } from "../ui/label";
 import { Switch } from "../ui/switch";
+import constants from "@/constants";
 
 type LeftPaneRelatedPropertiesProps = {
   onClose: () => void;
@@ -65,7 +66,7 @@ const LeftPaneRelatedProperties = ({
           Some data is displayed here for evaluation purposes only. For more
           information{" "}
           <a
-            href="https://landexplorer.coop/land-ownership-how"
+            href={constants.LAND_OWNERSHIP_PROCESS_URL}
             target="_blank"
             rel="noopener noreferrer"
           >
@@ -251,10 +252,8 @@ const OwnershipSearch = ({
             properties
           </div>
         )}
-      </div>
-      {import.meta.env.VITE_FEATURE_HISTORIC_OWNERSHIP === "true" ? (
-        <OwnershipYear />
-      ) : null}
+      </div>      
+        <OwnershipYear />      
       <Separator />
       {content}
     </div>

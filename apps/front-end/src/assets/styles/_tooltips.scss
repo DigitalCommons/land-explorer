@@ -115,6 +115,7 @@
 }
 
 .tooltip-menu-layers {
+  position: absolute;
   top: auto;
   bottom: 80px;
   right: 76px;
@@ -147,8 +148,8 @@ h3 {
 
 .tooltip-menu-key__container {
   width: 100%;
-  position: fixed;
-  top: 65px;
+  position: absolute;
+  top: 0;
   right: 0;
   bottom: 0;
   z-index: 1;
@@ -163,7 +164,7 @@ h3 {
 
   @media screen and (min-width: $medium) {
     width: auto;
-    top: 90px;
+    top: 22px;
     right: 0;
     bottom: auto;
   }
