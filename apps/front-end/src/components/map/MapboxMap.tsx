@@ -32,12 +32,13 @@ import {
 } from "../../actions/MapActions";
 import FeedbackTab from "../common/FeedbackTab";
 import MapBeingEditedToast from "./MapBeingEditedToast";
-import AdministrativeBoundaryTooltip, {
+import AdministrativeBoundaryTooltip from "./AdministrativeBoundaryTooltip";
+import {
   ADMIN_BOUNDARY_FILL_LAYER_IDS,
-  ADMIN_BOUNDARY_LAYER_GROUP_IDS,
   AdminBoundaryRow,
   getAdminBoundaryRows,
-} from "./AdministrativeBoundaryTooltip";
+  hasAdminBoundaryLayer,
+} from "../../utils/adminBoundaries";
 import BaseLayerMenu from "../map-controls/BaseLayerMenu";
 import MapLayerKey from "../map-controls/MapLayerKey";
 import ConsentBanner from "./ConsentBanner";
@@ -65,7 +66,9 @@ const MapboxMap = () => {
   const { zoom, lngLat, movingMethod } = useAppSelector((state) => state.map);
   const { currentMarker } = useAppSelector((state) => state.markers);
   const baseLayer = useAppSelector((state) => state.mapBaseLayer.layer);
-  const { landDataLayers } = useAppSelector((state) => state.landDataLayers);
+  const { landDataLayers, showBoundaryNamesOnHover } = useAppSelector(
+    (state) => state.landDataLayers,
+  );
   const { activeTool } = useAppSelector((state) => state.leftPane);
   const { activeDrawing, drawings, polygonsDrawn, linesDrawn } = useAppSelector(
     (state) => state.drawings,
@@ -360,7 +363,8 @@ const MapboxMap = () => {
   useEffect(() => {
     if (
       !map ||
-      !landDataLayers.some((id) => ADMIN_BOUNDARY_LAYER_GROUP_IDS.includes(id))
+      !showBoundaryNamesOnHover ||
+      !hasAdminBoundaryLayer(landDataLayers)
     ) {
       setAdminBoundaryPopup(null);
       return;
@@ -370,7 +374,7 @@ const MapboxMap = () => {
       map.off("mousemove", debouncedMouseMove);
       debouncedMouseMove.cancel();
     };
-  }, [map, landDataLayers, debouncedMouseMove]);
+  }, [map, landDataLayers, showBoundaryNamesOnHover, debouncedMouseMove]);
 
   // mapbox only resizes on window resize, so also resize when the map's
   // container changes size (e.g. the banner above it is dismissed)

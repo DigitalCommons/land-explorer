@@ -178,6 +178,8 @@ export const saveCurrentMap = (
         landDataLayers: getState().landDataLayers.landDataLayers,
         myDataLayers: getState().dataGroups.activeGroups,
         ownershipDisplay: getState().landOwnership.activeDisplay,
+        showBoundaryNamesOnHover:
+          getState().landDataLayers.showBoundaryNamesOnHover,
       },
       version: VERSION,
     };
