@@ -11,6 +11,9 @@ import iconHamburger from "../../assets/img/icon-hamburger.svg";
 import constants from "@/constants";
 import { UserButton } from "@/components/auth/user/user-button";
 import { useMediaQuery } from "usehooks-ts";
+import { Button } from "@/components/ui/button";
+import { HeartIcon } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 type Props = {
   limited?: boolean;
@@ -72,45 +75,73 @@ const LegacyTopBar = ({ limited }: Props) => {
   );
 };
 
+const DONATE_URL = "https://opencollective.com/digitalcommonscoop";
+
+const TopBarLogo = () => (
+  <Link className="shrink-0" to="/app">
+    <img className="lg:hidden size-10" src="/logo-green.svg" alt="LandExplorer" />
+    <img
+      className="hidden lg:block h-10"
+      src="/logo-green-text.svg"
+      alt="LandExplorer"
+    />
+  </Link>
+);
+
 const TopBarNew = ({ limited }: Props) => {
   const user = useAppSelector((state) => state.user);
   const [searchExpanded, setSearchExpanded] = useState(false);
-  const matches = useMediaQuery("(min-width: 1200px)");
+  const isWide = useMediaQuery("(min-width: 1280px)");
 
   if (!limited && user.populated) {
     return (
-      <div className="relative z-[30] flex gap-10 items-center py-2 bg-background shadow-lg">
-        <Link className="ml-6" to="/app">
-          <img className="lg:hidden size-10" src="/logo-green.svg" />
-          <img className="hidden lg:block h-10" src="/logo-green-text.svg" />
-        </Link>
-        <div className="flex justify-center grow gap-5">
-          <div className="flex items-center">
+      <div className="relative z-[30] flex h-16 items-center gap-2 px-3 bg-background shadow-lg sm:gap-4 sm:px-6">
+        <TopBarLogo />      
+        <div className="flex min-w-0 grow items-center justify-center gap-2 md:gap-5">
+          <div className="flex min-w-0 items-center [&_.map-title-bar]:min-w-0">
             <MapMenu />
             <MapTitleBar expanded={!searchExpanded} />
           </div>
-          <SearchBar
-            expanded={searchExpanded}
-            setExpanded={setSearchExpanded}
-          />
+          <div
+            className={cn(
+              "flex min-w-0 justify-center md:max-w-[600px] md:flex-1 md:[&_.search-bar-container]:w-full!",
+              searchExpanded &&
+                "flex-1 [&_.geocoder-expanded]:w-full! [&_.geocoder-expanded]:min-w-0! [&_.geocoder-expanded]:max-w-none!",
+            )}
+          >
+            <SearchBar
+              expanded={searchExpanded}
+              setExpanded={setSearchExpanded}
+            />
+          </div>
         </div>
-        <div className="px-5 flex">
-          <UserButton
-            className="max-w-60"
-            size={matches ? "default" : "icon"}
-            sideOffset={12}
-          />
-        </div>
+        <UserButton
+          className="max-w-60 shrink-0"
+          size={isWide ? "default" : "icon"}
+          sideOffset={12}
+        />
+        <Button
+          className="hidden sm:inline-flex"
+          size="lg"
+          onClick={() => window.open(DONATE_URL)}
+        >
+          Donate
+        </Button>
+        <Button
+          className="sm:hidden"
+          size="icon-lg"
+          aria-label="Donate"
+          onClick={() => window.open(DONATE_URL)}
+        >
+          <HeartIcon />
+        </Button>
       </div>
     );
   }
 
   return (
-    <div className="relative z-[30] flex gap-10 items-center py-2 bg-background shadow-lg">
-      <Link className="ml-6" to="/app">
-        <img className="lg:hidden size-10" src="/logo-green.svg" />
-        <img className="hidden lg:block h-10" src="/logo-green-text.svg" />
-      </Link>
+    <div className="relative z-[30] flex h-16 items-center px-3 bg-background shadow-lg sm:px-6">
+      <TopBarLogo />
     </div>
   );
 };
