@@ -12,7 +12,10 @@ import constants from "@/constants";
 import { UserButton } from "@/components/auth/user/user-button";
 import { useMediaQuery } from "usehooks-ts";
 import { Button } from "@/components/ui/button";
-import { HeartIcon } from "lucide-react";
+import { BookOpenIcon, HeartIcon, MapIcon } from "lucide-react";
+import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
+import { openModal } from "@/actions/ModalActions";
+import { trackEvent } from "@/analytics";
 import { cn } from "@/lib/utils";
 
 type Props = {
@@ -91,7 +94,42 @@ const TopBarLogo = () => (
 const TopBarNew = ({ limited }: Props) => {
   const user = useAppSelector((state) => state.user);
   const [searchExpanded, setSearchExpanded] = useState(false);
+  const isMedium = useMediaQuery("(min-width: 768px)");
   const isWide = useMediaQuery("(min-width: 1280px)");
+  const dispatch = useAppDispatch();
+
+  const userMenuLinks = [
+    <DropdownMenuItem
+      key="my-maps"
+      onClick={() => dispatch(openModal("openMap"))}
+    >
+      <MapIcon className="text-muted-foreground" />
+      My Maps
+    </DropdownMenuItem>,
+    <DropdownMenuItem
+      key="user-guide"
+      onClick={() => {
+        trackEvent(
+          "User_ViewedGuide",
+          { source: "profile-menu" },
+          user.analyticsConsent === true,
+        );
+        window.open(constants.USER_GUIDE_URL, "_blank");
+      }}
+    >
+      <BookOpenIcon className="text-muted-foreground" />
+      User Guide
+    </DropdownMenuItem>,
+  ];
+
+  if (!isMedium) {
+    userMenuLinks.push(
+      <DropdownMenuItem key="donate" onClick={() => window.open(DONATE_URL)}>
+        <HeartIcon className="fill-primary text-primary" />
+        Donate
+      </DropdownMenuItem>,
+    );
+  }
 
   if (!limited && user.populated) {
     return (
@@ -115,26 +153,24 @@ const TopBarNew = ({ limited }: Props) => {
             />
           </div>
         </div>
+        
+        {/* On small screens Donate lives in the user menu to leave room for search */}
+        <Button
+          className="hidden md:inline-flex"
+          variant="secondary"
+          size="lg"
+          onClick={() => window.open(DONATE_URL)}
+        >
+          <HeartIcon className="fill-primary text-primary" data-icon="inline-start" />
+          Donate
+        </Button>
         <UserButton
           className="max-w-60 shrink-0"
           size={isWide ? "default" : "icon"}
           sideOffset={12}
+          links={userMenuLinks}
+          variant="ghost"
         />
-        <Button
-          className="hidden sm:inline-flex"
-          size="lg"
-          onClick={() => window.open(DONATE_URL)}
-        >
-          Donate
-        </Button>
-        <Button
-          className="sm:hidden"
-          size="icon-lg"
-          aria-label="Donate"
-          onClick={() => window.open(DONATE_URL)}
-        >
-          <HeartIcon />
-        </Button>
       </div>
     );
   }
