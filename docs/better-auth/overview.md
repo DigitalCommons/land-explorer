@@ -56,12 +56,12 @@ erDiagram
     auth_verification {
         string id PK
         string identifier
-        string value "reset and email verification tokens"
+        string value "reset tokens and verification codes"
         timestamp expiresAt
     }
 ```
 
-`user` is ours and the `auth_*` tables are Better Auth's. `auth_verification` isn't linked to the other tables: it holds password reset and email verification tokens.
+`user` is ours and the `auth_*` tables are Better Auth's. `auth_verification` isn't linked to the other tables: it holds password reset tokens and email verification codes.
 
 - `user` is still the app user. Everything outside auth uses `user.id`.
 - `auth_user.appUserId` links the two. The Hapi strategy and websockets read it as `user_id`, so a session with no `appUserId` is treated as signed out.
@@ -76,7 +76,7 @@ This is acceptable for now. It can be cleaned up later by making `auth_user` the
 
 ## Email verification
 
-Users must verify their email before they can sign in. That includes migrated users: the first time they sign in, they're sent a verification link instead. See [back end](back-end.md#email-verification) and [Registration](registration.md).
+Users must verify their email before they can sign in, by entering a 6-digit code we email them. That includes migrated users: the first time they sign in, they're sent a code instead. See [back end](back-end.md#email-verification) and [Registration](registration.md).
 
 
 ## Removing the flag

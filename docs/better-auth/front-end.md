@@ -6,6 +6,8 @@ How the front end uses Better Auth when `VITE_FEATURE_USE_BETTERAUTH=true`. See 
 
 `authClient` is Better Auth's React client. It has no `baseURL`, so it calls `/api/auth/*` on the page's own origin and the session cookie is first-party. That means `/api` must be served from the front end's origin: in dev, Vite proxies it (`vite.config.ts`). In deployed environments, the reverse proxy does.
 
+It registers Better Auth's `emailOTPClient()` plugin, for verifying emails with a code (see [Email verification](#email-verification)).
+
 Its `onError` sends the user to `/auth/sign-in` when a Better Auth request returns 401, except on `/auth/*` pages, where a 401 is a form error such as a wrong password.
 
 ## Provider: `src/providers/AuthProviderWrapper.tsx`
@@ -17,6 +19,7 @@ Wraps the app in Better Auth UI's `AuthProvider`, which needs the TanStack `Quer
 - `requireEmailVerification: true`, matching the back end, so sign-up and sign-in send unverified users to the verify-email page
 - `viewPaths`, which map Better Auth UI's views onto our routes under `/auth`
 - `navigate` and `Link`, so Better Auth UI uses React Router
+- `plugins={[emailOtpPlugin()]}`, Better Auth UI's email OTP plugin. The components in `src/components/auth/email-otp/` read its settings and text with `useAuthPlugin`
 
 ## Routes
 
@@ -39,9 +42,17 @@ The sign-in, register and verify-email pages send a user who already has a sessi
 
 ## Email verification
 
-After sign-up (`RegisterFormNew`), or a sign-in attempt by an unverified user (`SignIn`), the email is saved to `sessionStorage` under `better-auth-ui.verify-email` and the user goes to `/auth/verify-email`. That page reads the email back to show which inbox to check and to resend the link. A resent link redirects to `/app` once clicked.
+Users verify their email by entering a 6-digit code from the email, not by clicking a link.
 
-`VerifyEmailPage` turns off `refetchOnWindowFocus` for its session query. Otherwise, switching back from the email tab would remount `VerifyEmail` and reset its resend cooldown.
+After sign-up (`RegisterFormNew`), or a sign-in attempt by an unverified user (`SignIn`), the email is saved to `sessionStorage` under `better-auth-ui.verify-email` and the user goes to `/auth/verify-email`. `VerifyEmailPage` renders `VerifyEmailOtp` (`src/components/auth/email-otp/verify-email-otp.tsx`), which reads the email back to show which inbox to check, and takes the code. If there's no saved email, the user types it in and asks for a code.
+
+A correct code signs the user in (`autoSignInAfterVerification` on the back end), and `VerifyEmailOtp` sends them to `/app`.
+
+Resending a code has a 60-second cooldown (`src/lib/auth/use-resend-cooldown.ts`), to keep users off the back end's rate limit. Arriving straight from sign-up or sign-in starts the cooldown, because a code has just been sent.
+
+Errors show inside the card rather than as a toast, so they stay next to the code the user is typing. `getFriendlyAuthErrorMessage` in `src/lib/auth/auth-error-message.ts` picks the message. It tells an expired code (`OTP_EXPIRED`) apart from a wrong one (`INVALID_OTP`), which Better Auth UI gives one combined message. `ErrorToaster` uses the same function for its toasts.
+
+`VerifyEmailPage` turns off `refetchOnWindowFocus` for its session query. Otherwise, switching back from the email tab would remount `VerifyEmailOtp` and reset its resend cooldown.
 
 ## Loading the app: `pages/MapApp.tsx`
 

@@ -26,18 +26,17 @@ postRegistrationFlow (user.create.after)
    ├─ sign up to marketing
    ├─ move maps shared before registering
    └─ track User_Register
-send the verification email
+send the verification code by email
 
-user clicks the link in the email: GET /api/auth/verify-email?token=…
+user enters the code on /auth/verify-email: POST /api/auth/email-otp/verify-email
 ├─ set emailVerified = true
-├─ sign the user in, set the cookie
 ├─ postEmailVerificationFlow (afterEmailVerification)
 │    └─ send the welcome email (RegisteredEmail)
-└─ redirect to the callbackURL: `/` from sign-up (the router sends it on to /app),
-   or /app from a resend on the verify-email page
+└─ sign the user in, set the cookie
+the front end sends the user to /app
 ```
 
-Sign-up doesn't create a session, because `requireEmailVerification` is on. The form sends the user to `/auth/verify-email`, which tells them to check their inbox and lets them resend the link. Until they verify, signing in fails and sends another link.
+Sign-up doesn't create a session, because `requireEmailVerification` is on. The form sends the user to `/auth/verify-email`, where they enter the code from the email and can ask for a new one. Until they verify, signing in fails and sends another code.
 
 The registration hooks are in `src/services/authUser.ts` and only act on `/sign-up/email`. `postEmailVerificationFlow` is in the same file.
 
@@ -72,6 +71,7 @@ This needs:
 | Any insert in the transaction | Generic error toast | Rolled back |
 | A step in `postRegistrationFlow` | Nothing, registration succeeds | Error logged |
 | The welcome email in `postEmailVerificationFlow` | Nothing, verification succeeds | Error logged |
+| A wrong or expired verification code | An error inside the verify card, see [front end](front-end.md#email-verification) | Nothing written |
 
 `postRegistrationFlow` and `postEmailVerificationFlow` must not throw: they run after the database writes, so an error would turn a successful registration or verification into a 500.
 

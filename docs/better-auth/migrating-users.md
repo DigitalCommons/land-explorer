@@ -16,7 +16,7 @@ For each `user` row, it finds the `auth_user` linked by `appUserId` and:
 
 - The email is `user.username`, trimmed and lowercased, because Better Auth lowercases emails at sign-in.
 - The name is `first_name last_name`.
-- `emailVerified` is `false`, so existing users verify their email the first time they sign in. Their sign-in is refused, and they're emailed a link that signs them in. Only users already in `auth_user` keep their current value.
+- `emailVerified` is `false`, so existing users verify their email the first time they sign in. Their sign-in is refused, and they're emailed a code. Entering it signs them in. Only users already in `auth_user` keep their current value.
 - `user.created_date` becomes `createdAt`. That also stops migrated users getting the welcome email when they verify, because it only goes to users created in the last 7 days.
 - Password hashes are copied as they are. Both auths use bcrypt, so nobody has to reset their password.
 

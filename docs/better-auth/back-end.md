@@ -16,10 +16,12 @@ How the back end uses Better Auth when `FEATURE_USE_BETTERAUTH=true`. For env va
 | `minPasswordLength: 6` | Matches the old rule. The front end's `AuthProviderWrapper` uses the same value |
 | `requireEmailVerification` | Users can't sign in until they've verified their email, see [Email verification](#email-verification) |
 | `sendResetPassword` | Our SendGrid email, see [Emails](#emails) |
-| `emailVerification` | Verification email settings, see [Email verification](#email-verification) |
+| `emailVerification` | When verification codes are sent and what happens after, see [Email verification](#email-verification) |
 | `databaseHooks.user.create` | Writes our `user` row during sign-up, see [Registration](registration.md) |
 | `generateId` | Lets MySQL auto-increment `user.id`; Better Auth's own tables get Better Auth ids |
-| `plugins: [appUserPlugin()]` | Describes `user` to Better Auth so the sign-up hook can write it |
+| `appUserPlugin()` | Describes `user` to Better Auth so the sign-up hook can write it |
+| `emailOTP()` | Verifies emails with a 6-digit code instead of a link, see [Email verification](#email-verification). `disableSignUp: true`, so users can only sign up through `/sign-up/email`, where our `user` row is written |
+| `disabledPaths` | Turns off the `emailOTP` plugin's code sign-in and code password reset, which we don't use. Password reset is still link-based |
 
 ## Routes: `src/server.ts`
 
@@ -71,33 +73,45 @@ As before, nothing in here may throw: an uncaught error crash-loops the server.
 
 ## Emails
 
-The auth emails are sent by functions in `src/emails/Email.ts`:
+The auth emails are sent by functions in `src/emails/email.ts`:
 
-| Email | Function | Sent by | Link expires after |
+| Email | Function | Sent by | Expires after |
 | --- | --- | --- | --- |
-| Password reset | `sendPasswordReset` | Better Auth | `RESET_PASSWORD_EXPIRY_SECONDS` (1 hour) |
-| Email verification | `sendVerificationEmail` | Better Auth | `VERIFICATION_EMAIL_EXPIRY_SECONDS` (1 hour) |
+| Password reset (a link) | `sendPasswordReset` | Better Auth | `RESET_PASSWORD_EXPIRY_SECONDS` (1 hour) |
+| Email verification (a code) | `sendVerificationOTP` | The `emailOTP` plugin | `VERIFICATION_CODE_EXPIRY_SECONDS` (15 minutes) |
 | Successful registration | `sendRegisteredEmail` | `postEmailVerificationFlow`, once a new user verifies | Doesn't expire |
 
-The reset and verification tokens are stored in `auth_verification`.
+The reset tokens and verification codes are stored in `auth_verification`.
+
+`sendVerificationOTP` is called for every kind of code the plugin can send, but only sends `email-verification` codes. Any other type is logged as an error, because those flows are switched off in `disabledPaths`.
 
 For how emails are built, previewed and sent, see [Emails](../back-end/emails.md).
 
 ## Email verification
 
-With `requireEmailVerification: true`, an unverified user can't sign in. The `emailVerification` settings:
+With `requireEmailVerification: true`, an unverified user can't sign in. Users verify by entering a 6-digit code from the email, rather than clicking a link.
+
+The `emailOTP` plugin, with `overrideDefaultEmailVerification: true`, replaces Better Auth's verification link with a code:
 
 | Setting | Effect |
 | --- | --- |
-| `sendOnSignUp` | Sends the verification email at sign-up. Sign-up doesn't create a session |
-| `sendOnSignIn` | Sends a fresh link when an unverified user tries to sign in |
-| `autoSignInAfterVerification` | Clicking the link signs the user in, so they land in the app |
-| `expiresIn` | 1 hour |
+| `overrideDefaultEmailVerification` | Better Auth's verification emails send a code (`sendVerificationOTP`) instead of a link |
+| `expiresIn` | Codes expire after 15 minutes |
+
+Better Auth's defaults also apply: codes are 6 digits, and a code can be tried 3 times before the user has to request a new one.
+
+The `emailVerification` settings say when a code is sent and what happens after:
+
+| Setting | Effect |
+| --- | --- |
+| `sendOnSignUp` | Sends a code at sign-up. Sign-up doesn't create a session |
+| `sendOnSignIn` | Sends a fresh code when an unverified user tries to sign in |
+| `autoSignInAfterVerification` | A correct code signs the user in, so they land in the app |
 | `afterEmailVerification` | `postEmailVerificationFlow`, which sends the welcome email to new sign-ups |
 
-The link goes to `/api/auth/verify-email`, which then redirects into the app. The full sign-up flow is in [Registration](registration.md).
+The front end posts the code to `/api/auth/email-otp/verify-email`. That sets `emailVerified`, runs `afterEmailVerification`, then creates the session and sets the cookie. There's no redirect: the front end sends the user to `/app`. The full sign-up flow is in [Registration](registration.md).
 
-The migration script creates existing users unverified, so they verify on their first sign-in: `sendOnSignIn` emails them a link, and `autoSignInAfterVerification` signs them in once they click it.
+The migration script creates existing users unverified, so they verify on their first sign-in: `sendOnSignIn` emails them a code, and `autoSignInAfterVerification` signs them in once they enter it.
 
 ## Migrations
 
