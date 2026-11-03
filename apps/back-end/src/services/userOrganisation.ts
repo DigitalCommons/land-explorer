@@ -7,12 +7,7 @@ export type UpdateOrgDetailsRequest = LoggedInRequest & {
     organisation: string;
     organisationNumber: string;
     organisationType: string;
-    organisationActivity: string;  
-  }
-};
-
-export type UpdateOrgAddressRequest = LoggedInRequest & {
-  payload: {
+    organisationActivity: string;
     address1: string;
     address2: string;
     city: string;
@@ -29,6 +24,10 @@ export async function updateUserOrganisationDetails(request: UpdateOrgDetailsReq
       organisation_number: request.payload.organisationNumber,
       organisation_type: request.payload.organisationType,
       organisation_activity: request.payload.organisationActivity,
+      address1: request.payload.address1,
+      address2: request.payload.address2,
+      city: request.payload.city,
+      postcode: request.payload.postcode,
     },
     {
       where: {
@@ -38,22 +37,3 @@ export async function updateUserOrganisationDetails(request: UpdateOrgDetailsReq
 
   return h.response().code(200);
 }
-
-export async function updateUserOrganisationAddress(request: UpdateOrgAddressRequest,
-  h: ResponseToolkit): Promise<ResponseObject>  {    
-
-  await User.update(
-    {
-      address1: request.payload.address1,
-      address2: request.payload.address2,
-      city: request.payload.city,
-      postcode: request.payload.postcode
-    },
-    {
-      where: {
-        id: request.auth.credentials.user_id,
-      },
-    });
-
-  return h.response().code(200);
-  }

@@ -35,10 +35,6 @@ export type OrgDetails = Pick<
   | "organisationNumber"
   | "organisationType"
   | "organisationActivity"
->;
-
-export type OrgAddress = Pick<
-  User,
   | "address1"
   | "address2"
   | "city"
@@ -102,7 +98,6 @@ type UserAction =
   | (Action<boolean> & { type: "USER_ANALYTICS_CONSENT_STATUS" })
   | (Action<UserGuideStatusData> & { type: "USER_GUIDE_PROMPT_SEEN" })
   | (Action<OrgDetails> & { type: "USER_ORGANISATION_DETAILS_UPDATED" })
-  | (Action<OrgAddress> & { type: "USER_ORGANISATION_ADDRESS_UPDATED" })
   | Action;
 
 export default (state: User = getInitialState(), action: UserAction): User => {
@@ -141,11 +136,6 @@ export default (state: User = getInitialState(), action: UserAction): User => {
         ...state,
         ...(action.payload as OrgDetails),
       };
-    case "USER_ORGANISATION_ADDRESS_UPDATED":
-      return {
-        ...state,
-        ...(action.payload as OrgAddress),
-      }
     default:
       return state;
   }

@@ -1,4 +1,5 @@
 import z from "zod";
+import { ukPostcodeRegexp } from "@/lib/validation";
 import { Controller, useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useAppDispatch, useAppSelector } from "@/hooks/react-redux";
@@ -78,6 +79,16 @@ const organisationDetailsSchema = z
       .trim()
       .max(100, "Must not exceed 100 characters"),
     orgNumber: z.string().max(100, "Must not exceed 100 characters"),
+    address1: z.string().max(100, "Must not exceed 100 characters"),
+    address2: z.string().max(100, "Must not exceed 100 characters"),
+    city: z.string().max(100, "Must not exceed 100 characters"),
+    postcode: z
+      .string()
+      .trim()
+      .refine(
+        (v) => v === "" || ukPostcodeRegexp.test(v),
+        "Invalid UK postcode",
+      ),
   })
   .superRefine((data, ctx) => {
     if (data.orgType === "other" && !data.orgTypeOther) {
@@ -102,6 +113,10 @@ export const OrganisationDetails = () => {
     organisationType,
     organisationActivity,
     organisationNumber,
+    address1,
+    address2,
+    city,
+    postcode,
   } = useAppSelector((state) => state.user);
   const dispatch = useAppDispatch();
 
@@ -114,6 +129,10 @@ export const OrganisationDetails = () => {
       orgTypeOther: ORG_TYPES.map((x) => x.value).includes(organisationType) ? "" : organisationType,        
       orgActivity: ORG_ACTIVITIES.map((x) => x.value).includes(organisationActivity) ? organisationActivity : "other",
       orgActivityOther: ORG_ACTIVITIES.map((x) => x.value).includes(organisationActivity) ? "" : organisationActivity,
+      address1,
+      address2,
+      city,
+      postcode,
     },
   });
 
@@ -133,6 +152,10 @@ export const OrganisationDetails = () => {
         data.orgType === "other" ? data.orgTypeOther : data.orgType,
       organisationActivity:
         data.orgActivity === "other" ? data.orgActivityOther : data.orgActivity,
+      address1: data.address1,
+      address2: data.address2,
+      city: data.city,
+      postcode: data.postcode,
     };
 
     const success = await dispatch(updateOrganisationDetails(details));
@@ -149,8 +172,9 @@ export const OrganisationDetails = () => {
   }
 
   return (
-    <Card>
-      <CardContent className="flex flex-col">
+    // Fills the panel so the footer stays visible while the fields scroll
+    <Card className="absolute inset-0">
+      <CardContent className="flex flex-col min-h-0 grow overflow-y-auto">
         <div className="text-foreground flex flex-col gap-3">
           <form
             id="organisation-details"
@@ -158,9 +182,8 @@ export const OrganisationDetails = () => {
           >
             <FieldGroup>
               <FieldSet>
-                <FieldLegend>Details</FieldLegend>
                 <FieldDescription>
-                  About the organisation you're using Land Explorer for.
+                  Tell us more about the organisation you're using Land Explorer for.
                 </FieldDescription>
                 <FieldGroup>
                   <div className="grid grid-cols-1 gap-x-4 gap-y-3 md:grid-cols-2">
@@ -187,9 +210,6 @@ export const OrganisationDetails = () => {
                             autoComplete="organization"
                             aria-invalid={fieldState.invalid}
                           />
-                          <FieldDescription>
-                            The registered name of your organisation
-                          </FieldDescription>
                           {fieldState.invalid && (
                             <FieldError errors={[fieldState.error]} />
                           )}
@@ -218,9 +238,109 @@ export const OrganisationDetails = () => {
                             maxLength={101}
                             aria-invalid={fieldState.invalid}
                           />
-                          <FieldDescription>
-                            Your Companies House or charity number.
-                          </FieldDescription>
+                          {fieldState.invalid && (
+                            <FieldError errors={[fieldState.error]} />
+                          )}
+                        </Field>
+                      )}
+                    />
+                    <Controller
+                      control={form.control}
+                      name="address1"
+                      render={({ field, fieldState }) => (
+                        <Field
+                          data-invalid={fieldState.invalid}
+                          className="gap-1.25"
+                        >
+                          <FieldLabel htmlFor="address1" className="text-left">
+                            Address line 1
+                          </FieldLabel>
+                          <Input
+                            {...field}
+                            id="address1"
+                            type="text"
+                            placeholder="Address 1"
+                            autoComplete="address-line1"
+                            maxLength={101}
+                            aria-invalid={fieldState.invalid}
+                          />
+                          {fieldState.invalid && (
+                            <FieldError errors={[fieldState.error]} />
+                          )}
+                        </Field>
+                      )}
+                    />
+                    <Controller
+                      control={form.control}
+                      name="address2"
+                      render={({ field, fieldState }) => (
+                        <Field
+                          data-invalid={fieldState.invalid}
+                          className="gap-1.25"
+                        >
+                          <FieldLabel htmlFor="address2" className="text-left">
+                            Address line 2
+                          </FieldLabel>
+                          <Input
+                            {...field}
+                            id="address2"
+                            type="text"
+                            placeholder="Address 2"
+                            autoComplete="address-line2"
+                            maxLength={101}
+                          />
+                          {fieldState.invalid && (
+                            <FieldError errors={[fieldState.error]} />
+                          )}
+                        </Field>
+                      )}
+                    />
+                    <Controller
+                      control={form.control}
+                      name="city"
+                      render={({ field, fieldState }) => (
+                        <Field
+                          data-invalid={fieldState.invalid}
+                          className="gap-1.25"
+                        >
+                          <FieldLabel htmlFor="city" className="text-left">
+                            City
+                          </FieldLabel>
+                          <Input
+                            {...field}
+                            id="city"
+                            type="text"
+                            placeholder="City"
+                            autoComplete="address-level2"
+                            maxLength={101}
+                            aria-invalid={fieldState.invalid}
+                          />
+                          {fieldState.invalid && (
+                            <FieldError errors={[fieldState.error]} />
+                          )}
+                        </Field>
+                      )}
+                    />
+                    <Controller
+                      control={form.control}
+                      name="postcode"
+                      render={({ field, fieldState }) => (
+                        <Field
+                          data-invalid={fieldState.invalid}
+                          className="gap-1.25"
+                        >
+                          <FieldLabel htmlFor="postcode" className="text-left">
+                            Postcode
+                          </FieldLabel>
+                          <Input
+                            {...field}
+                            id="postcode"
+                            type="text"
+                            placeholder="Postcode"
+                            autoComplete="postal-code"
+                            maxLength={8}
+                            aria-invalid={fieldState.invalid}
+                          />
                           {fieldState.invalid && (
                             <FieldError errors={[fieldState.error]} />
                           )}
@@ -265,10 +385,6 @@ export const OrganisationDetails = () => {
                               ))}
                             </SelectContent>
                           </Select>
-                          <FieldDescription>
-                            Choose the option that best describes your
-                            organisation.
-                          </FieldDescription>
                           {fieldState.invalid && (
                             <FieldError errors={[fieldState.error]} />
                           )}
@@ -298,10 +414,6 @@ export const OrganisationDetails = () => {
                             disabled={orgType !== "other"}
                             aria-invalid={fieldState.invalid}
                           />
-                          <FieldDescription>
-                            Only needed if you chose “Other” as the organisation
-                            type.
-                          </FieldDescription>
                           {fieldState.invalid && (
                             <FieldError errors={[fieldState.error]} />
                           )}
@@ -347,9 +459,6 @@ export const OrganisationDetails = () => {
                               ))}
                             </SelectContent>
                           </Select>
-                          <FieldDescription>
-                            Your organisation's main area of work.
-                          </FieldDescription>
                           {fieldState.invalid && (
                             <FieldError errors={[fieldState.error]} />
                           )}
@@ -380,9 +489,6 @@ export const OrganisationDetails = () => {
                             disabled={orgActivity !== "other"}
                             aria-invalid={fieldState.invalid}
                           />
-                          <FieldDescription>
-                            Only needed if you chose “Other” as the activity.
-                          </FieldDescription>
                           {fieldState.invalid && (
                             <FieldError errors={[fieldState.error]} />
                           )}
@@ -396,7 +502,7 @@ export const OrganisationDetails = () => {
           </form>
         </div>
       </CardContent>
-      <CardFooter>
+      <CardFooter className="shrink-0">
         <Button
           type="submit"
           form="organisation-details"

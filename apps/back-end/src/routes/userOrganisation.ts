@@ -1,8 +1,5 @@
 import { Lifecycle, ServerRoute } from "@hapi/hapi";
-import {
-  updateUserOrganisationAddress,
-  updateUserOrganisationDetails,
-} from "../services/userOrganisation";
+import { updateUserOrganisationDetails } from "../services/userOrganisation";
 import Joi from "joi";
 
 /** A text field that must be present but may be empty, with a friendly max length message */
@@ -33,18 +30,6 @@ export const userOrgRoutes: ServerRoute[] = [
           organisationNumber: textField("organisation number", 100),
           organisationType: textField("organisation type", 100),
           organisationActivity: textField("organisation activity", 100),
-        }).required(),
-        failAction,
-      },
-    },
-  },
-  {
-    method: "POST",
-    path: "/api/userOrganisation/address",
-    handler: updateUserOrganisationAddress,
-    options: {
-      validate: {
-        payload: Joi.object({
           address1: textField("organisation address line 1", 100),
           address2: textField("organisation address line 2", 100),
           city: textField("organisation city", 100),
