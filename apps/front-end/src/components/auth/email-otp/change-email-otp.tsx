@@ -246,53 +246,63 @@ export function ChangeEmailOtp({ className }: ChangeEmailOtpProps) {
           <Card className={cn(className)}>
             <CardContent className="flex flex-col gap-6">
               {state.step === "email" && (
-                <form.AppField
-                  name="email"
-                  validators={{
-                    onChange: ({ value }) =>
-                      validateEmailAddress(value, {
-                        invalidMessage: localization.auth.invalidEmail,
-                        requiredMessage: localization.auth.fieldRequired,
-                      }),
-                  }}
-                >
-                  {(field) => {
-                    const isInvalid = isAuthFormFieldInvalid(field.state.meta);
-                    return (
-                      <Field data-invalid={isInvalid}>
-                        <FieldLabel htmlFor="email">
-                          {localization.auth.email}
-                        </FieldLabel>
+                <div className="flex flex-col gap-3">
+                  <p className="text-muted-foreground text-sm">
+                    {`We'll send a code to your new address to confirm it. You'll keep signing in with ${
+                      currentEmail ?? "your current address"
+                    } until then.`}
+                  </p>
 
-                        {session ? (
-                          <Input
-                            key={currentEmail}
-                            id="email"
-                            name="email"
-                            type="email"
-                            autoComplete="email"
-                            value={field.state.value}
-                            placeholder={localization.auth.emailPlaceholder}
-                            disabled={isPending}
-                            required
-                            onBlur={field.handleBlur}
-                            onChange={(event) =>
-                              field.handleChange(event.target.value)
-                            }
-                            aria-invalid={isInvalid}
-                          />
-                        ) : (
-                          <Skeleton>
-                            <Input className="invisible" />
-                          </Skeleton>
-                        )}
+                  <form.AppField
+                    name="email"
+                    validators={{
+                      onChange: ({ value }) =>
+                        validateEmailAddress(value, {
+                          invalidMessage: localization.auth.invalidEmail,
+                          requiredMessage: localization.auth.fieldRequired,
+                        }),
+                    }}
+                  >
+                    {(field) => {
+                      const isInvalid = isAuthFormFieldInvalid(
+                        field.state.meta,
+                      );
+                      return (
+                        <Field data-invalid={isInvalid}>
+                          <FieldLabel htmlFor="email">
+                            {localization.auth.email}
+                          </FieldLabel>
 
-                        <field.AuthFormFieldError />
-                        <form.AuthFormServerError />
-                      </Field>
-                    );
-                  }}
-                </form.AppField>
+                          {session ? (
+                            <Input
+                              key={currentEmail}
+                              id="email"
+                              name="email"
+                              type="email"
+                              autoComplete="email"
+                              value={field.state.value}
+                              placeholder={localization.auth.emailPlaceholder}
+                              disabled={isPending}
+                              required
+                              onBlur={field.handleBlur}
+                              onChange={(event) =>
+                                field.handleChange(event.target.value)
+                              }
+                              aria-invalid={isInvalid}
+                            />
+                          ) : (
+                            <Skeleton>
+                              <Input className="invisible" />
+                            </Skeleton>
+                          )}
+
+                          <field.AuthFormFieldError />
+                          <form.AuthFormServerError />
+                        </Field>
+                      );
+                    }}
+                  </form.AppField>
+                </div>
               )}
 
               {state.step === "password" && (
@@ -379,6 +389,7 @@ export function ChangeEmailOtp({ className }: ChangeEmailOtpProps) {
                       "{{email}}",
                       state.newEmail,
                     )}
+                    . Can't find it? Check your spam folder.
                   </p>
 
                   <form.AppField name="code">
