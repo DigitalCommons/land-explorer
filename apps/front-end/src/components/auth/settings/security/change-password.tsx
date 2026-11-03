@@ -237,7 +237,9 @@ function ChangePasswordForm({
       </p>
 
       <form.AppForm>
-        <form.AuthFormRoot>
+        {/* The fields' validators show errors under them, rather than the
+            browser's own bubbles */}
+        <form.AuthFormRoot noValidate>
           <Card className={cn(className)}>
             <CardContent className="flex flex-col gap-6">
               <form.AppField

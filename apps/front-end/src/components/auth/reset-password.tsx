@@ -116,7 +116,9 @@ export function ResetPassword({ className }: ResetPasswordProps) {
 
       <CardContent>
         <form.AppForm>
-          <form.AuthFormRoot>
+          {/* The fields' validators show errors under them, rather than the
+              browser's own bubbles */}
+          <form.AuthFormRoot noValidate>
             <FieldGroup>
               <form.AppField
                 name="password"
