@@ -1,4 +1,6 @@
 import {
+  changePasswordOptions,
+  getAuthErrorCode,
   getViewURL,
   isPasswordCompromisedError,
   validateMatchingValue,
@@ -6,12 +8,12 @@ import {
 } from "@better-auth-ui/core"
 import {
   useAuth,
-  useChangePassword,
   useFetchOptions,
   useListAccounts,
   useRequestPasswordReset,
   useSession
 } from "@better-auth-ui/react"
+import { useMutation } from "@tanstack/react-query"
 import { Eye, EyeOff } from "lucide-react"
 import { useState } from "react"
 import { toast } from "sonner"
@@ -27,8 +29,13 @@ import {
 } from "@/components/ui/input-group"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Spinner } from "@/components/ui/spinner"
+import { getFriendlyAuthErrorMessage } from "@/lib/auth/auth-error-message"
 import { cn } from "cn"
-import { isAuthFormFieldInvalid, useAuthForm } from "../../auth-form"
+import {
+  isAuthFormFieldInvalid,
+  setAuthFormServerError,
+  useAuthForm
+} from "../../auth-form"
 import { OpenEmailButton } from "../../open-email-button"
 import { PasswordStrengthMeter } from "../../password-strength-meter"
 
@@ -88,9 +95,8 @@ function SetPassword({ className }: { className?: string }) {
     }
   )
 
-  const Captcha = plugins.find(
-    (plugin) => plugin.captchaComponent
-  )?.captchaComponent
+  const Captcha = plugins.find((plugin) => plugin.captchaComponent)
+    ?.captchaComponent
 
   const handleSetPassword = () => {
     if (!session) return
@@ -108,10 +114,6 @@ function SetPassword({ className }: { className?: string }) {
 
   return (
     <div>
-      <h2 className="text-sm font-semibold mb-3">
-        {localization.settings.changePassword}
-      </h2>
-
       <Card className={cn(className)}>
         <CardContent className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
@@ -168,20 +170,37 @@ function ChangePasswordForm({
   session: ReturnType<typeof useSession>["data"]
 }) {
   const { authClient } = useAuth()
-  const { mutateAsync: changePassword, isPending } = useChangePassword(
-    authClient,
-    {
-      onError: (error) => {
-        // The haveIBeenPwned plugin rejects on the password itself, so it
-        // belongs against the field rather than in a toast.
-        setIsCompromised(isPasswordCompromisedError(error))
-      },
-      onSuccess: () => {
-        form.reset()
-        toast.success(localization.settings.changePasswordSuccess)
+
+  // useMutation directly rather than useChangePassword, whose options can't
+  // set meta: errors such as a wrong current password show in the form, so
+  // ErrorToaster needs to leave them alone
+  const changePasswordMutationOptions = changePasswordOptions(authClient)
+  const { mutateAsync: changePassword, isPending } = useMutation({
+    ...changePasswordMutationOptions,
+    meta: {
+      ...changePasswordMutationOptions.meta,
+      errorPresentation: "inline"
+    },
+    onError: (error) => {
+      // The haveIBeenPwned plugin rejects on the password itself, so it
+      // belongs against the new password field
+      if (isPasswordCompromisedError(error)) {
+        setIsCompromised(true)
+        return
       }
+
+      if (getAuthErrorCode(error) === "INVALID_PASSWORD") {
+        // Without validating, which would add a "required" error to this one
+        form.setFieldValue("currentPassword", "", { dontValidate: true })
+      }
+      const message = getFriendlyAuthErrorMessage(error, localization)
+      if (message) setAuthFormServerError(form, message, message)
+    },
+    onSuccess: () => {
+      form.reset()
+      toast.success(localization.settings.changePasswordSuccess)
     }
-  )
+  })
 
   const [isCurrentPasswordVisible, setIsCurrentPasswordVisible] =
     useState(false)
@@ -212,9 +231,10 @@ function ChangePasswordForm({
 
   return (
     <div>
-      <h2 className="text-sm font-semibold mb-3">
-        {localization.settings.changePassword}
-      </h2>
+      <p className="text-muted-foreground text-xs mb-3">
+        You'll stay signed in here, but you'll be signed out on all other
+        devices.
+      </p>
 
       <form.AppForm>
         <form.AuthFormRoot>
@@ -464,6 +484,8 @@ function ChangePasswordForm({
                   )}
                 </form.AppField>
               )}
+
+              <form.AuthFormServerError />
             </CardContent>
 
             <CardFooter>

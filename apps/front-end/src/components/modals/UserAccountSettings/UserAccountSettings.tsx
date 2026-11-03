@@ -53,7 +53,7 @@ export default function UserAccountPage() {
   return (
     <Dialog open={open} onOpenChange={() => void 0}>
       <DialogContent
-        className="overflow-hidden w-4xl h-[min(30rem,calc(100dvh-2rem))] sm:max-w-[calc(100%-2rem)] grid-rows-[minmax(0,1fr)_auto]"
+        className="overflow-hidden w-4xl h-[min(44rem,calc(100dvh-2rem))] sm:max-w-[calc(100%-2rem)] grid-rows-[minmax(0,1fr)_auto]"
         showCloseButton={false}
       >
         <div className="flex min-h-0">
