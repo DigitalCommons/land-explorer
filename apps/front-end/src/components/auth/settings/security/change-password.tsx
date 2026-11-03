@@ -312,7 +312,8 @@ function ChangePasswordForm({
               <form.AppField
                 name="newPassword"
                 validators={{
-                  onChange: ({ value }) =>
+                  onChangeListenTo: ["currentPassword"],
+                  onChange: ({ fieldApi, value }) =>
                     validateStringLength(value, {
                       maxLength: emailAndPassword.maxPasswordLength,
                       maxLengthMessage: localization.auth.tooLong.replace(
@@ -325,7 +326,12 @@ function ChangePasswordForm({
                         String(emailAndPassword.minPasswordLength)
                       ),
                       requiredMessage: localization.auth.fieldRequired
-                    })
+                    }) ??
+                    // Better Auth accepts the same password, which would just
+                    // sign out the other devices
+                    (value === fieldApi.form.getFieldValue("currentPassword")
+                      ? "New password must be different from your current password"
+                      : undefined)
                 }}
               >
                 {(field) => {
