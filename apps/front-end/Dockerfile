@@ -58,6 +58,10 @@ RUN npm run build -w apps/front-end
 # ---- runtime stage ----
 FROM caddy:${CADDY_VERSION}-alpine
 
+# Always pull in Alpine security fixes that the upstream Caddy image hasn't
+# been rebuilt with yet, so the Trivy gate doesn't fail on already-fixed CVEs.
+RUN apk upgrade --no-cache
+
 # Caddy must know the hostname it should respond to; it's baked into the
 # Caddyfile at build time (Caddy won't serve an unknown hostname). The site
 # also answers *.<hostname> so PR previews (<pr>.dev.app...) are served by
