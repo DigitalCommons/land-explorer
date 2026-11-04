@@ -10,7 +10,7 @@ import { Button } from "../../ui/button";
 import { ChevronLeft, ShieldLock, User, UserRoundGroup } from "lucide-react";
 import { UserView } from "../../auth/user/user-view";
 import { Menu, MenuContent, MenuHeader, MenuItem } from "../../common/Menu";
-import { ComponentType, useState } from "react";
+import { ComponentType, useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 import { Privacy } from "./Privacy";
 import { ChangeEmailOtp } from "@/components/auth/email-otp/change-email-otp";
@@ -55,6 +55,15 @@ export default function UserAccountSettings() {
     setSection(newSection);
     setShowPanel(true);
   };
+
+  // The modal stays mounted while closed, so start from User Profile (and on
+  // small screens, the menu) each time it's opened again
+  useEffect(() => {
+    if (!open) {
+      setSection("userProfile");
+      setShowPanel(false);
+    }
+  }, [open]);
   return (
     <Dialog open={open} onOpenChange={() => void 0}>
       <DialogContent
