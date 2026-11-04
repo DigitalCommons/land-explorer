@@ -71,7 +71,7 @@ export async function postRegistrationFlow(user: User & Record<string, unknown>,
 
 // Migrated users are verified too, but their createdAt is when they first
 // registered on the old system, so this stops them getting a welcome email.
-// A week leaves room for a new user to request another link before verifying.
+// A week leaves room for a new user to request another code before verifying.
 const NEW_SIGN_UP_WINDOW_MS = 7 * 24 * 60 * 60 * 1000;
 
 /**
