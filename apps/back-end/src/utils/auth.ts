@@ -1,5 +1,9 @@
 import { betterAuth } from "better-auth";
 import { createPool } from "mysql2/promise";
+import {
+  RESET_PASSWORD_EXPIRY_SECONDS,
+  sendPasswordReset,
+} from "../emails/Email";
 
 export const auth = betterAuth({
   database: createPool({
@@ -15,10 +19,6 @@ export const auth = betterAuth({
       joins: true,
     },
     cookiePrefix: "lx",
-  },
-  emailAndPassword: {
-    enabled: true,
-    minPasswordLength: 6,
   },
   user: {
     modelName: "auth_user",
@@ -44,5 +44,14 @@ export const auth = betterAuth({
   },
   account: {
     modelName: "auth_account",
+  },
+  emailAndPassword: {
+    enabled: true,
+    minPasswordLength: 6,
+    resetPasswordTokenExpiresIn: RESET_PASSWORD_EXPIRY_SECONDS,
+    // signs the user out on every device, in case the reset is to lock someone else
+    // out. Other devices can stay signed in until the session cookieCache expires
+    revokeSessionsOnPasswordReset: true,
+    sendResetPassword: sendPasswordReset,
   },
 });
