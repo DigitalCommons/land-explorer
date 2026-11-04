@@ -285,11 +285,15 @@ describe("postRegistrationFlow", () => {
 });
 
 describe("splitName", () => {
-  it("takes the first word as the first name and the rest as the last name", () => {
-    expect(splitName("  Betty  Bo Blueberry ")).to.eql({ first_name: "Betty", last_name: "Bo Blueberry" });
+  it("takes the last word as the last name and the rest as the first name", () => {
+    expect(splitName("  Betty  Bo Blueberry ")).to.eql({ first_name: "Betty Bo", last_name: "Blueberry" });
   });
 
-  it("leaves the last name empty for a single word", () => {
+  it("splits two words into first and last names", () => {
+    expect(splitName("Betty Blueberry")).to.eql({ first_name: "Betty", last_name: "Blueberry" });
+  });
+
+  it("takes a single word as the first name", () => {
     expect(splitName("Betty")).to.eql({ first_name: "Betty", last_name: "" });
   });
 });
@@ -310,7 +314,7 @@ describe("preNameChangeFlow", () => {
     assert.calledOnceWithExactly(adapter.update, {
       model: APP_USER_MODEL,
       where: [{ field: "id", value: 7 }],
-      update: { first_name: "Betty", last_name: "Bo Blueberry" },
+      update: { first_name: "Betty Bo", last_name: "Blueberry" },
     });
   });
 
