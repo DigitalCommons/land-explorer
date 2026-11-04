@@ -85,5 +85,5 @@ The preview server can't show `cid:` images, so templates take a `logoSrc` prop.
 | Email | Template | Sent by |
 | --- | --- | --- |
 | Password reset | `templates/ResetPasswordEmail.tsx` | `sendPasswordReset`, called by Better Auth (`sendResetPassword` in `utils/auth.ts`). Links expire after `RESET_PASSWORD_EXPIRY_SECONDS` (1 hour) |
-| Email verification | `templates/EmailVerificationEmail.tsx` | `sendVerificationOTP`, called by Better Auth's `emailOTP` plugin (in `utils/auth.ts`) at sign-up and when an unverified user signs in. Sends a 6-digit code, not a link. Codes expire after `VERIFICATION_CODE_EXPIRY_SECONDS` (15 minutes) |
+| Email verification | `templates/EmailVerificationEmail.tsx` | `sendVerificationOTP`, called by Better Auth's `emailOTP` plugin (in `utils/auth.ts`) at sign-up, when an unverified user signs in, and when a user changes their email (sent to the new address). Sends a 6-digit code, not a link. Codes expire after `VERIFICATION_CODE_EXPIRY_SECONDS` (15 minutes) |
 | Successful registration | `templates/RegisteredEmail.tsx` | `sendRegisteredEmail`, called by `postEmailVerificationFlow` in `services/authUser.ts` once a new user verifies. Links to `${BETTER_AUTH_URL}/app` |

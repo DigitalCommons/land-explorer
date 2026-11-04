@@ -18,9 +18,12 @@ How the back end uses Better Auth when `FEATURE_USE_BETTERAUTH=true`. For env va
 | `sendResetPassword` | Our SendGrid email, see [Emails](#emails) |
 | `emailVerification` | When verification codes are sent and what happens after, see [Email verification](#email-verification) |
 | `databaseHooks.user.create` | Writes our `user` row during sign-up, see [Registration](registration.md) |
+| `databaseHooks.user.update` | `preUserUpdateFlow`, which copies name and email changes to `user`, see [Account settings](account-settings.md#keeping-user-in-step) |
+| `hooks.before` | `confirmPasswordForEmailChange`, which checks the password before an email change code is sent, see [Account settings](account-settings.md#email) |
+| `revokeSessionsOnPasswordReset` | A password reset signs the user out on every device. Other devices keep working until their cookie cache expires |
 | `generateId` | Lets MySQL auto-increment `user.id`; Better Auth's own tables get Better Auth ids |
 | `appUserPlugin()` | Describes `user` to Better Auth so the sign-up hook can write it |
-| `emailOTP()` | Verifies emails with a 6-digit code instead of a link, see [Email verification](#email-verification). `disableSignUp: true`, so users can only sign up through `/sign-up/email`, where our `user` row is written |
+| `emailOTP()` | Verifies emails with a 6-digit code instead of a link, see [Email verification](#email-verification). `changeEmail` lets users change their email with a code too, see [Account settings](account-settings.md#email). `disableSignUp: true`, so users can only sign up through `/sign-up/email`, where our `user` row is written |
 | `disabledPaths` | Turns off the `emailOTP` plugin's code sign-in and code password reset, which we don't use. Password reset is still link-based |
 
 ## Routes: `src/server.ts`
@@ -63,7 +66,7 @@ Route handlers still read `request.auth.credentials.user_id`, so they don't chan
 - `POST /api/user/email`
 - `POST /api/user/password`
 
-The rest of `userRoutes` (details, feedback, consent and so on) is the same either way.
+The rest of `userRoutes` (details, feedback, consent and so on) is the same either way. So is `userOrgRoutes` (`routes/userOrganisation.ts`), which saves organisation details from the settings modal, see [Account settings](account-settings.md#organisation-details).
 
 ## Websockets: `src/websockets/server.ts`
 
@@ -78,12 +81,12 @@ The auth emails are sent by functions in `src/emails/email.ts`:
 | Email | Function | Sent by | Expires after |
 | --- | --- | --- | --- |
 | Password reset (a link) | `sendPasswordReset` | Better Auth | `RESET_PASSWORD_EXPIRY_SECONDS` (1 hour) |
-| Email verification (a code) | `sendVerificationOTP` | The `emailOTP` plugin | `VERIFICATION_CODE_EXPIRY_SECONDS` (15 minutes) |
+| Email verification (a code) | `sendVerificationOTP` | The `emailOTP` plugin, at sign-up, at sign-in when unverified, and when changing email | `VERIFICATION_CODE_EXPIRY_SECONDS` (15 minutes) |
 | Successful registration | `sendRegisteredEmail` | `postEmailVerificationFlow`, once a new user verifies | Doesn't expire |
 
 The reset tokens and verification codes are stored in `auth_verification`.
 
-`sendVerificationOTP` is called for every kind of code the plugin can send, but only sends `email-verification` codes. Any other type is logged as an error, because those flows are switched off in `disabledPaths`.
+`sendVerificationOTP` is called for every kind of code the plugin can send, but only sends `email-verification` and `change-email` codes, both with the same template. Any other type is logged as an error, because those flows are switched off in `disabledPaths`.
 
 For how emails are built, previewed and sent, see [Emails](../back-end/emails.md).
 
@@ -127,4 +130,4 @@ These are Sequelize migrations rather than Better Auth's CLI, so `be-migrate` ru
 
 ## Tests
 
-`src/services/authUser.test.ts` covers the registration hooks.
+`src/services/authUser.test.ts` covers the hooks in `src/services/authUser.ts`: registration, email verification, and changing name and email.

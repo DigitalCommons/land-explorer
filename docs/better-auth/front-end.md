@@ -8,7 +8,7 @@ How the front end uses Better Auth when `VITE_FEATURE_USE_BETTERAUTH=true`. See 
 
 It registers Better Auth's `emailOTPClient()` plugin, for verifying emails with a code (see [Email verification](#email-verification)).
 
-Its `onError` sends the user to `/auth/sign-in` when a Better Auth request returns 401, except on `/auth/*` pages, where a 401 is a form error such as a wrong password.
+Its `onError` calls `resetToSignIn` (see [When the session ends](#when-the-session-ends)) when a Better Auth request returns 401, except on `/auth/*` pages, where a 401 is a form error such as a wrong password.
 
 ## Provider: `src/providers/AuthProviderWrapper.tsx`
 
@@ -16,6 +16,7 @@ Wraps the app in Better Auth UI's `AuthProvider`, which needs the TanStack `Quer
 
 - `redirectTo="/app"` after sign-in
 - `minPasswordLength: 6`, matching the back end
+- `confirmPassword: true`, so the reset and change password forms ask for the new password twice
 - `requireEmailVerification: true`, matching the back end, so sign-up and sign-in send unverified users to the verify-email page
 - `viewPaths`, which map Better Auth UI's views onto our routes under `/auth`
 - `navigate` and `Link`, so Better Auth UI uses React Router
@@ -23,7 +24,7 @@ Wraps the app in Better Auth UI's `AuthProvider`, which needs the TanStack `Quer
 
 ## Routes
 
-`index.tsx` picks `RoutesNew` or `RoutesLegacy`. In `RoutesNew`, `/app` and `/app/my-account/*` sit behind `RequireAuth`, which shows a spinner while the session loads and sends signed-out users to `/auth/sign-in`.
+`index.tsx` picks `RoutesNew` or `RoutesLegacy`. In `RoutesNew`, `/app` and `/app/my-account/*` sit behind `RequireAuth`, which shows a spinner while the session loads and sends signed-out users to `/auth/sign-in`. If the session ends while a user's details are loaded, it calls `resetToSignIn` instead (see [When the session ends](#when-the-session-ends)).
 
 `pages/Authentication.tsx` has the `/auth` routes:
 
@@ -60,12 +61,16 @@ Errors show inside the card rather than as a toast, so they stay next to the cod
 
 The websocket client in `actions/WebSocketActions.ts` no longer sends a token. The browser sends the cookie with the handshake.
 
-## When the session expires
+## When the session ends
 
-Two things catch a 401:
+`resetToSignIn()` in `src/lib/auth/reset-to-sign-in.ts` sends the user to `/auth/sign-in` with a full page load rather than a client-side navigation, so none of their data stays in memory for whoever signs in next. Browser storage survives the reload, so it also clears `currentMapId` from `sessionStorage` (otherwise the next user would try to reopen the map) and resets Mixpanel's identity.
 
-- **Better Auth requests:** `authClient`'s `onError`, above.
-- **Our API requests (axios):** `redirectOnUnauthorized()` in `src/lib/auth/redirect-on-unauthorized.ts`, registered in `index.tsx`. It signs out first, because a session can be valid to Better Auth but have no linked app user. Without signing out, the sign-in page would see the session and send the user straight back to `/app`.
+It's called when:
+
+- **A Better Auth request returns 401:** `authClient`'s `onError`, above.
+- **Our API requests (axios) return 401:** `redirectOnUnauthorized()` in `src/lib/auth/redirect-on-unauthorized.ts`, registered in `index.tsx`. It signs out first, because a session can be valid to Better Auth but have no linked app user. Without signing out, the sign-in page would see the session and send the user straight back to `/app`.
+- **The session disappears while the app is open:** `RequireAuth`, above.
+- **The user signs out.**
 
 With the flag on, `RequestActions.ts` no longer dispatches `sessionTimedOut`.
 
@@ -76,7 +81,8 @@ With the flag on, `RequestActions.ts` no longer dispatches `sessionTimedOut`.
 Our own pieces:
 
 - `pages/Register/RegisterForm/RegisterFormNew.tsx`, `RegisterFormFields.tsx` and `RegisterFormSchema.ts`: the registration form, which sends our extra `user` fields to `/api/auth/sign-up/email`. See [Registration](registration.md).
-- `TopBarNew` in `components/top-bar/TopBar.tsx`, which uses Better Auth UI's `UserButton`.
+- `TopBarNew` in `components/top-bar/TopBar.tsx`, which uses Better Auth UI's `UserButton`. Its menu adds My Maps, User Guide, and Donate below the `md` breakpoint, where there's no room for the Donate button in the top bar. The user button shows the name from the `xl` breakpoint, and only the avatar below it.
+- `components/modals/UserAccountSettings/`, the settings modal opened from the user menu. See [Account settings](account-settings.md).
 
 ## Debugging
 
