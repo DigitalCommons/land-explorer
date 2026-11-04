@@ -174,8 +174,11 @@ async function migrateUsers(transaction: Transaction): Promise<Result> {
 
   for (const appUser of appUsers) {
     // Better Auth lowercases emails when signing in, so they must be stored lowercase
-    const email = appUser.username.trim().toLowerCase();
-    const name = `${appUser.first_name} ${appUser.last_name}`.trim();
+    const email = appUser.username.trim().toLowerCase();   
+    const name = [appUser.first_name, appUser.last_name]
+      .map((part) => part.trim())
+      .filter(Boolean)
+      .join(" ");
     const authUser = authUserByAppUserId.get(Number(appUser.id));
 
     const emailOwner = authUserIdByEmail.get(email);
