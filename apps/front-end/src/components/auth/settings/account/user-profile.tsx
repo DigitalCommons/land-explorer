@@ -96,7 +96,7 @@ export function UserProfile({ className }: UserProfileProps) {
                         trim: true
                       }) ||
                       // Saved as first and last names, with any extra words
-                      // going into the first name (see splitName in the back-end)
+                      // going into the last name (see splitName in the back-end)
                       (value.trim().split(/\s+/).length < 2
                         ? { message: "Please enter your first and last name." }
                         : undefined)

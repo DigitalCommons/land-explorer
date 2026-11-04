@@ -152,15 +152,14 @@ export async function preEmailChangeFlow(data: Partial<User> & Record<string, un
 }
 
 /**
- * Splits a full name into first and last names, taking the last word as the
- * last name and the rest as the first name. A single word is taken as the first
+ * Splits a full name into first and last names, taking the first word as the
+ * first name and the rest as the last name. A single word is taken as the first
  * name, leaving the last name empty.
  * @param name the full name
  */
 export function splitName(name: string) {
-  const words = name.trim().split(/\s+/);
-  const lastName = words.length > 1 ? words.pop()! : "";
-  return { first_name: words.join(" "), last_name: lastName };
+  const [firstName = "", ...rest] = name.trim().split(/\s+/);
+  return { first_name: firstName, last_name: rest.join(" ") };
 }
 
 /**
