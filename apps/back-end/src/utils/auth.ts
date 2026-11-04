@@ -1,9 +1,12 @@
 import { betterAuth } from "better-auth";
+import { generateId } from "@better-auth/core/utils/id";
 import { createPool } from "mysql2/promise";
+import { APP_USER_MODEL, appUserPlugin } from "./appUserPlugin";
 import {
   RESET_PASSWORD_EXPIRY_SECONDS,
   sendPasswordReset,
 } from "../emails/Email";
+import { postRegistrationFlow, preRegistrationFlow } from "../services/authUser";
 
 export const auth = betterAuth({
   database: createPool({
@@ -17,11 +20,14 @@ export const auth = betterAuth({
   advanced: {
     database: {
       joins: true,
+      // our user table's id is auto-increment, so leave it to the database;
+      // Better Auth's own tables keep its default ids
+      generateId: ({ model }) => (model === APP_USER_MODEL ? false : generateId()),
     },
     cookiePrefix: "lx",
   },
   user: {
-    modelName: "auth_user",
+    modelName: "auth_user",    
     additionalFields: {
       appUserId: {
         type: "number",
@@ -29,6 +35,14 @@ export const auth = betterAuth({
         required: false, // nullable
         unique: true,
         input: false,
+      },
+    },
+  },
+  databaseHooks: {
+    user: {
+      create: {        
+        before: preRegistrationFlow,
+        after: postRegistrationFlow
       },
     },
   },
@@ -45,6 +59,7 @@ export const auth = betterAuth({
   account: {
     modelName: "auth_account",
   },
+  plugins: [appUserPlugin()],
   emailAndPassword: {
     enabled: true,
     minPasswordLength: 6,
