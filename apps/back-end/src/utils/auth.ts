@@ -49,6 +49,9 @@ export const auth = betterAuth({
     enabled: true,
     minPasswordLength: 6,
     resetPasswordTokenExpiresIn: RESET_PASSWORD_EXPIRY_SECONDS,
+    // signs the user out on every device, in case the reset is to lock someone else
+    // out. Other devices can stay signed in until the session cookieCache expires
+    revokeSessionsOnPasswordReset: true,
     sendResetPassword: sendPasswordReset,
   },
 });
