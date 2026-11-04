@@ -166,12 +166,21 @@ export function splitName(name: string) {
 /**
  * Runs before Better Auth updates an auth_user. When a user changes their name in
  * their profile, updates the first and last names on our User table to match.
+ * Both are required on our User table, so the name must have at least two words.
  *
  * @param data the auth_user fields being changed
  * @param ctx the request context
  */
 export async function preNameChangeFlow(data: Partial<User> & Record<string, unknown>, ctx: GenericEndpointContext | null) {
-  if (ctx?.path !== UPDATE_USER_PATH || typeof data.name !== "string" || !data.name.trim()) return;
+  if (ctx?.path !== UPDATE_USER_PATH || data.name === undefined) return;
+
+  // checked here too, as the profile form's check can be skipped by calling the endpoint directly
+  if (typeof data.name !== "string" || data.name.trim().split(/\s+/).length < 2) {
+    throw new APIError("BAD_REQUEST", {
+      message: "Please enter your first and last name.",
+      code: "INVALID_NAME",
+    });
+  }
 
   const appUserId = (ctx.context.session?.user as Record<string, unknown> | undefined)?.appUserId;
   if (!appUserId) return;

@@ -323,8 +323,19 @@ describe("preNameChangeFlow", () => {
     assert.notCalled(adapter.update);
   });
 
-  it("does nothing for a blank name", async () => {
-    await preNameChangeFlow({ name: "   " }, updateUserContext());
+  it("rejects a single name", async () => {
+    const error = await preNameChangeFlow({ name: " Betty " }, updateUserContext()).catch((e) => e);
+
+    expect(error).to.be.instanceOf(APIError);
+    expect(error.body.code).to.equal("INVALID_NAME");
+    assert.notCalled(adapter.update);
+  });
+
+  it("rejects a blank name", async () => {
+    const error = await preNameChangeFlow({ name: "   " }, updateUserContext()).catch((e) => e);
+
+    expect(error).to.be.instanceOf(APIError);
+    expect(error.body.code).to.equal("INVALID_NAME");
     assert.notCalled(adapter.update);
   });
 
