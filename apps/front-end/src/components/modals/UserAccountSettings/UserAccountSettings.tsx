@@ -29,7 +29,7 @@ type UserAccountSection =
 const titles: Record<UserAccountSection, string> = {
   userProfile: "User Profile",
   email: "Change email",
-  password: "Password",
+  password: "Change Password",
   privacy: "Privacy Settings",
   orgDetails: "Organisation Details",
 };
