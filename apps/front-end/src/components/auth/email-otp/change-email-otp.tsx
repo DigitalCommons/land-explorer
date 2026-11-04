@@ -235,10 +235,6 @@ export function ChangeEmailOtp({ className }: ChangeEmailOtpProps) {
 
   return (
     <div>
-      <h2 className="text-sm font-semibold mb-3">
-        {localization.settings.changeEmail}
-      </h2>
-
       <form.AppForm>
         {/* The fields' validators show errors under them, rather than the
             browser's own bubbles */}

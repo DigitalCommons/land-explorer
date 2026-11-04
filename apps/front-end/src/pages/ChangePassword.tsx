@@ -5,6 +5,8 @@ import { Link, useLocation } from "react-router-dom";
 import constants from "../constants";
 import { getAuthHeader } from "../utils/Auth";
 
+// TODO: Delete this when we remove VITE_FEATURE_USE_BETTERAUTH
+
 const ChangePassword = () => {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");

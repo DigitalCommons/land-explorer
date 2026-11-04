@@ -4,6 +4,9 @@ import { useAppDispatch, useAppSelector } from "@/hooks/react-redux";
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
+
+// TODO: Delete this when we remove VITE_FEATURE_USE_BETTERAUTH
+
 const PrivacySettings = () => {
   const dispatch = useAppDispatch();
   const navigator = useNavigate();

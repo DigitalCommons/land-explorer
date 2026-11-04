@@ -10,7 +10,7 @@ import FeedbackForm from "./FeedbackForm";
 import FeedbackPopUp from "./FeedbackPopUp";
 import FeedbackSuccess from "./FeedbackSuccess";
 import UserGuidePrompt from "./UserGuidePrompt";
-import UserAccountSettings from "./UserAccountSettings";
+import UserAccountSettings from "./UserAccountSettings/UserAccountSettings";
 
 const Modals = () => (
   <div>

@@ -8,6 +8,8 @@ import constants from "../constants";
 import { getUserDetails } from "../actions/UserActions";
 import { getAuthHeader } from "../utils/Auth";
 
+// TODO: Delete this when we remove VITE_FEATURE_USE_BETTERAUTH
+
 type UpdateUserDetailsModel = {
   firstName: string;
   lastName: string;
