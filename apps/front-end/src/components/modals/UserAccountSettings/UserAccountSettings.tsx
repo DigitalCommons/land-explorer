@@ -73,7 +73,7 @@ export default function UserAccountSettings() {
         <div className="flex min-h-0">
           <Menu
             className={cn(
-              "overflow-y-auto max-sm:grow max-sm:-mr-4 min-w-60 max-w-60",
+              "overflow-y-auto max-sm:grow max-sm:-mr-4 sm:min-w-60 sm:max-w-60",
               showPanel && "max-sm:hidden",
             )}
           >
