@@ -16,6 +16,7 @@ import { isBetterAuthEnabled } from "./featureFlagUtils";
 import { toNodeHandler } from "better-auth/node";
 import { auth } from "./utils/auth";
 import * as Boom from "@hapi/boom";
+import { userOrgRoutes } from "./routes/userOrganisation";
 
 const AuthBearer = require("hapi-auth-bearer-token");
 const Inert = require("@hapi/inert");
@@ -120,6 +121,7 @@ export const init = async function (): Promise<Server> {
   });
 
   server.route(userRoutes);
+  server.route(userOrgRoutes);
   server.route(userAuthRoutes())
   server.route(mapRoutes);
   server.route(dataGroupRoutes);

@@ -7,42 +7,47 @@ import {
 } from "../../ui/dialog";
 import { closeModal } from "@/actions/ModalActions";
 import { Button } from "../../ui/button";
-import { ChevronLeft, ShieldLock, User } from "lucide-react";
+import { ChevronLeft, ShieldLock, User, UserRoundGroup } from "lucide-react";
 import { UserView } from "../../auth/user/user-view";
 import { Menu, MenuContent, MenuHeader, MenuItem } from "../../common/Menu";
 import { ComponentType, useState } from "react";
 import { cn } from "@/lib/utils";
-import { PrivacyPanel } from "./PrivacyPanel";
+import { Privacy } from "./Privacy";
 import { ChangeEmailOtp } from "@/components/auth/email-otp/change-email-otp";
 import { ChangePassword } from "@/components/auth/settings/security/change-password";
+import { OrganisationDetails } from "./OrganisationDetails";
+import { UserProfile } from "@/components/auth/settings/account/user-profile";
 
-type UserAccountSection = "details" | "email" | "password" | "privacy";
-
-const DetailsPanel = () => {
-  return <div>Details</div>;
-};
+type UserAccountSection =
+  | "userProfile"
+  | "email"
+  | "password"
+  | "privacy"
+  | "orgDetails";
 
 // Shown as the dialog's title, so it always has an accessible name
 const titles: Record<UserAccountSection, string> = {
-  details: "Details",
+  userProfile: "User Profile",
   email: "Change email",
   password: "Password",
   privacy: "Privacy Settings",
+  orgDetails: "Organisation Details",
 };
 
 const panels: Record<UserAccountSection, ComponentType> = {
-  details: DetailsPanel,
+  userProfile: UserProfile,
   email: ChangeEmailOtp,
   password: ChangePassword,
-  privacy: PrivacyPanel,
+  privacy: Privacy,
+  orgDetails: OrganisationDetails,
 };
 
-export default function UserAccountPage() {
+export default function UserAccountSettings() {
   const dispatch = useAppDispatch();
   const { open } = useAppSelector(
     (state) => state.modal["userAccountSettings"],
   );
-  const [section, setSection] = useState<UserAccountSection>("details");
+  const [section, setSection] = useState<UserAccountSection>("userProfile");
   // On small screens only one of the menu or the panel is shown at a time
   const [showPanel, setShowPanel] = useState(false);
   const Panel = panels[section];
@@ -70,10 +75,10 @@ export default function UserAccountPage() {
             </MenuHeader>
             <MenuContent>
               <MenuItem
-                onClick={() => selectSection("details")}
-                active={section === "details"}
+                onClick={() => selectSection("userProfile")}
+                active={section === "userProfile"}
               >
-                Details
+                User Profile
               </MenuItem>
               <MenuItem
                 onClick={() => selectSection("email")}
@@ -98,10 +103,20 @@ export default function UserAccountPage() {
             >
               Privacy Settings
             </MenuItem>
+            <MenuHeader>
+              <UserRoundGroup className="size-4" />
+              Organisation
+            </MenuHeader>
+            <MenuItem
+              onClick={() => selectSection("orgDetails")}
+              active={section === "orgDetails"}
+            >
+              Details
+            </MenuItem>
           </Menu>
           <div
             className={cn(
-              "grow min-w-0 overflow-y-auto p-4 -my-4 -mr-4 max-sm:-ml-4",
+              "flex flex-col grow min-w-0 overflow-y-auto p-4 -my-4 -mr-4 max-sm:-ml-4",
               !showPanel && "max-sm:hidden",
             )}
           >
@@ -118,7 +133,8 @@ export default function UserAccountPage() {
               <DialogTitle>{titles[section]}</DialogTitle>
             </div>
 
-            <div className="pt-6">
+            {/* Fills the remaining height so panels can pin content to it */}
+            <div className="relative grow mt-6">
               <Panel />
             </div>
           </div>
