@@ -22,6 +22,7 @@ import AuthProviderWrapper from "./providers/AuthProviderWrapper";
 import { Toaster } from "./components/ui/sonner";
 import RequireAuth from "./components/layouts/RequireAuth";
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
+import { redirectOnUnauthorized } from "./lib/auth/redirect-on-unauthorized";
 
 
 const queryClient = new QueryClient()
@@ -36,6 +37,10 @@ declare global {
 // This code is for all users
 window.__TANSTACK_QUERY_CLIENT__ = queryClient
 initializeMixpanel();
+
+if (constants.VITE_FEATURE_USE_BETTERAUTH) {
+  redirectOnUnauthorized();
+}
 
 // Create a client
 

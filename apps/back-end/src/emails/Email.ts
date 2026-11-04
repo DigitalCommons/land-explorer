@@ -21,20 +21,27 @@ export async function sendPasswordReset(
   request?: Request,
 ) {
   try {
-    sgMail.send({
-      to: user.email,
-      from: {
-        name: senderName,
-        email: sender,
-      },
-      subject: "Reset your LandExplorer password",
-      html: await renderResetPasswordEmail({
-        name: user.name,
-        url,
-        expiryMinutes: RESET_PASSWORD_EXPIRY_SECONDS / 60,
-      }),
-      attachments: [logoAttachment()],
+    const html = await renderResetPasswordEmail({
+      name: user.name,
+      url,
+      expiryMinutes: RESET_PASSWORD_EXPIRY_SECONDS / 60,
     });
+    // Not awaited - Better Auth waits for this function, so waiting on SendGrid
+    // would make a registered email respond slower than an unknown one. The
+    // catch stops a failed send becoming an unhandledRejection, which exits
+    // the server in server.ts
+    sgMail
+      .send({
+        to: user.email,
+        from: {
+          name: senderName,
+          email: sender,
+        },
+        subject: "Reset your LandExplorer password",
+        html,
+        attachments: [logoAttachment()],
+      })
+      .catch((error) => console.error(error));
   } catch (error) {
     console.error(error);
   }

@@ -49,13 +49,13 @@ export const setupWebsockets = (server: HapiServer): void => {
   } else {
     io.use(async (socket, next) => {
       try {
-        // implement authentication, using the same JWT that we use for Hapi API requests
-        // see the 'loginUser' function to see token content        
+        // implement authentication, using the same Better Auth session cookie as the
+        // Hapi "session" strategy. Reject sessions with no linked app user
         const cookie = socket.handshake.headers.cookie ?? "";
         const session = await auth.api.getSession({
           headers: new Headers({cookie: cookie})
         })
-        if (!session) return next(new Error("unauthorized"));
+        if (!session?.user.appUserId) return next(new Error("unauthorized"));
 
         socket.data.userId = session.user.appUserId;
         console.log("User websocket connected");
