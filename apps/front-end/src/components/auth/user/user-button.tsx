@@ -23,6 +23,8 @@ import {
 import { cn } from "@/lib/utils"
 import { UserAvatar } from "./user-avatar"
 import { UserView } from "./user-view"
+import { openModal } from "@/actions/ModalActions"
+import { useAppDispatch } from "@/hooks/react-redux"
 
 /** Auth states a `UserButton` link can be visible in. */
 export type UserButtonLinkVisibility =
@@ -114,7 +116,7 @@ export function UserButton({
 }: UserButtonProps) {
   const { authClient, basePaths, viewPaths, localization, plugins, navigate } =
     useAuth<MultiSessionAuthClient>()
-
+  const dispatch = useAppDispatch();
   const { isPending: settingActiveSession } = useSetActiveSession(authClient)
   const { data: session, isPending: sessionPending } = useSession(authClient)
 
@@ -197,9 +199,7 @@ export function UserButton({
             {!hideSettings && (
               <DropdownMenuItem
                 onClick={() =>
-                  navigate({
-                    to: `${basePaths.settings}/${viewPaths.settings.account}`
-                  })
+                  dispatch(openModal("userAccountSettings"))                  
                 }
               >
                 <Settings className="text-muted-foreground" />
