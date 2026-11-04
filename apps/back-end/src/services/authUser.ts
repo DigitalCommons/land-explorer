@@ -15,6 +15,8 @@ const SIGN_UP_EMAIL_PATH = "/sign-up/email";
 const CHANGE_EMAIL_PATH = "/email-otp/change-email";
 // The emailOTP plugin's endpoint that sends a code to the new address
 const REQUEST_EMAIL_CHANGE_PATH = "/email-otp/request-email-change";
+// Better Auth's endpoint the profile settings use to change the user's name
+const UPDATE_USER_PATH = "/update-user";
 
 const NEW_SIGN_UP_WINDOW_MS = 7 * 24 * 60 * 60 * 1000;
 
@@ -147,6 +149,48 @@ export async function preEmailChangeFlow(data: Partial<User> & Record<string, un
     where: [{ field: "id", value: Number(appUserId) }],
     update: { username: data.email },
   });
+}
+
+/**
+ * Splits a full name into first and last names, taking the first word as the
+ * first name and the rest as the last name. A single word leaves the last name empty.
+ * @param name the full name
+ */
+export function splitName(name: string) {
+  const [firstName = "", ...rest] = name.trim().split(/\s+/);
+  return { first_name: firstName, last_name: rest.join(" ") };
+}
+
+/**
+ * Runs before Better Auth updates an auth_user. When a user changes their name in
+ * their profile, updates the first and last names on our User table to match.
+ *
+ * @param data the auth_user fields being changed
+ * @param ctx the request context
+ */
+export async function preNameChangeFlow(data: Partial<User> & Record<string, unknown>, ctx: GenericEndpointContext | null) {
+  if (ctx?.path !== UPDATE_USER_PATH || typeof data.name !== "string" || !data.name.trim()) return;
+
+  const appUserId = (ctx.context.session?.user as Record<string, unknown> | undefined)?.appUserId;
+  if (!appUserId) return;
+
+  const adapter = await getCurrentAdapter(ctx.context.adapter);
+  await adapter.update({
+    model: APP_USER_MODEL,
+    where: [{ field: "id", value: Number(appUserId) }],
+    update: splitName(data.name),
+  });
+}
+
+/**
+ * Runs before Better Auth updates an auth_user, keeping our User table in step
+ * with changes to the user's email or name.
+ * @param data the auth_user fields being changed
+ * @param ctx the request context
+ */
+export async function preUserUpdateFlow(data: Partial<User> & Record<string, unknown>, ctx: GenericEndpointContext | null) {
+  await preEmailChangeFlow(data, ctx);
+  await preNameChangeFlow(data, ctx);
 }
 
 /**
