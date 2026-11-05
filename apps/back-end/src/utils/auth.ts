@@ -35,6 +35,12 @@ export const auth = betterAuth({
       generateId: ({ model }) => (model === APP_USER_MODEL ? false : generateId()),
     },
     cookiePrefix: "lx",
+    // Rate limits are per IP. Caddy in the front-end image sets X-Client-IP to the
+    // user's address; X-Forwarded-For only holds the coolify proxy address in front of it, which
+    // would put every user in one shared bucket
+    ipAddress: {
+      ipAddressHeaders: ["x-client-ip"],
+    },
   },
   user: {
     modelName: "auth_user",
