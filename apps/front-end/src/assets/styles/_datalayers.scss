@@ -1,13 +1,3 @@
-.data-section-title {
-  cursor: pointer;
-  position: relative;
-  display: flex;
-  flex-direction: row;
-  justify-content: space-between;
-  padding: 0px 25px;
-  background-color: $trayBackground;
-}
-
 /* Tooltips for data group markers  */
 
 [data-tooltip]:before {
