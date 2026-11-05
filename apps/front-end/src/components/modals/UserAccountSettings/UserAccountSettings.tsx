@@ -28,7 +28,7 @@ type UserAccountSection =
 // Shown as the dialog's title, so it always has an accessible name
 const titles: Record<UserAccountSection, string> = {
   userProfile: "User Profile",
-  email: "Change email",
+  email: "Change Email",
   password: "Change Password",
   privacy: "Privacy Settings",
   orgDetails: "Organisation Details",
@@ -125,7 +125,7 @@ export default function UserAccountSettings() {
           </Menu>
           <div
             className={cn(
-              "flex flex-col grow min-w-0 overflow-y-auto p-4 -my-4 -mr-4 max-sm:-ml-4",
+              "flex flex-col grow min-w-0 min-h-0 pt-4 px-4 -my-4 -mr-4 max-sm:-ml-4",
               !showPanel && "max-sm:hidden",
             )}
           >
@@ -140,11 +140,12 @@ export default function UserAccountSettings() {
                 <ChevronLeft />
               </Button>
               <DialogTitle>{titles[section]}</DialogTitle>
-            </div>
-
-            {/* Fills the remaining height so panels can pin content to it */}
-            <div className="relative grow mt-6">
-              <Panel />
+            </div>           
+            <div className="flex flex-col grow min-h-0 overflow-y-auto mt-2 pt-4 pb-4 -mx-4 px-4">
+              {/* Fills the remaining height so panels can pin content to it */}
+              <div className="relative grow">
+                <Panel />
+              </div>
             </div>
           </div>
         </div>
