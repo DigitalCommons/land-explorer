@@ -76,10 +76,6 @@ export function UserProfile({ className }: UserProfileProps) {
 
   return (
     <div>
-      <h2 className="text-sm font-semibold mb-3">
-        {localization.settings.userProfile}
-      </h2>
-
       <form.AppForm>
         <form.AuthFormRoot>
           <Card className={cn(className)}>
@@ -94,7 +90,12 @@ export function UserProfile({ className }: UserProfileProps) {
                       validateStringLength(value, {
                         requiredMessage: localization.auth.fieldRequired,
                         trim: true
-                      })
+                      }) ||
+                      // Saved as first and last names, with any extra words
+                      // going into the last name (see splitName in the back-end)
+                      (value.trim().split(/\s+/).length < 2
+                        ? { message: "Please enter your first and last name." }
+                        : undefined)
                   }}
                 >
                   {(field) => {

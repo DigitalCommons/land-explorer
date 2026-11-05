@@ -2,13 +2,24 @@ import { expect } from "chai";
 import { assert, createSandbox, fake, match, SinonStub } from "sinon";
 import bcrypt from "bcrypt";
 import { APIError } from "better-auth";
-import { postRegistrationFlow, preNameChangeFlow, preRegistrationFlow, splitName } from "./authUser";
+import { runWithEndpointContext } from "@better-auth/core/context";
+import {
+  confirmPasswordForEmailChange,
+  postEmailVerificationFlow,
+  postRegistrationFlow,
+  preEmailChangeFlow,
+  preNameChangeFlow,
+  preRegistrationFlow,
+  preUserUpdateFlow,
+  splitName,
+} from "./authUser";
 import { APP_USER_MODEL } from "../utils/appUserPlugin";
 import { Event } from "../instrument";
 
 // Dependencies to be stubbed https://sinonjs.org/how-to/stub-dependency/
 const query = require("../queries/query");
 const buttondown = require("../clients/buttondown.client");
+const email = require("../emails/email");
 
 const sandbox = createSandbox();
 
@@ -285,12 +296,16 @@ describe("postRegistrationFlow", () => {
 });
 
 describe("splitName", () => {
-  it("takes the last word as the last name and the rest as the first name", () => {
-    expect(splitName("  Betty  Bo Blueberry ")).to.eql({ first_name: "Betty Bo", last_name: "Blueberry" });
+  it("takes the first word as the first name and the rest as the last name", () => {
+    expect(splitName("  Betty  Bo Blueberry ")).to.eql({ first_name: "Betty", last_name: "Bo Blueberry" });
   });
 
   it("splits two words into first and last names", () => {
     expect(splitName("Betty Blueberry")).to.eql({ first_name: "Betty", last_name: "Blueberry" });
+  });
+
+  it("puts every word after the first into the last name", () => {
+    expect(splitName("Betty Mary Ann Blueberry")).to.eql({ first_name: "Betty", last_name: "Mary Ann Blueberry" });
   });
 
   it("takes a single word as the first name", () => {
@@ -314,7 +329,7 @@ describe("preNameChangeFlow", () => {
     assert.calledOnceWithExactly(adapter.update, {
       model: APP_USER_MODEL,
       where: [{ field: "id", value: 7 }],
-      update: { first_name: "Betty Bo", last_name: "Blueberry" },
+      update: { first_name: "Betty", last_name: "Bo Blueberry" },
     });
   });
 
@@ -323,18 +338,305 @@ describe("preNameChangeFlow", () => {
     assert.notCalled(adapter.update);
   });
 
-  it("does nothing for a blank name", async () => {
-    await preNameChangeFlow({ name: "   " }, updateUserContext());
+  it("rejects a single name", async () => {
+    const error = await preNameChangeFlow({ name: " Betty " }, updateUserContext()).catch((e) => e);
+
+    expect(error).to.be.instanceOf(APIError);
+    expect(error.body.code).to.equal("INVALID_NAME");
+    assert.notCalled(adapter.update);
+  });
+
+  it("rejects a blank name", async () => {
+    const error = await preNameChangeFlow({ name: "   " }, updateUserContext()).catch((e) => e);
+
+    expect(error).to.be.instanceOf(APIError);
+    expect(error.body.code).to.equal("INVALID_NAME");
+    assert.notCalled(adapter.update);
+  });
+
+  it("rejects a name that isn't a string", async () => {
+    const error = await preNameChangeFlow({ name: null } as any, updateUserContext()).catch((e) => e);
+
+    expect(error).to.be.instanceOf(APIError);
+    expect(error.body.code).to.equal("INVALID_NAME");
     assert.notCalled(adapter.update);
   });
 
   it("does nothing on other endpoints", async () => {
-    await preNameChangeFlow({ name: "Betty Blueberry" }, updateUserContext("/sign-up/email"));
+    await preNameChangeFlow({ name: "Betty" }, updateUserContext("/sign-up/email"));
     assert.notCalled(adapter.update);
   });
 
   it("does nothing without an app user", async () => {
     await preNameChangeFlow({ name: "Betty Blueberry" }, updateUserContext("/update-user", null));
     assert.notCalled(adapter.update);
+  });
+});
+
+describe("confirmPasswordForEmailChange", () => {
+  const REQUEST_EMAIL_CHANGE_PATH = "/email-otp/request-email-change";
+
+  let findCredentialAccount: ReturnType<typeof fake>;
+  let verify: ReturnType<typeof fake>;
+  let usernameExist: SinonStub;
+
+  // The session is given on the context, which getSessionFromCtx returns as it is
+  const requestContext = (
+    body: Record<string, unknown>,
+    { path = REQUEST_EMAIL_CHANGE_PATH, session = { user: { id: "auth-user-id" } } as unknown } = {},
+  ) =>
+    ({
+      path,
+      body,
+      context: {
+        session,
+        internalAdapter: { findCredentialAccount },
+        password: { verify },
+      },
+    }) as any;
+
+  beforeEach(() => {
+    findCredentialAccount = fake.resolves({ password: "stored-hash" });
+    verify = fake.resolves(true);
+    usernameExist = sandbox.stub(query, "usernameExist").resolves(false);
+  });
+
+  afterEach(() => {
+    sandbox.restore();
+  });
+
+  it("lets a request with the right password and a valid new email through", async () => {
+    await confirmPasswordForEmailChange(
+      requestContext({ newEmail: "new@yahoomail.com", password: "testingtesting123" }),
+    );
+
+    assert.calledOnceWithExactly(findCredentialAccount, "auth-user-id");
+    assert.calledOnceWithExactly(verify, { hash: "stored-hash", password: "testingtesting123" });
+  });
+
+  it("rejects a wrong password", async () => {
+    verify = fake.resolves(false);
+    const error = await confirmPasswordForEmailChange(
+      requestContext({ newEmail: "new@yahoomail.com", password: "wrong" }),
+    ).catch((e) => e);
+
+    expect(error).to.be.instanceOf(APIError);
+    expect(error.body.code).to.equal("INVALID_PASSWORD");
+  });
+
+  it("rejects a missing password without checking it", async () => {
+    const error = await confirmPasswordForEmailChange(
+      requestContext({ newEmail: "new@yahoomail.com" }),
+    ).catch((e) => e);
+
+    expect(error.body.code).to.equal("INVALID_PASSWORD");
+    assert.notCalled(verify);
+  });
+
+  it("rejects an account with no password", async () => {
+    findCredentialAccount = fake.resolves(null);
+    const error = await confirmPasswordForEmailChange(
+      requestContext({ newEmail: "new@yahoomail.com", password: "testingtesting123" }),
+    ).catch((e) => e);
+
+    expect(error.body.code).to.equal("INVALID_PASSWORD");
+  });
+
+  it("rejects a new email that another account uses", async () => {
+    usernameExist.resolves(true);
+    const error = await confirmPasswordForEmailChange(
+      requestContext({ newEmail: "taken@yahoomail.com", password: "testingtesting123" }),
+    ).catch((e) => e);
+
+    expect(error.body.code).to.equal("INVALID_NEW_EMAIL");
+    expect(error.body.message).to.equal("An account already exists with this email.");
+  });
+
+  it("rejects an invalid new email", async () => {
+    const error = await confirmPasswordForEmailChange(
+      requestContext({ newEmail: "not-an-email", password: "testingtesting123" }),
+    ).catch((e) => e);
+
+    expect(error.body.code).to.equal("INVALID_NEW_EMAIL");
+  });
+
+  it("checks the password before the new email, so a wrong password doesn't reveal whether an email is taken", async () => {
+    verify = fake.resolves(false);
+    usernameExist.resolves(true);
+    const error = await confirmPasswordForEmailChange(
+      requestContext({ newEmail: "taken@yahoomail.com", password: "wrong" }),
+    ).catch((e) => e);
+
+    expect(error.body.code).to.equal("INVALID_PASSWORD");
+    assert.notCalled(usernameExist);
+  });
+
+  it("does nothing on other endpoints", async () => {
+    await confirmPasswordForEmailChange(
+      requestContext({ password: "wrong" }, { path: "/sign-in/email" }),
+    );
+
+    assert.notCalled(findCredentialAccount);
+  });
+});
+
+describe("preEmailChangeFlow", () => {
+  const CHANGE_EMAIL_PATH = "/email-otp/change-email";
+
+  let adapter: { update: ReturnType<typeof fake> };
+  let usernameExist: SinonStub;
+
+  const changeEmailContext = (path = CHANGE_EMAIL_PATH, appUserId: number | null = 7) =>
+    ({ path, body: {}, context: { adapter, session: { user: { appUserId } } } }) as any;
+
+  beforeEach(() => {
+    adapter = { update: fake.resolves({}) };
+    usernameExist = sandbox.stub(query, "usernameExist").resolves(false);
+  });
+
+  afterEach(() => {
+    sandbox.restore();
+  });
+
+  it("updates the username on the app user to the new email", async () => {
+    await preEmailChangeFlow({ email: "new@yahoomail.com" }, changeEmailContext());
+
+    assert.calledOnceWithExactly(adapter.update, {
+      model: APP_USER_MODEL,
+      where: [{ field: "id", value: 7 }],
+      update: { username: "new@yahoomail.com" },
+    });
+  });
+
+  it("rejects an email another account took after the code was sent", async () => {
+    usernameExist.resolves(true);
+    const error = await preEmailChangeFlow({ email: "taken@yahoomail.com" }, changeEmailContext()).catch(
+      (e) => e,
+    );
+
+    expect(error).to.be.instanceOf(APIError);
+    expect(error.body.code).to.equal("INVALID_NEW_EMAIL");
+    assert.notCalled(adapter.update);
+  });
+
+  it("does nothing when the email isn't changing", async () => {
+    await preEmailChangeFlow({ name: "Betty Blueberry" }, changeEmailContext());
+    assert.notCalled(usernameExist);
+    assert.notCalled(adapter.update);
+  });
+
+  it("does nothing on other endpoints", async () => {
+    await preEmailChangeFlow({ email: "new@yahoomail.com" }, changeEmailContext("/update-user"));
+    assert.notCalled(adapter.update);
+  });
+
+  it("does nothing without an app user", async () => {
+    await preEmailChangeFlow({ email: "new@yahoomail.com" }, changeEmailContext(CHANGE_EMAIL_PATH, null));
+    assert.notCalled(adapter.update);
+  });
+});
+
+describe("preUserUpdateFlow", () => {
+  let adapter: { update: ReturnType<typeof fake> };
+
+  const context = (path: string) =>
+    ({ path, body: {}, context: { adapter, session: { user: { appUserId: 7 } } } }) as any;
+
+  beforeEach(() => {
+    adapter = { update: fake.resolves({}) };
+    sandbox.stub(query, "usernameExist").resolves(false);
+  });
+
+  afterEach(() => {
+    sandbox.restore();
+  });
+
+  it("updates the username when the email is changed", async () => {
+    await preUserUpdateFlow({ email: "new@yahoomail.com" }, context("/email-otp/change-email"));
+    assert.calledOnceWithMatch(adapter.update, { update: { username: "new@yahoomail.com" } });
+  });
+
+  it("updates the first and last names when the name is changed", async () => {
+    await preUserUpdateFlow({ name: "Betty Blueberry" }, context("/update-user"));
+    assert.calledOnceWithMatch(adapter.update, { update: { first_name: "Betty", last_name: "Blueberry" } });
+  });
+
+  it("rejects a single name from the profile", async () => {
+    const error = await preUserUpdateFlow({ name: "Betty" }, context("/update-user")).catch((e) => e);
+    expect(error.body.code).to.equal("INVALID_NAME");
+  });
+});
+
+describe("postEmailVerificationFlow", () => {
+  const appUser = { id: 42, first_name: "Betty" };
+  const verifiedUser = { ...authUser, emailVerified: true, appUserId: 42 };
+  const DAY_MS = 24 * 60 * 60 * 1000;
+
+  let sendRegisteredEmail: ReturnType<typeof fake>;
+
+  // the endpoint the verification came through, which the flow reads from Better Auth's context
+  const verifiedThrough = (path: string, user: typeof verifiedUser) =>
+    runWithEndpointContext({ path } as any, () => postEmailVerificationFlow(user));
+
+  beforeEach(() => {
+    sendRegisteredEmail = fake();
+    sandbox.replace(email, "sendRegisteredEmail", sendRegisteredEmail);
+    sandbox.replace(query, "getUserById", fake.resolves(appUser));
+    sandbox.replace(process.env, "BETTER_AUTH_URL", "https://landexplorer.test");
+  });
+
+  afterEach(() => {
+    sandbox.restore();
+  });
+
+  it("sends a new sign-up the welcome email", async () => {
+    await verifiedThrough("/email-otp/verify-email", verifiedUser);
+
+    assert.calledOnceWithExactly(
+      sendRegisteredEmail,
+      "blueberry@yahoomail.com",
+      "Betty",
+      "https://landexplorer.test/app",
+    );
+  });
+
+  it("sends the welcome email to a user who signed up 6 days ago", async () => {
+    await verifiedThrough("/email-otp/verify-email", {
+      ...verifiedUser,
+      createdAt: new Date(Date.now() - 6 * DAY_MS),
+    });
+
+    assert.calledOnce(sendRegisteredEmail);
+  });
+
+  it("doesn't send it to a migrated user, who first registered over a week ago", async () => {
+    await verifiedThrough("/email-otp/verify-email", {
+      ...verifiedUser,
+      createdAt: new Date(Date.now() - 8 * DAY_MS),
+    });
+
+    assert.notCalled(sendRegisteredEmail);
+  });
+
+  it("doesn't send it when the email was verified by changing it", async () => {
+    await verifiedThrough("/email-otp/change-email", verifiedUser);
+    assert.notCalled(sendRegisteredEmail);
+  });
+
+  it("does nothing without a linked app user", async () => {
+    await verifiedThrough("/email-otp/verify-email", { ...verifiedUser, appUserId: undefined as any });
+    assert.notCalled(sendRegisteredEmail);
+  });
+
+  it("logs the error rather than rejecting", async () => {
+    sandbox.restore();
+    sandbox.replace(email, "sendRegisteredEmail", sendRegisteredEmail);
+    sandbox.replace(query, "getUserById", fake.rejects(new Error("database down")));
+    const consoleError = sandbox.stub(console, "error");
+
+    await verifiedThrough("/email-otp/verify-email", verifiedUser);
+
+    assert.notCalled(sendRegisteredEmail);
+    assert.calledOnce(consoleError);
   });
 });

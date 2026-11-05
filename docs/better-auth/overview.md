@@ -8,6 +8,7 @@ The new auth sits behind a feature flag, so the old and new versions live side b
 - [Emails](../back-end/emails.md): React Email templates, which all new emails should use
 - [Front end](front-end.md): the auth client, Better Auth UI components, routes and 401 handling
 - [Registration](registration.md): how sign-up writes our `user` table inside Better Auth's transaction
+- [Account settings](account-settings.md): the settings modal, and changing name, email, password, privacy and organisation details
 - [Migrating users](migrating-users.md): copying existing users into Better Auth and switching the flag on
 
 ## Environment variables
@@ -70,7 +71,7 @@ erDiagram
 
 ### Tech debt: duplicated user details
 
-The email and name are stored twice: `user.username`, `first_name` and `last_name`, and `auth_user.email` and `name`. Sign-in uses `auth_user.email`, and the rest of the app uses `user`.
+The email and name are stored twice: `user.username`, `first_name` and `last_name`, and `auth_user.email` and `name`. Sign-in uses `auth_user.email`, and the rest of the app uses `user`. Hooks copy changes from `auth_user` to `user` when a user changes their name or email, see [Account settings](account-settings.md#keeping-user-in-step).
 
 This is acceptable for now. It can be cleaned up later by making `auth_user` the only copy and removing the columns from `user`.
 
