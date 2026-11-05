@@ -76,10 +76,6 @@ export function UserProfile({ className }: UserProfileProps) {
 
   return (
     <div>
-      <h2 className="text-sm font-semibold mb-3">
-        {localization.settings.userProfile}
-      </h2>
-
       <form.AppForm>
         <form.AuthFormRoot>
           <Card className={cn(className)}>
