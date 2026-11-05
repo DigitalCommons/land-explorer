@@ -20,7 +20,7 @@ const DataLayersContainer = ({ children, title, settings }: Props) => {
   return (
     <div>
       <div
-        className="relative flex cursor-pointer flex-row justify-between bg-[#eff0f2] px-[25px]"
+        className="relative flex cursor-pointer flex-row justify-between bg-muted px-[25px]"
         onClick={() => {
           setExpanded(!expanded);
           setSettingsOpen(false);
@@ -41,11 +41,11 @@ const DataLayersContainer = ({ children, title, settings }: Props) => {
                   setExpanded(true);
                   setSettingsOpen(!settingsOpen);
                 }}
-                className="bg-transparent text-[#78838f]/80 aria-expanded:text-primary"
+                className="bg-transparent text-muted-foreground/80 hover:bg-background aria-expanded:bg-background aria-expanded:text-primary"
               >
                 <FontAwesomeIcon icon={faGear} />
               </Button>
-              <span className="h-[18px] w-px bg-[#ccc]" />
+              <span className="h-[18px] w-px bg-border" />
             </>
           )}
           <img
