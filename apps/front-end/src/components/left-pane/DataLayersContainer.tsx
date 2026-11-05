@@ -1,6 +1,7 @@
 import React, { useId, useState } from "react";
 import { faGear } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { Button } from "@/components/ui/button";
 import { Collapsible, CollapsibleContent } from "@/components/ui/collapsible";
 import iconChevron from "../../assets/img/icon-chevron.svg";
 import { cn } from "@/lib/utils";
@@ -29,8 +30,9 @@ const DataLayersContainer = ({ children, title, settings }: Props) => {
         <div className="absolute top-1/2 right-3 flex -translate-y-1/2 items-center gap-3">
           {settings && (
             <>
-              <button
-                type="button"
+              <Button
+                variant="ghost"
+                size="icon"
                 aria-label={`${title} settings`}
                 aria-expanded={settingsOpen}
                 aria-controls={panelId}
@@ -39,13 +41,10 @@ const DataLayersContainer = ({ children, title, settings }: Props) => {
                   setExpanded(true);
                   setSettingsOpen(!settingsOpen);
                 }}
-                className={cn(
-                  "relative cursor-pointer border-0 bg-transparent p-0 text-[#78838f]/80 after:absolute after:-inset-2",
-                  settingsOpen && "text-primary",
-                )}
+                className="bg-transparent text-[#78838f]/80 aria-expanded:text-primary"
               >
                 <FontAwesomeIcon icon={faGear} />
-              </button>
+              </Button>
               <span className="h-[18px] w-px bg-[#ccc]" />
             </>
           )}
