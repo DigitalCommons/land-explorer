@@ -22,7 +22,7 @@ type LoadMapPayload = {
 
 type LandDataLayersAction =
   | (Action<string> & { type: "TOGGLE_LAND_DATA_LAYER" })
-  | (Action & { type: "TOGGLE_BOUNDARY_NAMES_ON_HOVER" })
+  | (Action<boolean> & { type: "SET_BOUNDARY_NAMES_ON_HOVER" })
   | (Action<LoadMapPayload> & { type: "LOAD_MAP" | "RELOAD_MAP" })
   | (Action & { type: "NEW_MAP" })
   | Action;
@@ -46,10 +46,10 @@ export default (
         landDataLayers,
       };
     }
-    case "TOGGLE_BOUNDARY_NAMES_ON_HOVER":
+    case "SET_BOUNDARY_NAMES_ON_HOVER":
       return {
         ...state,
-        showBoundaryNamesOnHover: !state.showBoundaryNamesOnHover,
+        showBoundaryNamesOnHover: action.payload as boolean,
       };
     case "LOAD_MAP":
     case "RELOAD_MAP": {
