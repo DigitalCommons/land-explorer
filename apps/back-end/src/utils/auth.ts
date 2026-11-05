@@ -1,5 +1,16 @@
 import { betterAuth } from "better-auth";
+import { emailOTP } from "better-auth/plugins";
+import { generateId } from "@better-auth/core/utils/id";
 import { createPool } from "mysql2/promise";
+import bcrypt from 'bcrypt';
+import { APP_USER_MODEL, appUserPlugin } from "./appUserPlugin";
+import {
+  RESET_PASSWORD_EXPIRY_SECONDS,
+  sendPasswordReset,
+  sendVerificationOTP,
+  VERIFICATION_CODE_EXPIRY_SECONDS,
+} from "../emails/email";
+import { postEmailVerificationFlow, postRegistrationFlow, preRegistrationFlow } from "../services/authUser";
 
 export const auth = betterAuth({
   database: createPool({
@@ -13,15 +24,14 @@ export const auth = betterAuth({
   advanced: {
     database: {
       joins: true,
+      // our user table's id is auto-increment, so leave it to the database;
+      // Better Auth's own tables keep its default ids
+      generateId: ({ model }) => (model === APP_USER_MODEL ? false : generateId()),
     },
     cookiePrefix: "lx",
   },
-  emailAndPassword: {
-    enabled: true,
-    minPasswordLength: 6,
-  },
   user: {
-    modelName: "auth_user",
+    modelName: "auth_user",        
     additionalFields: {
       appUserId: {
         type: "number",
@@ -29,6 +39,14 @@ export const auth = betterAuth({
         required: false, // nullable
         unique: true,
         input: false,
+      },
+    },
+  },
+  databaseHooks: {
+    user: {
+      create: {        
+        before: preRegistrationFlow,
+        after: postRegistrationFlow
       },
     },
   },
@@ -45,4 +63,43 @@ export const auth = betterAuth({
   account: {
     modelName: "auth_account",
   },
+  plugins: [
+    appUserPlugin(),
+    emailOTP({
+      overrideDefaultEmailVerification: true,
+      sendVerificationOTP,
+      expiresIn: VERIFICATION_CODE_EXPIRY_SECONDS,
+      // users must sign up through /sign-up/email, where preRegistrationFlow
+      // creates their row in our user table
+      disableSignUp: true,
+    }),
+  ],
+  // The emailOTP plugin also adds code sign-in and code password reset, which we don't use currently
+  disabledPaths: [
+    "/sign-in/email-otp",
+    "/email-otp/request-password-reset",
+    "/forget-password/email-otp",
+    "/email-otp/reset-password",
+  ],
+  emailAndPassword: {
+    enabled: true,
+    requireEmailVerification: true,
+    minPasswordLength: 6,
+    resetPasswordTokenExpiresIn: RESET_PASSWORD_EXPIRY_SECONDS,
+    // signs the user out on every device, in case the reset is to lock someone else
+    // out. Other devices can stay signed in until the session cookieCache expires
+    revokeSessionsOnPasswordReset: true,
+    sendResetPassword: sendPasswordReset,
+    password: {
+      hash: (password: string) => bcrypt.hash(password, 10),      
+      verify: (data: {hash: string; password: string;}) => bcrypt.compare(data.password, data.hash)
+    }    
+  },
+  // The verification email itself comes from the emailOTP plugin above
+  emailVerification: {
+    autoSignInAfterVerification: true,
+    sendOnSignIn: true,
+    sendOnSignUp: true,
+    afterEmailVerification: postEmailVerificationFlow,
+  }
 });

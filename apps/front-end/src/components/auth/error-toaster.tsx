@@ -5,6 +5,7 @@ import {
   isPasswordCompromisedError
 } from "@better-auth-ui/core"
 import { oneTapMutationKeys } from "@better-auth-ui/core/plugins/one-tap"
+import { useAuth } from "@better-auth-ui/react"
 import {
   matchMutation,
   matchQuery,
@@ -14,10 +15,18 @@ import type { BetterFetchError } from "better-auth/react"
 import { useEffect } from "react"
 import { toast } from "sonner"
 
+import { getFriendlyAuthErrorMessage } from "@/lib/auth/auth-error-message"
+
 export function ErrorToaster() {
   const queryClient = useQueryClient()
+  const { localization } = useAuth()
 
   useEffect(() => {
+    const messageFor = (
+      err: BetterFetchError,
+      key?: readonly unknown[]
+    ) => getFriendlyAuthErrorMessage(err, localization, key)
+
     const queryCache = queryClient.getQueryCache()
     const previousQueryOnError = queryCache.config.onError
 
@@ -29,7 +38,9 @@ export function ErrorToaster() {
 
       const err = error as BetterFetchError
       if (err?.error?.code === "EMAIL_NOT_VERIFIED") return
-      if (err?.error) toast.error(err.error.message)
+      if (!err?.error) return
+      const message = messageFor(err, query.queryKey)
+      if (message) toast.error(message)
     }
 
     const mutationCache = queryClient.getMutationCache()
@@ -65,14 +76,15 @@ export function ErrorToaster() {
       ) {
         return
       }
-      toast.error(err.error?.message || err.message)
+      const message = messageFor(err, mutation.options.mutationKey)
+      if (message) toast.error(message)
     }
 
     return () => {
       queryCache.config.onError = previousQueryOnError
       mutationCache.config.onError = previousMutationOnError
     }
-  }, [queryClient])
+  }, [queryClient, localization])
 
   return null
 }
