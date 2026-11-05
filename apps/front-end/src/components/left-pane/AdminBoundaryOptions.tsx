@@ -49,11 +49,11 @@ const AdminBoundaryOptions = () => {
         render={({ field }) => (
           <FieldLabel
             className={cn(
-              "select-none",
+              "border-input select-none",
               disabled ? "opacity-50" : "cursor-pointer",
             )}
           >
-            <Field orientation="horizontal" className="gap-3">
+            <Field orientation="horizontal" className="gap-3 rounded-lg">
               <FieldContent className="gap-1">
                 <FieldTitle id={LABEL_ID} className="text-base font-normal">
                   Show boundary names on hover
