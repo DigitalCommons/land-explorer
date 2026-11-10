@@ -158,6 +158,7 @@ const LeftPaneLandData = ({ open, active, onClose }: Props) => {
       <DataLayersContainer
         title={"Administrative Boundaries"}
         settings={<AdminBoundaryOptions />}
+        settingsLabel="Boundary pop-up display options"
       >
         <LandDataLayerToggle title="Wards" layerId="wards-cu4dni" />
         <LandDataLayerToggle title="Parishes" layerId="parish" />

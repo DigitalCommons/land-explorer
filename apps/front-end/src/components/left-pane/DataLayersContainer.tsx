@@ -3,6 +3,11 @@ import { faGear } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Button } from "@/components/ui/button";
 import { Collapsible, CollapsibleContent } from "@/components/ui/collapsible";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import iconChevron from "../../assets/img/icon-chevron.svg";
 import { cn } from "@/lib/utils";
 
@@ -10,9 +15,15 @@ type Props = {
   children: React.ReactNode;
   title: string;
   settings?: React.ReactNode;
+  settingsLabel?: string;
 };
 
-const DataLayersContainer = ({ children, title, settings }: Props) => {
+const DataLayersContainer = ({
+  children,
+  title,
+  settings,
+  settingsLabel = `${title} settings`,
+}: Props) => {
   const [expanded, setExpanded] = useState(true);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const panelId = useId();
@@ -30,21 +41,28 @@ const DataLayersContainer = ({ children, title, settings }: Props) => {
         <div className="absolute top-1/2 right-3 flex -translate-y-1/2 items-center gap-3">
           {settings && (
             <>
-              <Button
-                variant="ghost"
-                size="icon"
-                aria-label={`${title} settings`}
-                aria-expanded={settingsOpen}
-                aria-controls={panelId}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setExpanded(true);
-                  setSettingsOpen(!settingsOpen);
-                }}
-                className="bg-transparent text-muted-foreground/80 hover:bg-background aria-expanded:bg-background aria-expanded:text-primary"
-              >
-                <FontAwesomeIcon icon={faGear} />
-              </Button>
+              <Tooltip>
+                <TooltipTrigger
+                  render={
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      aria-label={settingsLabel}
+                      aria-expanded={settingsOpen}
+                      aria-controls={panelId}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setExpanded(true);
+                        setSettingsOpen(!settingsOpen);
+                      }}
+                      className="bg-transparent text-muted-foreground/80 hover:bg-background aria-expanded:bg-background aria-expanded:text-primary"
+                    />
+                  }
+                >
+                  <FontAwesomeIcon icon={faGear} />
+                </TooltipTrigger>
+                <TooltipContent>{settingsLabel}</TooltipContent>
+              </Tooltip>
               <span className="h-[18px] w-px bg-border" />
             </>
           )}
