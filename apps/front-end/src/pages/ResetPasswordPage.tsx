@@ -10,7 +10,7 @@ import { Navigate, useSearchParams } from "react-router-dom";
 type ResetPasswordProps = { updateBgImage: (n: number) => void };
 
 export default function ResetPasswordPage({ updateBgImage }: ResetPasswordProps) {
-    const {data: session, isFetching} = useSession(authClient);
+    const {data: session, isPending} = useSession(authClient);
     // An expired or already used reset link lands here with ?error=INVALID_TOKEN
     const [searchParams] = useSearchParams();
     const linkFailed = searchParams.has("error");
@@ -19,7 +19,9 @@ export default function ResetPasswordPage({ updateBgImage }: ResetPasswordProps)
         updateBgImage(2);
     }, []);
     
-    if (!session && isFetching) return <Spinner />
+    // Only on the first load: a background refetch (e.g. on tab focus) would
+    // otherwise unmount the form and lose what was typed
+    if (isPending) return <Spinner />
     if (session) return <Navigate to="/app" replace />
 
     return (
