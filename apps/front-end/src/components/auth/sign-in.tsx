@@ -37,7 +37,12 @@ import {
 } from "@/components/ui/input-group"
 import { useSignInContinuation } from "@/lib/auth/use-sign-in-continuation"
 import { cn } from "@/lib/utils"
-import { isAuthFormFieldInvalid, useAuthForm } from "./auth-form"
+import { getFriendlyAuthErrorMessage } from "@/lib/auth/auth-error-message"
+import {
+  isAuthFormFieldInvalid,
+  setAuthFormServerError,
+  useAuthForm
+} from "./auth-form"
 import { LastUsedBadge } from "./last-login-method/last-used-badge"
 import { ProviderButtons, type SocialLayout } from "./provider-buttons"
 import { ReauthenticationNotice } from "./reauthentication"
@@ -78,14 +83,21 @@ export function SignIn({
 
   const { mutateAsync: signInEmail, isPending: signInEmailPending } =
     useSignInEmail(authClient, {
+      // Errors such as a wrong password show under the password field, so
+      // ErrorToaster needs to leave them alone
+      meta: { errorPresentation: "inline" },
       onError: (error, { email }) => {
-        form.setFieldValue("password", "")
+        // Without validating, which would add a "required" error to the server one
+        form.setFieldValue("password", "", { dontValidate: true })
 
         if (error.error?.code === "EMAIL_NOT_VERIFIED") {
           sessionStorage.setItem("better-auth-ui.verify-email", email)
           navigate({
             to: `${basePaths.auth}/${viewPaths.auth.verifyEmail}`
           })
+        } else {
+          const message = getFriendlyAuthErrorMessage(error, localization)
+          if (message) setAuthFormServerError(form, message, message)
         }
 
         resetFetchOptions()
@@ -270,6 +282,7 @@ export function SignIn({
                           </InputGroup>
 
                           <field.AuthFormFieldError />
+                          <form.AuthFormServerError />
                         </Field>
                       )
                     }}
