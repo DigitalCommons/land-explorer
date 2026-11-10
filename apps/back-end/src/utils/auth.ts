@@ -56,6 +56,17 @@ export const auth = betterAuth({
       },
     },
   },
+  rateLimit: {
+    customRules: {
+      // The emailOTP plugin allows 3 a minute on the endpoints that check a code,
+      // the same as the code's own 3 tries, so a 4th try got a 429 instead of
+      // the plugin's TOO_MANY_ATTEMPTS, which tells the user to request a new
+      // code. Guessing is still capped per code, and sending a new code has its
+      // own limit
+      "/email-otp/change-email": { window: 60, max: 10 },
+      "/email-otp/verify-email": { window: 60, max: 10 },
+    },
+  },
   hooks: {
     before: confirmPasswordForEmailChange,
   },
