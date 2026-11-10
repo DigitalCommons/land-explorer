@@ -6,10 +6,8 @@ import {
   FieldLabel,
   FieldTitle,
 } from "@/components/ui/field";
-import { hasAdminBoundaryLayer } from "../../utils/adminBoundaries";
 import { useAppDispatch, useAppSelector } from "@/hooks/react-redux";
 import { autoSave } from "@/actions/MapActions";
-import { cn } from "@/lib/utils";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Controller, useForm } from "react-hook-form";
 import z from "zod";
@@ -22,16 +20,14 @@ const formSchema = z.object({
 
 const AdminBoundaryOptions = () => {
   const dispatch = useAppDispatch();
-  const { landDataLayers, showBoundaryNamesOnHover } = useAppSelector(
-    (state) => state.landDataLayers,
+  const showBoundaryNamesOnHover = useAppSelector(
+    (state) => state.landDataLayers.showBoundaryNamesOnHover,
   );
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     // values rather than defaultValues, as loading a map can change the setting
     values: { showBoundaryNames: showBoundaryNamesOnHover },
   });
-
-  const disabled = !hasAdminBoundaryLayer(landDataLayers);
 
   const onSubmit = (data: z.infer<typeof formSchema>) => {
     dispatch({
@@ -47,12 +43,7 @@ const AdminBoundaryOptions = () => {
         name="showBoundaryNames"
         control={form.control}
         render={({ field }) => (
-          <FieldLabel
-            className={cn(
-              "border-input select-none",
-              disabled ? "opacity-50" : "cursor-pointer",
-            )}
-          >
+          <FieldLabel className="cursor-pointer border-input select-none">
             <Field orientation="horizontal" className="gap-3 rounded-lg">
               <FieldContent className="gap-1">
                 <FieldTitle id={LABEL_ID} className="text-base font-normal">
@@ -65,7 +56,6 @@ const AdminBoundaryOptions = () => {
               <Checkbox
                 aria-labelledby={LABEL_ID}
                 checked={field.value}
-                disabled={disabled}
                 onCheckedChange={(checked) => {
                   field.onChange(checked);
                   form.handleSubmit(onSubmit)();
