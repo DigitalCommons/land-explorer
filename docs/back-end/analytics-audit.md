@@ -42,7 +42,8 @@ When analtics consent is given, the `distinct_id` hash is SHA-256 of `userId + u
 
 ### `User_ViewedGuide`
 **Trigger:** User views the user guide when prompted  
-**Source:** `src/routes/user.ts`
+**Source:** `src/routes/user.ts`  
+**Notes:** Opening the guide from the user menu sends the same event from the browser instead (`trackEvent` in the front end's `src/analytics.ts`, `source: "profile-menu"`). That one is only sent with consent, uses the front end's hashed user ID (salted with `VITE_MIXPANEL_PEPPER`), and has no `user_groups`.
 
 | Field | Consenting | Non-consenting |
 |---|---|---|

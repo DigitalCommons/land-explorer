@@ -21,7 +21,7 @@ src/emails/
 `components/Layout.tsx` provides:
 
 - `Layout`: the logo, white card, green top border and Digital Commons footer. `preview` is the text inboxes show after the subject line.
-- `EmailHeading`, `Paragraph` (`muted` for grey text), `PrimaryButton` and `SignOff`.
+- `EmailHeading`, `Paragraph` (`muted` for grey text), `PrimaryButton`, `CodeBox` (a large one-time code, as in the verification email) and `SignOff`.
 - `BRAND_GREEN`.
 
 Use these rather than styling each email, so every email stays on brand.

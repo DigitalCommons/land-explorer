@@ -11,7 +11,9 @@ How the back end uses Better Auth when `FEATURE_USE_BETTERAUTH=true`. For env va
 | `modelName: "auth_*"` | Keeps Better Auth's tables apart from our `user` table |
 | `user.additionalFields.appUserId` | Links `auth_user` to `user`. `input: false`, so clients can't set it |
 | `cookiePrefix: "lx"` | Cookies are named `lx.session_token` and so on |
-| `session.cookieCache` (5 minutes) | Saves a database read per request. A revoked session can keep working for up to 5 minutes |
+| `advanced.ipAddress.ipAddressHeaders: ["x-client-ip"]` | Rate limits are per IP. The front end's Caddy sets `X-Client-IP` to the user's address (see `apps/front-end/Dockerfile`). `X-Forwarded-For` only shows the Coolify proxy, which would put every user in one shared bucket |
+| `rateLimit.customRules` | Allows 10 a minute on `/email-otp/verify-email` and `/email-otp/change-email`. The plugin's default of 3 matched the code's own 3 tries, so a 4th try got a 429 instead of `TOO_MANY_ATTEMPTS`, which tells the user to request a new code |
+| `session.cookieCache` (5 minutes) | Saves a database read per request. A revoked or signed-out session can keep working for up to 5 minutes if its `lx.session_data` cookie is still sent, e.g. a copied cookie. Browsers clear it on sign-out |
 | `emailAndPassword.password` | bcrypt with cost 10, the same as the old auth, so existing hashes still verify |
 | `minPasswordLength: 6` | Matches the old rule. The front end's `AuthProviderWrapper` uses the same value |
 | `requireEmailVerification` | Users can't sign in until they've verified their email, see [Email verification](#email-verification) |

@@ -39,7 +39,7 @@ Wraps the app in Better Auth UI's `AuthProvider`, which needs the TanStack `Quer
 | `/auth/verify-email` | `VerifyEmailPage.tsx`, see [Email verification](#email-verification) |
 | `/auth/sign-out` | `SignOut` |
 
-The sign-in, register and verify-email pages send a user who already has a session to `/app`.
+Every page here except sign-out sends a user who already has a session to `/app`.
 
 ## Email verification
 
@@ -51,7 +51,7 @@ A correct code signs the user in (`autoSignInAfterVerification` on the back end)
 
 Resending a code has a 60-second cooldown (`src/lib/auth/use-resend-cooldown.ts`), to keep users off the back end's rate limit. Arriving straight from sign-up or sign-in starts the cooldown, because a code has just been sent.
 
-Errors show inside the card rather than as a toast, so they stay next to the code the user is typing. `getFriendlyAuthErrorMessage` in `src/lib/auth/auth-error-message.ts` picks the message. It tells an expired code (`OTP_EXPIRED`) apart from a wrong one (`INVALID_OTP`), which Better Auth UI gives one combined message. `ErrorToaster` uses the same function for its toasts.
+Errors show inside the card rather than as a toast, so they stay next to the code the user is typing. `getFriendlyAuthErrorMessage` in `src/lib/auth/auth-error-message.ts` picks the message. It tells an expired code (`OTP_EXPIRED`) apart from a wrong one (`INVALID_OTP`), which Better Auth UI gives one combined message, and tells the user to request a new code after 3 wrong tries (`TOO_MANY_ATTEMPTS`). `ErrorToaster` uses the same function for its toasts.
 
 `VerifyEmailPage` turns off `refetchOnWindowFocus` for its session query. Otherwise, switching back from the email tab would remount `VerifyEmailOtp` and reset its resend cooldown.
 
