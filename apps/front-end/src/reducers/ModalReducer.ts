@@ -18,6 +18,7 @@ type ModalState = {
   feedbackPopUp: ModalConfig;
   feedbackSuccess: ModalConfig;
   userGuidePrompt: ModalConfig;
+  userAccountSettings: ModalConfig;
   [key: string]: ModalConfig;
 };
 
@@ -70,6 +71,10 @@ const INITIAL_STATE: ModalState = {
     open: false,
     canToggle: false,
   },
+  userAccountSettings: {
+    open: false,
+    canToggle: false
+  }
 };
 
 type ModalAction =
