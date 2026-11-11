@@ -119,6 +119,8 @@ export const auth = betterAuth({
     enabled: true,
     requireEmailVerification: true,
     minPasswordLength: 6,
+    // bcrypt only uses the first 72 bytes, so anything longer would be silently ignored
+    maxPasswordLength: 72,
     resetPasswordTokenExpiresIn: RESET_PASSWORD_EXPIRY_SECONDS,
     // signs the user out on every device, in case the reset is to lock someone else
     // out. Other devices can stay signed in until the session cookieCache expires
