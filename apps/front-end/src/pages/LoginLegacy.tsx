@@ -80,6 +80,13 @@ const LoginLegacy = ({ updateBgImage }: Props) => {
       .catch((err: any) => {
         console.log(err);
         const { response } = err;
+        // The back end has switched to Better Auth, which doesn't have /api/token,
+        // but this tab is still running the old front end. Reloading loads the
+        // new one, which shows the new sign-in page.
+        if (response?.status === 404) {
+          window.location.reload();
+          return;
+        }
         const errorMessage =
           response?.data.message || "Unable to log in. Please try again later.";
         setLoggingIn(false);
