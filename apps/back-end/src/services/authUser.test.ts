@@ -2,7 +2,7 @@ import { expect } from "chai";
 import { assert, createSandbox, fake, match, SinonStub } from "sinon";
 import bcrypt from "bcrypt";
 import { APIError } from "better-auth";
-import { postRegistrationFlow, preRegistrationFlow } from "./authUser";
+import { postRegistrationFlow, preNameChangeFlow, preRegistrationFlow, splitName } from "./authUser";
 import { APP_USER_MODEL } from "../utils/appUserPlugin";
 import { Event } from "../instrument";
 
@@ -281,5 +281,60 @@ describe("postRegistrationFlow", () => {
       );
       assert.notCalled(trackUserEvent);
     });
+  });
+});
+
+describe("splitName", () => {
+  it("takes the last word as the last name and the rest as the first name", () => {
+    expect(splitName("  Betty  Bo Blueberry ")).to.eql({ first_name: "Betty Bo", last_name: "Blueberry" });
+  });
+
+  it("splits two words into first and last names", () => {
+    expect(splitName("Betty Blueberry")).to.eql({ first_name: "Betty", last_name: "Blueberry" });
+  });
+
+  it("takes a single word as the first name", () => {
+    expect(splitName("Betty")).to.eql({ first_name: "Betty", last_name: "" });
+  });
+});
+
+describe("preNameChangeFlow", () => {
+  let adapter: { update: ReturnType<typeof fake> };
+
+  const updateUserContext = (path = "/update-user", appUserId: number | null = 7) =>
+    ({ path, body: {}, context: { adapter, session: { user: { appUserId } } } }) as any;
+
+  beforeEach(() => {
+    adapter = { update: fake.resolves({}) };
+  });
+
+  it("updates the first and last names on the app user", async () => {
+    await preNameChangeFlow({ name: "Betty Bo Blueberry" }, updateUserContext());
+
+    assert.calledOnceWithExactly(adapter.update, {
+      model: APP_USER_MODEL,
+      where: [{ field: "id", value: 7 }],
+      update: { first_name: "Betty Bo", last_name: "Blueberry" },
+    });
+  });
+
+  it("does nothing when the name isn't changing", async () => {
+    await preNameChangeFlow({ image: "avatar.png" }, updateUserContext());
+    assert.notCalled(adapter.update);
+  });
+
+  it("does nothing for a blank name", async () => {
+    await preNameChangeFlow({ name: "   " }, updateUserContext());
+    assert.notCalled(adapter.update);
+  });
+
+  it("does nothing on other endpoints", async () => {
+    await preNameChangeFlow({ name: "Betty Blueberry" }, updateUserContext("/sign-up/email"));
+    assert.notCalled(adapter.update);
+  });
+
+  it("does nothing without an app user", async () => {
+    await preNameChangeFlow({ name: "Betty Blueberry" }, updateUserContext("/update-user", null));
+    assert.notCalled(adapter.update);
   });
 });
