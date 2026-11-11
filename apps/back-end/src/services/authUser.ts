@@ -152,26 +152,34 @@ export async function preEmailChangeFlow(data: Partial<User> & Record<string, un
 }
 
 /**
- * Splits a full name into first and last names, taking the last word as the
- * last name and the rest as the first name. A single word is taken as the first
+ * Splits a full name into first and last names, taking the first word as the
+ * first name and the rest as the last name. A single word is taken as the first
  * name, leaving the last name empty.
  * @param name the full name
  */
 export function splitName(name: string) {
-  const words = name.trim().split(/\s+/);
-  const lastName = words.length > 1 ? words.pop()! : "";
-  return { first_name: words.join(" "), last_name: lastName };
+  const [firstName = "", ...rest] = name.trim().split(/\s+/);
+  return { first_name: firstName, last_name: rest.join(" ") };
 }
 
 /**
  * Runs before Better Auth updates an auth_user. When a user changes their name in
  * their profile, updates the first and last names on our User table to match.
+ * Both are required on our User table, so the name must have at least two words.
  *
  * @param data the auth_user fields being changed
  * @param ctx the request context
  */
 export async function preNameChangeFlow(data: Partial<User> & Record<string, unknown>, ctx: GenericEndpointContext | null) {
-  if (ctx?.path !== UPDATE_USER_PATH || typeof data.name !== "string" || !data.name.trim()) return;
+  if (ctx?.path !== UPDATE_USER_PATH || data.name === undefined) return;
+
+  // checked here too, as the profile form's check can be skipped by calling the endpoint directly
+  if (typeof data.name !== "string" || data.name.trim().split(/\s+/).length < 2) {
+    throw new APIError("BAD_REQUEST", {
+      message: "Please enter your first and last name.",
+      code: "INVALID_NAME",
+    });
+  }
 
   const appUserId = (ctx.context.session?.user as Record<string, unknown> | undefined)?.appUserId;
   if (!appUserId) return;

@@ -10,7 +10,7 @@ import { Button } from "../../ui/button";
 import { ChevronLeft, ShieldLock, User, UserRoundGroup } from "lucide-react";
 import { UserView } from "../../auth/user/user-view";
 import { Menu, MenuContent, MenuHeader, MenuItem } from "../../common/Menu";
-import { ComponentType, useState } from "react";
+import { ComponentType, useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 import { Privacy } from "./Privacy";
 import { ChangeEmailOtp } from "@/components/auth/email-otp/change-email-otp";
@@ -28,8 +28,8 @@ type UserAccountSection =
 // Shown as the dialog's title, so it always has an accessible name
 const titles: Record<UserAccountSection, string> = {
   userProfile: "User Profile",
-  email: "Change email",
-  password: "Password",
+  email: "Change Email",
+  password: "Change Password",
   privacy: "Privacy Settings",
   orgDetails: "Organisation Details",
 };
@@ -55,6 +55,15 @@ export default function UserAccountSettings() {
     setSection(newSection);
     setShowPanel(true);
   };
+
+  // The modal stays mounted while closed, so start from User Profile (and on
+  // small screens, the menu) each time it's opened again
+  useEffect(() => {
+    if (!open) {
+      setSection("userProfile");
+      setShowPanel(false);
+    }
+  }, [open]);
   return (
     <Dialog open={open} onOpenChange={() => void 0}>
       <DialogContent
@@ -64,7 +73,7 @@ export default function UserAccountSettings() {
         <div className="flex min-h-0">
           <Menu
             className={cn(
-              "overflow-y-auto max-sm:grow max-sm:-mr-4 min-w-60 max-w-60",
+              "overflow-y-auto max-sm:grow max-sm:-mr-4 sm:min-w-60 sm:max-w-60",
               showPanel && "max-sm:hidden",
             )}
           >
@@ -116,7 +125,7 @@ export default function UserAccountSettings() {
           </Menu>
           <div
             className={cn(
-              "flex flex-col grow min-w-0 overflow-y-auto p-4 -my-4 -mr-4 max-sm:-ml-4",
+              "flex flex-col grow min-w-0 min-h-0 pt-4 px-4 -my-4 -mr-4 max-sm:-ml-4",
               !showPanel && "max-sm:hidden",
             )}
           >
@@ -131,11 +140,12 @@ export default function UserAccountSettings() {
                 <ChevronLeft />
               </Button>
               <DialogTitle>{titles[section]}</DialogTitle>
-            </div>
-
-            {/* Fills the remaining height so panels can pin content to it */}
-            <div className="relative grow mt-6">
-              <Panel />
+            </div>           
+            <div className="flex flex-col grow min-h-0 overflow-y-auto mt-2 pt-4 pb-4 -mx-4 px-4">
+              {/* Fills the remaining height so panels can pin content to it */}
+              <div className="relative grow">
+                <Panel />
+              </div>
             </div>
           </div>
         </div>

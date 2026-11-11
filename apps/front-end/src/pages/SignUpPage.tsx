@@ -9,13 +9,15 @@ import { Navigate } from "react-router-dom";
 type SignUpProps = { updateBgImage: (n: number) => void };
 
 export default function SignUpPage({ updateBgImage }: SignUpProps) {
-    const {data: session, isFetching} = useSession(authClient);
+    const {data: session, isPending} = useSession(authClient);
 
     useEffect(() => {
         updateBgImage(1);
     }, []);
 
-    if (!session && isFetching) return <Spinner />
+    // Only on the first load: a background refetch (e.g. on tab focus) would
+    // otherwise unmount the form and lose what was typed
+    if (isPending) return <Spinner />
     if (session) return <Navigate to="/app" replace />
 
     return (

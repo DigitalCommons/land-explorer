@@ -11,6 +11,8 @@ export const initializeMixpanel = (): void => {
   }
 
   mixpanel.init(constants.MIXPANEL_TOKEN, {
+    // Our project's data is in the EU, matching the back-end's host
+    api_host: "https://api-eu.mixpanel.com",
     debug: constants.DEV_MODE || false,
     persistence: "localStorage",
     ip: false,

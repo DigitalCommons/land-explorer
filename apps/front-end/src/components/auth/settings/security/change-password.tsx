@@ -231,17 +231,16 @@ function ChangePasswordForm({
 
   return (
     <div>
-      <p className="text-muted-foreground text-xs mb-3">
-        You'll stay signed in here, but you'll be signed out on all other
-        devices.
-      </p>
-
       <form.AppForm>
         {/* The fields' validators show errors under them, rather than the
             browser's own bubbles */}
         <form.AuthFormRoot noValidate>
           <Card className={cn(className)}>
             <CardContent className="flex flex-col gap-6">
+              <p className="text-muted-foreground text-sm">
+                You'll stay signed in here, but you'll be signed out on all other
+                devices.
+              </p>
               <form.AppField
                 name="currentPassword"
                 validators={{

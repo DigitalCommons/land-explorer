@@ -11,6 +11,9 @@ const OTP_ERROR_MESSAGES: Partial<Record<string, string>> = {
   OTP_EXPIRED: "This code has expired. Request a new code.",
   INVALID_OTP:
     "This code is incorrect. Check it and try again, or request a new code.",
+  // The code stops working after 3 wrong tries, even if the next one is right
+  TOO_MANY_ATTEMPTS:
+    "This code was entered incorrectly too many times. Request a new code.",
   INVALID_PASSWORD: "Incorrect password. Please try again.",
 };
 
