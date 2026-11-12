@@ -47,7 +47,6 @@ type Constants = {
   USER_GUIDE_URL: string;
   LAND_OWNERSHIP_PROCESS_URL: string;
   TIERS_URL: string;
-  VITE_FEATURE_USE_BETTERAUTH: boolean;
 };
 
 const constants: Constants = {
@@ -86,8 +85,7 @@ const constants: Constants = {
   MIXPANEL_PEPPER: import.meta.env.VITE_MIXPANEL_PEPPER,
   USER_GUIDE_URL: import.meta.env.VITE_USER_GUIDE_URL,
   LAND_OWNERSHIP_PROCESS_URL: import.meta.env.VITE_LAND_OWNERSHIP_PROCESS_URL,
-  TIERS_URL: import.meta.env.VITE_TIERS_URL,
-  VITE_FEATURE_USE_BETTERAUTH: import.meta.env.VITE_FEATURE_USE_BETTERAUTH === "true"
+  TIERS_URL: import.meta.env.VITE_TIERS_URL
 };
 
 export const VERSION = "1.1";
