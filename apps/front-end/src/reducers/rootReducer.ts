@@ -1,5 +1,4 @@
 import { combineReducers } from "redux";
-import AuthenticationReducer from "./AuthenticationReducer";
 import MenuReducer from "./MenuReducer";
 import ProfileMenuReducer from "./ProfileMenuReducer";
 import LeftPaneReducer from "./LeftPaneReducer";
@@ -22,7 +21,6 @@ import SearchReducer from "./SearchReducer";
 import { Action } from "../types";
 
 const appReducer = combineReducers({
-  authentication: AuthenticationReducer,
   menu: MenuReducer,
   profileMenu: ProfileMenuReducer,
   leftPane: LeftPaneReducer,
@@ -46,11 +44,7 @@ const appReducer = combineReducers({
 
 type RootState = ReturnType<typeof appReducer>;
 
-const rootReducer = (state: RootState | undefined, action: Action): RootState => {
-  // Clear all data in redux store to initial state when user logs out
-  if (action.type === "LOG_OUT" || action.type === "SESSION_TIMED_OUT") {
-    state = undefined;
-  }
+const rootReducer = (state: RootState | undefined, action: Action): RootState => {  
   return appReducer(state, action);
 };
 
