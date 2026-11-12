@@ -1,13 +1,9 @@
 import { io, Socket } from "socket.io-client";
 import constants from "../constants";
-import * as Auth from "../utils/Auth";
 import { reloadCurrentMap } from "./MapActions";
 import { updateReadOnly } from "./ReadOnlyActions";
 
 const socket: Socket = io(constants.ROOT_URL as string, {
-  ...(constants.VITE_FEATURE_USE_BETTERAUTH
-    ? {}
-    : { auth: (cb) => cb({ token: Auth.getToken() }) }),
   autoConnect: false,
 });
 
