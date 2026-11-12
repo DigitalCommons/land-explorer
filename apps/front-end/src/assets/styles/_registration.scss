@@ -1,25 +1,7 @@
-.registration {
-  width: calc(100vw - 40px);
-  top: 6rem;
-  position: relative;
-  padding: 1rem;
-  margin: 0 auto;
-  box-sizing: border-box;
-  border-radius: 8px;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
-}
-
 .active {
   box-shadow: #00000080 0px 0px 10px;
 }
 
 .inactive {
   opacity: 0.75;
-}
-
-/* Desktop specific, as mobile first */
-@media screen and (min-width: 769px) {
-  .registration {
-    width: 760px;
-  }
 }
