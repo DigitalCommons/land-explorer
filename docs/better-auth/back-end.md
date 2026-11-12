@@ -1,7 +1,5 @@
 # Better Auth: back end
 
-How the back end uses Better Auth when `FEATURE_USE_BETTERAUTH=true`. For env vars and the tables, see the [overview](overview.md).
-
 ## Config: `src/utils/auth.ts`
 
 `auth` is the Better Auth instance. It has its own `mysql2` pool, separate from Sequelize.

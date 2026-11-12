@@ -4,7 +4,7 @@ import { sequelize } from "../queries/database";
 
 /**
  * Copies users from our app `user` table into Better Auth's auth_user and auth_account
- * tables, so existing users can sign in once FEATURE_USE_BETTERAUTH is switched on.
+ * tables, so existing users can sign in once betterauth is switched on.
  *
  * Until the flag is on, `user` is the source of truth, so this creates any missing
  * users and updates email, name and password where they've drifted. It's safe to re-run.

@@ -1,7 +1,5 @@
 # Better Auth: front end
 
-How the front end uses Better Auth when `VITE_FEATURE_USE_BETTERAUTH=true`. See also the [overview](overview.md).
-
 ## Auth client: `src/lib/auth/auth-client.ts`
 
 `authClient` is Better Auth's React client. It has no `baseURL`, so it calls `/api/auth/*` on the page's own origin and the session cookie is first-party. That means `/api` must be served from the front end's origin: in dev, Vite proxies it (`vite.config.ts`). In deployed environments, the reverse proxy does.
