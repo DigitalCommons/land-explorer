@@ -2,7 +2,6 @@ import axios from "axios";
 import constants from "../constants";
 import { getAuthHeader } from "../utils/Auth";
 import { RootState } from "@/store";
-import { sessionTimedOut } from "./AuthenticationActions";
 
 /**
  * Make a GET request to the given API endpoint.
@@ -30,13 +29,7 @@ export const getRequest = (endpoint: string, signal?: AbortSignal) => {
         return null;
       }
 
-      console.error(`There was an error in ${endpoint} GET request`, err);
-
-      if (!constants.VITE_FEATURE_USE_BETTERAUTH) {
-        if (err.response?.status === 401) {
-          await dispatch(sessionTimedOut());
-        }
-      }      
+      console.error(`There was an error in ${endpoint} GET request`, err);      
     }
     return null;
   };
@@ -63,13 +56,7 @@ export const postRequest = (endpoint: string, body: any) => {
       });
       return true;
     } catch (err: any) {
-      console.error(`There was an error in ${endpoint} POST request`, err);
-
-      if (!constants.VITE_FEATURE_USE_BETTERAUTH) {
-        if (err.response?.status === 401) {
-          await dispatch(sessionTimedOut());
-        }
-      }
+      console.error(`There was an error in ${endpoint} POST request`, err);      
     }
     return false;
   };
