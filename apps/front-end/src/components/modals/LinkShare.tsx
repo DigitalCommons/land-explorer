@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { useAppDispatch, useAppSelector } from '@/hooks/react-redux';
 import axios from 'axios';
 import constants from '../../constants';
-import { getAuthHeader } from "../../utils/Auth";
 import Modal from './Modal';
 
 const LinkShare = () => {
@@ -18,7 +17,7 @@ const LinkShare = () => {
                 {
                     mapId: currentMapId
                 },
-                { headers: { ...getAuthHeader().headers, "x-session-id": sessionId } });
+                { headers: { "x-session-id": sessionId } });
 
             // ROOT_URL is empty in same-origin deployments; the link must stay absolute
             const link = (constants.ROOT_URL || window.location.origin) + result.data;

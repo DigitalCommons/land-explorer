@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { useAppDispatch, useAppSelector } from '@/hooks/react-redux';
 import axios from 'axios';
 import constants from '../../constants';
-import { getAuthHeader } from "../../utils/Auth";
 import Modal from './Modal';
 import iconDownloadComplete from '../../assets/img/icon-download-complete.svg';
 
@@ -15,12 +14,8 @@ const Download = () => {
     const downloadMap = async () => {
         const mapToDownload = maps.find((map: any) => map.eid === currentMapId);
         const mapName = mapToDownload?.name;
-
-        const headers = getAuthHeader() as any;
-        headers['Content-Disposition'] = 'attachment';
-        headers.responseType = 'blob'
-
-        const response = await axios.get(`${constants.ROOT_URL}/api/user/map/download/${currentMapId}`, headers);
+    
+        const response = await axios.get(`${constants.ROOT_URL}/api/user/map/download/${currentMapId}`, { responseType: "blob" });
 
         const type = response.headers['content-type']
         const blob = new Blob([response.data], { type: type, encoding: 'UTF-8' } as BlobPropertyBag)

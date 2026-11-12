@@ -1,6 +1,5 @@
 import axios from "axios";
 import constants from "../constants";
-import { getAuthHeader } from "../utils/Auth";
 import { RootState } from "@/store";
 
 /**
@@ -19,7 +18,6 @@ export const getRequest = (endpoint: string, signal?: AbortSignal) => {
       const response = await axios.get(`${constants.ROOT_URL}${endpoint}`, {
         signal,
         headers: {
-          ...getAuthHeader().headers,
           "x-session-id": sessionId,
         },
       });
@@ -49,8 +47,7 @@ export const postRequest = (endpoint: string, body: any) => {
     try {
       const { sessionId } = getState().user;
       await axios.post(`${constants.ROOT_URL}${endpoint}`, body, {
-        headers: {
-          ...getAuthHeader().headers,
+        headers: {          
           "x-session-id": sessionId,
         },
       });

@@ -8,7 +8,6 @@ import { openModal } from "../../actions/ModalActions";
 import Button from "../common/Button";
 import InputTextarea from "../common/InputTextarea";
 import constants from "../../constants";
-import { getAuthHeader } from "../../utils/Auth";
 
 const FeedbackForm = () => {
   const dispatch = useAppDispatch();
@@ -46,7 +45,7 @@ const FeedbackForm = () => {
         .post(
           `${constants.ROOT_URL}/api/user/feedback`,
           submittedData,
-          { headers: { ...getAuthHeader().headers, "x-session-id": sessionId } }
+          { headers: {"x-session-id": sessionId } }
         )
         .then((response) => {
           console.log("Feedback Form Response:", response);
