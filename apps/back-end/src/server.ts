@@ -44,7 +44,7 @@ export const init = async function (): Promise<Server> {
         // Allow the headers the front-end actually sends
         // x-session-id is added to every request as otherwise CORS preflight
         // fails for authenticated calls
-        additionalHeaders: ["authorization", "content-type", "x-session-id"],
+        additionalHeaders: ["content-type", "x-session-id"],
       },
     },
   });
