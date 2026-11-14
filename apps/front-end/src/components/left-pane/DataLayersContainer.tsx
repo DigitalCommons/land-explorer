@@ -1,0 +1,93 @@
+import React, { useId, useState } from "react";
+import { faGear } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { Button } from "@/components/ui/button";
+import { Collapsible, CollapsibleContent } from "@/components/ui/collapsible";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import iconChevron from "../../assets/img/icon-chevron.svg";
+import { cn } from "@/lib/utils";
+
+type Props = {
+  children: React.ReactNode;
+  title: string;
+  settings?: React.ReactNode;
+  settingsLabel?: string;
+};
+
+const DataLayersContainer = ({
+  children,
+  title,
+  settings,
+  settingsLabel = `${title} settings`,
+}: Props) => {
+  const [expanded, setExpanded] = useState(true);
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const panelId = useId();
+
+  return (
+    <div>
+      <div
+        className="relative flex cursor-pointer flex-row justify-between bg-muted px-[25px]"
+        onClick={() => {
+          setExpanded(!expanded);
+          setSettingsOpen(false);
+        }}
+      >
+        <h4 className="font-bold">{title}</h4>
+        <div className="absolute top-1/2 right-3 flex -translate-y-1/2 items-center gap-3">
+          {settings && (
+            <>
+              <Tooltip>
+                <TooltipTrigger
+                  render={
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      aria-label={settingsLabel}
+                      aria-expanded={settingsOpen}
+                      aria-controls={panelId}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setExpanded(true);
+                        setSettingsOpen(!settingsOpen);
+                      }}
+                      className="bg-transparent text-muted-foreground/80 hover:bg-background aria-expanded:bg-background aria-expanded:text-primary"
+                    />
+                  }
+                >
+                  <FontAwesomeIcon icon={faGear} />
+                </TooltipTrigger>
+                <TooltipContent>{settingsLabel}</TooltipContent>
+              </Tooltip>
+              <span className="h-[18px] w-px bg-border" />
+            </>
+          )}
+          <img
+            src={iconChevron}
+            alt=""
+            className={cn("size-6 origin-center", expanded && "rotate-180")}
+          />
+        </div>
+      </div>
+      {expanded && (
+        <>
+          {settings && (
+            // the gear sits in the header, so it can't be a CollapsibleTrigger:
+            // the root would have to wrap the header too, and shadcn-scope pulls
+            // in Preflight, which strips the margins the h4 relies on for height
+            <Collapsible open={settingsOpen}>
+              <CollapsibleContent id={panelId}>{settings}</CollapsibleContent>
+            </Collapsible>
+          )}
+          {children}
+        </>
+      )}
+    </div>
+  );
+};
+
+export default DataLayersContainer;
