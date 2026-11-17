@@ -8,10 +8,7 @@ import { init } from "../server";
 
 // Dependencies to be stubbed https://sinonjs.org/how-to/stub-dependency/
 const query = require("../queries/query");
-const mailer = require("../queries/mails");
-const helper = require("../queries/helper");
 const Model = require("../queries/database");
-const jwt = require("jsonwebtoken");
 
 // We plug all our fakes, spies, etc into the system under test using a sandbox. This makes it
 // easier to clean them up after each test.
