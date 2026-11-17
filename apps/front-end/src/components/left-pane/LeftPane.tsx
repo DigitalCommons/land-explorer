@@ -4,7 +4,6 @@ import LeftPaneLandData from "./LeftPaneLandData";
 import LeftPaneDrawingTools from "./LeftPaneDrawingTools";
 import LeftPaneRelatedProperties from "./LeftPaneRelatedProperties";
 import { autoSave } from "../../actions/MapActions";
-import { isMobile } from "react-device-detect";
 import { LEFT_PANE_TRAY, LeftPaneTrayId } from "../../reducers/LeftPaneReducer";
 
 type Props = {
@@ -15,7 +14,6 @@ const LeftPane = ({ drawControl }: Props) => {
   const dispatch = useAppDispatch();
   const { open, active, activeTool } = useAppSelector((state) => state.leftPane);
   const readOnly = useAppSelector((state) => state.readOnly.readOnly);
-  const profileMenuOpen = useAppSelector((state) => state.menu.profile);
   const currentMarker = useAppSelector((state) => state.markers.currentMarker);
   const activeDrawing = useAppSelector((state) => state.drawings.activeDrawing);
   const relatedProperties = useAppSelector(
@@ -41,9 +39,7 @@ const LeftPane = ({ drawControl }: Props) => {
   const clickIcon = (tray: LeftPaneTrayId) => {
     active === tray
       ? dispatch({ type: "CLOSE_TRAY" })
-      : dispatch({ type: "SET_ACTIVE", payload: tray });
-    // Close profile menu if open and mobile
-    if (profileMenuOpen && isMobile) dispatch({ type: "CLOSE_MENU_PROFILE" });
+      : dispatch({ type: "SET_ACTIVE", payload: tray });   
   };
 
   const handleTrashClick = () => {
