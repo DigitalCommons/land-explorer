@@ -133,7 +133,7 @@ const TopBarNew = ({ limited }: Props) => {
 
   if (!limited && user.populated) {
     return (
-      <div className="relative z-[30] flex h-16 items-center gap-2 px-3 bg-background shadow-lg sm:gap-4 sm:px-6">
+      <div className="relative z-[30] flex h-16 shrink-0 items-center gap-2 px-3 bg-background shadow-lg sm:gap-4 sm:px-6">
         <TopBarLogo />      
         <div className="flex min-w-0 grow items-center justify-center gap-2 md:gap-5">
           <div className="flex min-w-0 items-center [&_.map-title-bar]:min-w-0">
@@ -176,7 +176,7 @@ const TopBarNew = ({ limited }: Props) => {
   }
 
   return (
-    <div className="relative z-[30] flex h-16 items-center px-3 bg-background shadow-lg sm:px-6">
+    <div className="relative z-[30] flex h-16 shrink-0 items-center px-3 bg-background shadow-lg sm:px-6">
       <TopBarLogo />
     </div>
   );
