@@ -625,6 +625,7 @@ export type SaveMapData = {
     landDataLayers: string[];
     myDataLayers: string[];
     ownershipDisplay: string | null;
+    showBoundaryNamesOnHover?: boolean;
   };
   version: string;
 };
