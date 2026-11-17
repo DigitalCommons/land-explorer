@@ -10,7 +10,13 @@ import {
   sendVerificationOTP,
   VERIFICATION_CODE_EXPIRY_SECONDS,
 } from "../emails/email";
-import { postEmailVerificationFlow, postRegistrationFlow, preRegistrationFlow } from "../services/authUser";
+import {
+  confirmPasswordForEmailChange,
+  postEmailVerificationFlow,
+  postRegistrationFlow,
+  preRegistrationFlow,
+  preUserUpdateFlow,
+} from "../services/authUser";
 
 export const auth = betterAuth({
   database: createPool({
@@ -29,9 +35,17 @@ export const auth = betterAuth({
       generateId: ({ model }) => (model === APP_USER_MODEL ? false : generateId()),
     },
     cookiePrefix: "lx",
+    // Rate limits are per IP. Caddy in the front-end image sets X-Client-IP to the
+    // user's address; X-Forwarded-For only holds the coolify proxy address in front of it, which
+    // would put every user in one shared bucket
+    ipAddress: {
+      ipAddressHeaders: ["x-client-ip"],
+    },
   },
   user: {
-    modelName: "auth_user",        
+    modelName: "auth_user",
+    // changeEmail is left off, which disables Better Auth's link-based /change-email.
+    // Users change their email with codes through the emailOTP plugin below instead
     additionalFields: {
       appUserId: {
         type: "number",
@@ -42,11 +56,28 @@ export const auth = betterAuth({
       },
     },
   },
+  rateLimit: {
+    customRules: {
+      // The emailOTP plugin allows 3 a minute on the endpoints that check a code,
+      // the same as the code's own 3 tries, so a 4th try got a 429 instead of
+      // the plugin's TOO_MANY_ATTEMPTS, which tells the user to request a new
+      // code. Guessing is still capped per code, and sending a new code has its
+      // own limit
+      "/email-otp/change-email": { window: 60, max: 10 },
+      "/email-otp/verify-email": { window: 60, max: 10 },
+    },
+  },
+  hooks: {
+    before: confirmPasswordForEmailChange,
+  },
   databaseHooks: {
     user: {
-      create: {        
+      create: {
         before: preRegistrationFlow,
         after: postRegistrationFlow
+      },
+      update: {
+        before: preUserUpdateFlow,
       },
     },
   },
@@ -67,6 +98,9 @@ export const auth = betterAuth({
     appUserPlugin(),
     emailOTP({
       overrideDefaultEmailVerification: true,
+      changeEmail: {
+        enabled: true,
+      },
       sendVerificationOTP,
       expiresIn: VERIFICATION_CODE_EXPIRY_SECONDS,
       // users must sign up through /sign-up/email, where preRegistrationFlow
@@ -85,6 +119,8 @@ export const auth = betterAuth({
     enabled: true,
     requireEmailVerification: true,
     minPasswordLength: 6,
+    // bcrypt only uses the first 72 bytes, so anything longer would be silently ignored
+    maxPasswordLength: 72,
     resetPasswordTokenExpiresIn: RESET_PASSWORD_EXPIRY_SECONDS,
     // signs the user out on every device, in case the reset is to lock someone else
     // out. Other devices can stay signed in until the session cookieCache expires
@@ -101,5 +137,5 @@ export const auth = betterAuth({
     sendOnSignIn: true,
     sendOnSignUp: true,
     afterEmailVerification: postEmailVerificationFlow,
-  }
+  },
 });

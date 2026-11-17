@@ -45,6 +45,12 @@ The SPA calls the API same-origin (the front-end's Caddy proxies /api to the
 back-end), so the host ports aren't coupled; 24000 is only for hitting the
 back-end directly.
 
+Caddy also sets `X-Client-IP` on proxied requests to the user's address, which
+Better Auth keys its rate limits on. It trusts `X-Forwarded-For` only from
+private addresses (the Coolify proxy) and reads it right to left, so users can't
+choose their own address. Requests to 24000 skip Caddy, so they have no
+`X-Client-IP`.
+
 The credentials inlined in docker-compose.local.yml are dev throwaways. Real secrets - map keys, SendGrid, analytics, PBS pipeline keys - are in docker.env (from Bitwarden). The live secrets are injected by Coolify.
 
 ### Reset

@@ -15,7 +15,7 @@ const LeftPaneTray = ({ open, title, onClose, header, children }: Props) => {
   return (
     <div
       className={cn(
-        "absolute inset-y-0 left-18 z-100000 flex w-[calc(100%-72px)] flex-col overflow-x-hidden bg-background transition-transform duration-500 ease-in-out md:w-100",
+        "absolute inset-y-0 left-18 z-9 flex w-[calc(100%-72px)] flex-col overflow-x-hidden bg-background transition-transform duration-500 ease-in-out md:w-100",
         open
           ? "translate-x-0 shadow-[3px_0_6px_0_rgba(0,0,0,0.16)]"
           : "translate-x-[-200%]",

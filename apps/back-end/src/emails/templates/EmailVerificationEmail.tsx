@@ -1,7 +1,6 @@
-import type { CSSProperties } from "react";
-import { render, Section, Text } from "react-email";
+import { render } from "react-email";
 import {
-  BRAND_GREEN,
+  CodeBox,
   EmailHeading,
   Layout,
   Paragraph,
@@ -11,7 +10,6 @@ import { LOGO_PREVIEW_SRC } from "../components/logo";
 import { formatExpiry } from "../helper";
 
 export type VerificationEmailProps = {
-  name?: string;
   email: string;
   code: string;
   expiryMinutes: number;
@@ -19,7 +17,8 @@ export type VerificationEmailProps = {
 };
 
 // The user types the code on the verify page they were sent to after signing up or in
-const VerificationEmailEmail = ({ name, email, code, expiryMinutes, logoSrc }: VerificationEmailProps) => {
+// or in My Account when changing their email to this address
+const VerificationEmailEmail = ({ email, code, expiryMinutes, logoSrc }: VerificationEmailProps) => {
   const expiry = formatExpiry(expiryMinutes);
 
   return (
@@ -28,13 +27,11 @@ const VerificationEmailEmail = ({ name, email, code, expiryMinutes, logoSrc }: V
       logoSrc={logoSrc}
     >
       <EmailHeading>Verify email address</EmailHeading>
-      <Paragraph>{name ? `Dear ${name},` : "Hi,"}</Paragraph>
+      <Paragraph>Hi,</Paragraph>
       <Paragraph>
         {`Enter this code in LandExplorer to verify your email address ${email}:`}
       </Paragraph>
-      <Section style={codeBox}>
-        <Text style={codeText}>{code}</Text>
-      </Section>
+      <CodeBox code={code} />
       <Paragraph muted>
         {`This code expires in ${expiry}.`}
       </Paragraph>
@@ -46,27 +43,8 @@ const VerificationEmailEmail = ({ name, email, code, expiryMinutes, logoSrc }: V
   );
 };
 
-const codeBox: CSSProperties = {
-  margin: "6px 0 24px",
-  padding: "12px 0",
-  backgroundColor: "#f4f6f5",
-  borderRadius: "6px",
-  textAlign: "center",
-};
-
-const codeText: CSSProperties = {
-  margin: 0,
-  fontFamily: "'Courier New', Courier, monospace",
-  fontSize: "32px",
-  lineHeight: "40px",
-  fontWeight: "bold",
-  letterSpacing: "8px",
-  color: BRAND_GREEN,
-};
-
 // This is for the dev server
 VerificationEmailEmail.PreviewProps = {
-  name: "Laura",
   email: "laura@email.com",
   code: "123456",
   expiryMinutes: 15,

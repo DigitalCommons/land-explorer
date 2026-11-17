@@ -8,10 +8,12 @@ export type RegisterFormValues = z.infer<typeof registerSchema>;
 
 export const registerSchema = z
   .object({
-    firstName: maxChars(100).min(1, "Please enter your first name"),
-    lastName: maxChars(100).min(1, "Please enter your last name"),
+    // trimmed first, so a name of only spaces counts as empty
+    firstName: z.string().trim().min(1, "Please enter your first name").max(100, maxCharsMessage(100)),
+    lastName: z.string().trim().min(1, "Please enter your last name").max(100, maxCharsMessage(100)),
     email: z.email("Invalid email address").max(100, maxCharsMessage(100)),
-    password: maxChars(100).min(6, "Must be at least 6 characters"),
+    // bcrypt only uses the first 72 bytes, matching the back end's limit
+    password: maxChars(72).min(6, "Must be at least 6 characters"),
     confirmPassword: z.string(),
     phone: maxChars(20).refine(
       (v) => v === "" || ukPhoneRegexp.test(v),

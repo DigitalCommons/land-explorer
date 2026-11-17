@@ -217,6 +217,8 @@ async function changeEmail(
 }
 
 /**
+ * TODO: DELETE FUNCTION WHEN `FEATURE_USE_BETTERAUTH` ENV VAR IS REMOVED
+ * 
  * Change the user detail of the authenticated user
  */
 async function changeUserDetail(

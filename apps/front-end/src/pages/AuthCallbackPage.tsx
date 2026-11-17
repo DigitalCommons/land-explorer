@@ -3,7 +3,7 @@ import { useEffect } from "react";
 
 type AuthCallbackPageProps = { updateBgImage: (n: number) => void };
 
-// Where verification email links land and expired password reset links.
+// Where expired password reset links land.
 export default function AuthCallbackPage({ updateBgImage }: AuthCallbackPageProps) {
   useEffect(() => {
     updateBgImage(0);

@@ -69,6 +69,13 @@ export const PrimaryButton = ({ href, children }: { href: string; children: Reac
   </Section>
 );
 
+/** A one-time code for the user to type into LandExplorer */
+export const CodeBox = ({ code }: { code: string }) => (
+  <Section style={codeBox}>
+    <Text style={codeText}>{code}</Text>
+  </Section>
+);
+
 export const SignOff = () => (
   <Text style={{ ...text, margin: 0 }}>
     Many thanks,
@@ -122,6 +129,24 @@ const button: CSSProperties = {
   fontSize: "16px",
   fontWeight: "bold",
   textDecoration: "none",
+};
+
+const codeBox: CSSProperties = {
+  margin: "6px 0 24px",
+  padding: "12px 0",
+  backgroundColor: "#f4f6f5",
+  borderRadius: "6px",
+  textAlign: "center",
+};
+
+const codeText: CSSProperties = {
+  margin: 0,
+  fontFamily: "'Courier New', Courier, monospace",
+  fontSize: "32px",
+  lineHeight: "40px",
+  fontWeight: "bold",
+  letterSpacing: "8px",
+  color: BRAND_GREEN,
 };
 
 const footer: CSSProperties = {

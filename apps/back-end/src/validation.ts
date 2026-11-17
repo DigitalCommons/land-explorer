@@ -40,21 +40,21 @@ export class Validation {
       }
     }
 
-    //password: required | 5 < length < 101
+    //password: required | 6 to 72 characters (bcrypt ignores anything after 72 bytes)
     if (Joi.string().validate(data?.password, { presence: "required" }).error) {
       this.addErrorMessage("password", "The password field is required.");
     } else {
-      if (Joi.string().min(6).max(100).validate(data?.password).error) {
+      if (Joi.string().min(6).max(72).validate(data?.password).error) {
         this.addErrorMessage(
           "password",
-          "The password has to be between 5 and 100 characters."
+          "The password has to be between 6 and 72 characters."
         );
       }
     }
 
-    //firstName: required | length < 101
+    //firstName: required, not just spaces | length < 101
     if (
-      Joi.string().validate(data?.firstName, { presence: "required" }).error
+      Joi.string().trim().validate(data?.firstName, { presence: "required" }).error
     ) {
       this.addErrorMessage("firstName", "The first name field is required.");
     } else {
@@ -67,8 +67,8 @@ export class Validation {
       }
     }
 
-    //lastName: required | length < 101
-    if (Joi.string().validate(data?.lastName, { presence: "required" }).error) {
+    //lastName: required, not just spaces | length < 101
+    if (Joi.string().trim().validate(data?.lastName, { presence: "required" }).error) {
       this.addErrorMessage("lastName", "The last name field is required.");
     } else {
       // Cant do these checks if it is null or empty
@@ -135,9 +135,9 @@ export class Validation {
   }
 
   async validateUserDetailUpdate(data: any) {
-    //firstName: required | length < 101
+    //firstName: required, not just spaces | length < 101
     if (
-      Joi.string().validate(data?.firstName, { presence: "required" }).error
+      Joi.string().trim().validate(data?.firstName, { presence: "required" }).error
     ) {
       this.addErrorMessage("firstName", "The first name field is required.");
     } else {
@@ -150,8 +150,8 @@ export class Validation {
       }
     }
 
-    //lastName: required | length < 101
-    if (Joi.string().validate(data?.lastName, { presence: "required" }).error) {
+    //lastName: required, not just spaces | length < 101
+    if (Joi.string().trim().validate(data?.lastName, { presence: "required" }).error) {
       this.addErrorMessage("lastName", "The last name field is required.");
     } else {
       // Cant do these checks if it is null or empty
@@ -235,14 +235,14 @@ export class Validation {
   }
 
   async validateChangePassword(data: any) {
-    //password: required | 5 < length < 101
+    //password: required | 6 to 72 characters (bcrypt ignores anything after 72 bytes)
     if (Joi.string().validate(data?.password, { presence: "required" }).error) {
       this.addErrorMessage("password", "The password field is required.");
     } else {
-      if (Joi.string().min(6).max(100).validate(data?.password).error) {
+      if (Joi.string().min(6).max(72).validate(data?.password).error) {
         this.addErrorMessage(
           "password",
-          "The password must be between 5 and 100 characters."
+          "The password must be between 6 and 72 characters."
         );
       }
     }

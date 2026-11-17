@@ -1,7 +1,7 @@
 import sgMail from "@sendgrid/mail";
 import { renderResetPasswordEmail } from "./templates/ResetPasswordEmail";
 import { logoAttachment } from "./logoAttachment";
-import { GenericEndpointContext, User } from "better-auth";
+import { User } from "better-auth";
 import { renderVerificationEmail } from "./templates/EmailVerificationEmail";
 import { renderRegisteredEmail } from "./templates/RegisteredEmail";
 
@@ -10,7 +10,7 @@ export const VERIFICATION_CODE_EXPIRY_SECONDS = 15 * 60;
 
 const RESET_PASSWORD_CALLBACK_URL = "/auth/reset-password?flow=password-reset";
 
-sgMail.setApiKey(process.env.SENDGRID_API_KEY || '');
+sgMail.setApiKey(process.env.SENDGRID_API_KEY || "");
 
 const sender = "landexplorer@digitalcommons.coop";
 const senderName = "LandExplorer";
@@ -28,7 +28,7 @@ export async function sendPasswordReset(
   try {
     const fullUrl = new URL(url);
     fullUrl.searchParams.set("callbackURL", RESET_PASSWORD_CALLBACK_URL);
-    
+
     const html = await renderResetPasswordEmail({
       name: user.name,
       url: fullUrl.toString(),
@@ -63,22 +63,21 @@ type VerificationOTPData = {
 
 /**
  * Sends the codes for Better Auth's emailOTP plugin (see utils/auth.ts). Only email
- * verification uses codes so far; the plugin's other flows are switched off.
+ * verification and changing email use codes so far; the plugin's other flows are
+ * switched off.
  */
-export async function sendVerificationOTP(
-  { email, otp, type }: VerificationOTPData,
-  ctx?: GenericEndpointContext,
-) {
-  if (type !== "email-verification") {
+export async function sendVerificationOTP({
+  email,
+  otp,
+  type,
+}: VerificationOTPData) {
+  if (type !== "email-verification" && type !== "change-email") {
     console.error(`No email is set up for ${type} codes`);
     return;
   }
 
   try {
-    // the plugin only passes the address, so look the user up for their name
-    const found = await ctx?.context.internalAdapter.findUserByEmail(email);
     const html = await renderVerificationEmail({
-      name: found?.user.name,
       email,
       code: otp,
       expiryMinutes: VERIFICATION_CODE_EXPIRY_SECONDS / 60,
@@ -104,7 +103,11 @@ export async function sendVerificationOTP(
   }
 }
 
-export async function sendRegisteredEmail(email: string, name: string, appUrl: string) {
+export async function sendRegisteredEmail(
+  email: string,
+  name: string,
+  appUrl: string,
+) {
   try {
     const html = await renderRegisteredEmail({ name, url: appUrl });
     sgMail
