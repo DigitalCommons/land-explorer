@@ -30,6 +30,19 @@ export type User = {
   userGuidePromptSeen: boolean;  
 };
 
+export type OrgDetails = Pick<
+  User,
+  | "organisation"
+  | "organisationNumber"
+  | "organisationType"
+  | "organisationActivity"
+  | "address1"
+  | "address2"
+  | "city"
+  | "postcode"
+>;
+
+
 type UserPayload = {
   id: string;
   firstName: string;
@@ -86,6 +99,7 @@ type UserAction =
   | (Action<UserPayload> & { type: "POPULATE_USER" })
   | (Action<boolean> & { type: "USER_FEEDBACK_STATUS" })  
   | (Action<UserGuideStatusData> & { type: "USER_GUIDE_PROMPT_SEEN" })
+  | (Action<OrgDetails> & { type: "USER_ORGANISATION_DETAILS_UPDATED" })
   | Action;
 
 export default (state: User = getInitialState(), action: UserAction): User => {
@@ -113,6 +127,11 @@ export default (state: User = getInitialState(), action: UserAction): User => {
       return {
         ...state,
         userGuidePromptSeen: payload.userGuidePromptSeen,
+      };
+    case "USER_ORGANISATION_DETAILS_UPDATED":
+      return {
+        ...state,
+        ...(action.payload as OrgDetails),
       };
     default:
       return state;

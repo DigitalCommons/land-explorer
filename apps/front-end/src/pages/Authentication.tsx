@@ -1,31 +1,60 @@
 import { useState } from "react";
-import { Route, Routes } from 'react-router-dom';
+import { Navigate, Route, Routes } from 'react-router-dom';
 import TopBar from '../components/top-bar/TopBar';
-import Register from "./Register";
-import Login from "./Login";
+import LoginLegacy from "./LoginLegacy";
 import ResetPassword from "./ResetPassword";
 import FourOhFour from "./FourOhFour";
 import BackgroundImage from '../components/common/BackgroundImage';
+import constants from "@/constants";
+import Login from "./Login";
+import Register from "./Register/Register";
+import { SignOut } from "@/components/auth/sign-out";
+import ForgottenPasswordPage from "./ForgottenPasswordPage";
+import ResetLinkSentPage from "./ResetLinkSentPage";
+import ResetPasswordPage from "./ResetPasswordPage";
+import SignUpPage from "./SignUpPage";
+import VerifyEmailPage from "./VerifyEmailPage";
+import AuthCallbackPage from "./AuthCallbackPage";
 
 const Authentication = () => {
-    const [image, setImage] = useState(0);
+  const [image, setImage] = useState(0);
 
     const updateBgImage = (n: number) => {
         setImage(n);
     }
-
-    return (
-        <div>
+   
+    if (!constants.VITE_FEATURE_USE_BETTERAUTH) {
+        return (
+            <div className="h-screen min-h-screen flex flex-col">
+                <TopBar limited={true} />
+                <BackgroundImage image={image} />
+                <Routes>
+                    <Route path="/" element={<LoginLegacy updateBgImage={updateBgImage} />} />  
+                    <Route path="/register" element={<Register updateBgImage={updateBgImage} />} />
+                    <Route path="/reset-password" element={<ResetPassword updateBgImage={updateBgImage} />} />
+                    <Route path="/*" element={<FourOhFour withTopBar={false}/>} />
+                </Routes>
+            </div>
+        )
+    } else {
+        return(
+            <div className="h-screen min-h-screen flex flex-col">
             <TopBar limited={true} />
             <BackgroundImage image={image} />
             <Routes>
-                <Route path="/" element={<Login updateBgImage={updateBgImage} />} />
-                <Route path="/register" element={<Register updateBgImage={updateBgImage} />} />
-                <Route path="/reset-password" element={<ResetPassword updateBgImage={updateBgImage} />} />
-                <Route path="/*" element={<FourOhFour />} />
+                <Route index element={<Navigate to="sign-in" replace />} />
+                <Route path="/sign-in" element={<Login updateBgImage={updateBgImage}/>} />
+                <Route path="/register" element={<SignUpPage updateBgImage={updateBgImage} />} />
+                <Route path="/forgot-password" element={<ForgottenPasswordPage updateBgImage={updateBgImage} />} />
+                <Route path="/reset-link-sent" element={<ResetLinkSentPage updateBgImage={updateBgImage} />} />
+                <Route path="/reset-password" element={<ResetPasswordPage updateBgImage={updateBgImage} />} />
+                <Route path="/verify-email" element={<VerifyEmailPage updateBgImage={updateBgImage}/>}/>
+                <Route path="/callback" element={<AuthCallbackPage updateBgImage={updateBgImage}/>}/>
+                <Route path="/sign-out" element={<SignOut />} />
+                <Route path="/*" element={<FourOhFour withTopBar={false}/>} />
             </Routes>
         </div>
-    );
+    )}
 }
 
 export default Authentication;

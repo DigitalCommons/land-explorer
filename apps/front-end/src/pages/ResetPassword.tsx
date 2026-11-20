@@ -3,6 +3,8 @@ import { useState, useEffect, FormEvent } from 'react';
 import { Link } from 'react-router-dom';
 import constants from "../constants";
 
+
+// TODO: Delete this when we remove VITE_FEATURE_USE_BETTERAUTH
 type Props = { updateBgImage: (n: number) => void };
 
 const ResetPassword = ({ updateBgImage }: Props) => {
@@ -39,7 +41,7 @@ const ResetPassword = ({ updateBgImage }: Props) => {
     return (
       <div
         style={{
-          minHeight: "100vh",
+          height: "100%",
           overflowY: "scroll",
         }}
       >
@@ -74,7 +76,7 @@ const ResetPassword = ({ updateBgImage }: Props) => {
     return (
       <div
         style={{
-          minHeight: "100vh",
+          height: "100%",
         }}
       >
         <div

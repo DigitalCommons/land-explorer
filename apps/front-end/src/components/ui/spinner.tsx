@@ -7,7 +7,10 @@ function Spinner({ className, ...props }: React.ComponentProps<"svg">) {
       data-slot="spinner"
       role="status"
       aria-label="Loading"
-      className={cn("shadcn-scope size-4 animate-spin", className)}
+      className={cn(
+        "shadcn-scope size-4 animate-spin bg-transparent text-inherit",
+        className,
+      )}
       {...props}
     />
   );

@@ -14,6 +14,8 @@ import PrivacySettings from "@/pages/PrivacySettings";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faShieldHalved } from "@fortawesome/free-solid-svg-icons";
 
+// TODO: Delete this when we remove VITE_FEATURE_USE_BETTERAUTH
+
 type AccountViewProps = { initials: string };
 
 const AccountView = ({ initials }: AccountViewProps) => {
@@ -59,7 +61,7 @@ const AccountView = ({ initials }: AccountViewProps) => {
             />
             Details
           </div>
-          <Link to="/app/my-account/details" className="button button-small">
+          <Link to="/app/my-account/details" className="button button-small no-underline">
             Edit
           </Link>
         </div>
@@ -76,7 +78,7 @@ const AccountView = ({ initials }: AccountViewProps) => {
             />
             Email
           </div>
-          <Link to="/app/my-account/email" className="button button-small">
+          <Link to="/app/my-account/email" className="button button-small no-underline">
             Edit
           </Link>
         </div>
@@ -93,7 +95,7 @@ const AccountView = ({ initials }: AccountViewProps) => {
             />
             Password
           </div>
-          <Link to="/app/my-account/password" className="button button-small">
+          <Link to="/app/my-account/password" className="button button-small no-underline">
             Edit
           </Link>
         </div>
@@ -105,7 +107,7 @@ const AccountView = ({ initials }: AccountViewProps) => {
             <FontAwesomeIcon icon={faShieldHalved} />
             Privacy Settings
           </div>
-          <Link to="/app/my-account/privacy" className="button button-small">
+          <Link to="/app/my-account/privacy" className="button button-small no-underline">
             Edit
           </Link>
         </div>

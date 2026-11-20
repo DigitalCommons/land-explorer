@@ -7,6 +7,8 @@ import { LngLat } from "./types";
         if developing locally, wherever the land-map-server is running on]
     STATIC_SITE_URL
         the url for the static site
+    TIERS_URL
+        the access tiers section of the static site, linked from the registration form
     OS_KEY
         ordnance survey Enterprise Maps key
     OS_PLACES_KAY
@@ -42,6 +44,9 @@ type Constants = {
   DATAGROUP_ACCESS_READ_WRITE: number;
   MIXPANEL_TOKEN: string | undefined;
   USER_GUIDE_URL: string;
+  LAND_OWNERSHIP_PROCESS_URL: string;
+  TIERS_URL: string;
+  VITE_FEATURE_USE_BETTERAUTH: boolean;
 };
 
 const constants: Constants = {
@@ -78,6 +83,9 @@ const constants: Constants = {
   DATAGROUP_ACCESS_READ_WRITE: 3,
   MIXPANEL_TOKEN: import.meta.env.VITE_MIXPANEL_TOKEN,
   USER_GUIDE_URL: import.meta.env.VITE_USER_GUIDE_URL,
+  LAND_OWNERSHIP_PROCESS_URL: import.meta.env.VITE_LAND_OWNERSHIP_PROCESS_URL,
+  TIERS_URL: import.meta.env.VITE_TIERS_URL,
+  VITE_FEATURE_USE_BETTERAUTH: import.meta.env.VITE_FEATURE_USE_BETTERAUTH === "true"
 };
 
 export const VERSION = "1.1";

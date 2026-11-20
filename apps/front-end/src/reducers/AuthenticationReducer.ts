@@ -1,5 +1,7 @@
 import { Action } from "../types";
 
+// TODO: Remove this file as part of the clean up of VITE_FEATURE_USE_BETTERAUTH feature flag
+
 type AuthenticationState = {
     authenticated: boolean;
     error: string | null;

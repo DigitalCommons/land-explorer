@@ -1,0 +1,40 @@
+import { AuthProvider } from "@/components/auth/auth-provider";
+import { authClient } from "@/lib/auth/auth-client";
+import { ComponentProps, PropsWithChildren } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { QueryClient } from "@tanstack/react-query";
+import { emailOtpPlugin } from "@better-auth-ui/core/plugins/email-otp";
+
+// Defined once at module level so React sees a stable component type across renders
+const RouterLink: ComponentProps<typeof AuthProvider>["Link"] = ({ href, ...props }) => <Link to={href} {...props} />;
+
+type AuthProviderWrapperProps = {
+  client: QueryClient
+} & PropsWithChildren
+
+export default function AuthProviderWrapper({children, client}: AuthProviderWrapperProps) {
+    const navigate = useNavigate();
+
+    return (
+        <AuthProvider        
+            authClient={authClient}
+            queryClient={client}
+            redirectTo="/app"            
+            emailAndPassword={{ confirmPassword: true, minPasswordLength: 6, maxPasswordLength: 72, rememberMe: true, requireEmailVerification: true }}
+            viewPaths={{auth: {
+                signIn: "sign-in",
+                signUp: "register",
+                forgotPassword: "forgot-password",  
+                resetLinkSent: "reset-link-sent",    
+                resetPassword: "reset-password",          
+                signOut: "sign-out",     
+                verifyEmail: "verify-email"          
+            }}}            
+            navigate={({ to, replace }) => navigate(to, {replace: replace})}
+            Link={RouterLink}
+            plugins={[emailOtpPlugin()]}
+        >
+            {children}
+        </AuthProvider>
+    )
+}

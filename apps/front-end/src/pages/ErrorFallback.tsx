@@ -6,7 +6,7 @@ type Props = { error: Error };
 const ErrorFallback = ({ error }: Props) => {
   console.log("Boundary Error", error);
   return (
-    <>
+    <div className="flex h-dvh flex-col">
       <TopBar limited={true} />
       <div className="error-page">
         <h1>Oops! Something went wrong...</h1>
@@ -20,7 +20,7 @@ const ErrorFallback = ({ error }: Props) => {
           Back to LandExplorer
         </Button>
       </div>
-    </>
+    </div>
   );
 };
 
