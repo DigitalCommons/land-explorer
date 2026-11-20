@@ -25,8 +25,9 @@ export type User = {
   privileged: boolean;
   askForFeedback: boolean;
   analyticsConsent: boolean | null;
+  analyticsUserHash: string;
   sessionId: string;
-  userGuidePromptSeen: boolean;
+  userGuidePromptSeen: boolean;  
 };
 
 export type OrgDetails = Pick<
@@ -62,6 +63,7 @@ type UserPayload = {
   is_super_user?: boolean;
   analyticsConsent: boolean | null;
   userGuidePromptSeen: boolean;
+  analyticsUserHash: string;
 };
 
 const getInitialState = (): User => ({
@@ -90,12 +92,12 @@ const getInitialState = (): User => ({
   analyticsConsent: null,
   sessionId: crypto.randomUUID(),
   userGuidePromptSeen: false,
+  analyticsUserHash: ""
 });
 
 type UserAction =
   | (Action<UserPayload> & { type: "POPULATE_USER" })
-  | (Action<boolean> & { type: "USER_FEEDBACK_STATUS" })
-  | (Action<boolean> & { type: "USER_ANALYTICS_CONSENT_STATUS" })
+  | (Action<boolean> & { type: "USER_FEEDBACK_STATUS" })  
   | (Action<UserGuideStatusData> & { type: "USER_GUIDE_PROMPT_SEEN" })
   | (Action<OrgDetails> & { type: "USER_ORGANISATION_DETAILS_UPDATED" })
   | Action;
@@ -119,12 +121,7 @@ export default (state: User = getInitialState(), action: UserAction): User => {
       return {
         ...state,
         askForFeedback: action.payload as boolean,
-      };
-    case "USER_ANALYTICS_CONSENT_STATUS":
-      return {
-        ...state,
-        analyticsConsent: action.payload as boolean,
-      };
+      };    
     case "USER_GUIDE_PROMPT_SEEN":
       const payload = action.payload as UserGuideStatusData;
       return {
