@@ -11,13 +11,9 @@ import {
   establishSocketConnection,
   closeSocketConnection,
 } from "../actions/WebSocketActions";
-import constants from "@/constants";
 import { Spinner } from "@/components/ui/spinner";
 /**
  * Renders the map once the user's details have loaded, and a spinner until then.
- *
- * Both auth variants below share this, so the only thing that differs between
- * them is how the session is established.
  */
 const MapApp = () => {
   const user = useAppSelector((state) => state.user);
@@ -55,9 +51,7 @@ const MapApp = () => {
     /*
             Tooltips - hover tooltips for buttons
             MapboxMap - MapboxGL instance, drawing tools, left pane, ui etc.
-            TopBar - navigation bar at top of page
-            PlatformUpdateBanner - warning under the top bar about the upcoming
-              login change, so only shown while still on the legacy auth
+            TopBar - navigation bar at top of page           
             Controls - map and layer controls in bottom right of app
          */
     return (

@@ -1,6 +1,5 @@
 import { combineReducers } from "redux";
 import MenuReducer from "./MenuReducer";
-import ProfileMenuReducer from "./ProfileMenuReducer";
 import LeftPaneReducer from "./LeftPaneReducer";
 import ModalReducer from "./ModalReducer";
 import MapReducer from "./MapReducer";
@@ -22,7 +21,6 @@ import { Action } from "../types";
 
 const appReducer = combineReducers({
   menu: MenuReducer,
-  profileMenu: ProfileMenuReducer,
   leftPane: LeftPaneReducer,
   modal: ModalReducer,
   map: MapReducer,
