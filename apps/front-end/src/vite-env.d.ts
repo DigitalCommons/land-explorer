@@ -11,7 +11,6 @@ declare module 'react-responsive';
 
 interface ImportMetaEnv {
   readonly VITE_ROOT_URL: string | undefined;
-  readonly VITE_PAYMENTS_URL: string | undefined;
   readonly VITE_OS_KEY: string | undefined;
   readonly VITE_GEOCODER_TOKEN: string | undefined;
   readonly VITE_MAPBOX_TOKEN: string | undefined;

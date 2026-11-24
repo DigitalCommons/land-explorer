@@ -11,8 +11,6 @@ import { LngLat } from "./types";
         the access tiers section of the static site, linked from the registration form
     OS_KEY
         ordnance survey Enterprise Maps key
-    OS_PLACES_KAY
-        ordnance survey Places API key (not needed now, but will be for converting UPRNs to real addresses and vice versa)
     USE_OS_TILES
         if true, use OS raster tiles for Topography layer, otherwise use mapbox street tiles
 */
@@ -21,7 +19,6 @@ type Constants = {
   DEV_MODE: boolean;
   STATIC_SITE_URL: string;
   ROOT_URL: string | undefined;
-  PAYMENTS_URL: string | undefined;
   OS_KEY: string | undefined;
   GEOCODER_TOKEN: string | undefined;
   MAPBOX_TOKEN: string | undefined;
@@ -51,8 +48,7 @@ type Constants = {
 const constants: Constants = {
   DEV_MODE: import.meta.env.DEV,
   STATIC_SITE_URL: "https://landexplorer.coop",
-  ROOT_URL: import.meta.env.VITE_ROOT_URL ?? "",
-  PAYMENTS_URL: import.meta.env.VITE_PAYMENTS_URL,
+  ROOT_URL: import.meta.env.VITE_ROOT_URL ?? "",  
   OS_KEY: import.meta.env.VITE_OS_KEY,
   GEOCODER_TOKEN: import.meta.env.VITE_GEOCODER_TOKEN,
   MAPBOX_TOKEN: import.meta.env.VITE_MAPBOX_TOKEN,
