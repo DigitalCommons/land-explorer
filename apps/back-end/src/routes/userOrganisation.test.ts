@@ -2,6 +2,7 @@ import { expect } from "chai";
 import { assert, createSandbox, fake } from "sinon";
 import { Server } from "@hapi/hapi";
 import { init } from "../server";
+import { auth } from "../utils/auth";
 
 // Dependencies to be stubbed
 const Model = require("../queries/database");
@@ -135,6 +136,8 @@ describe("POST /api/userOrganisation/details", () => {
 
   context("Not logged in", () => {
     it("returns status 401", async () => {
+      sandbox.stub(auth.api, "getSession").resolves(null);
+      
       const res = await server.inject({
         method: "POST",
         url: "/api/userOrganisation/details",

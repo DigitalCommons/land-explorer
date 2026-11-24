@@ -3,6 +3,7 @@ import { createSandbox, fake } from "sinon";
 import { Server } from "@hapi/hapi";
 import { init } from "../../server";
 import { ProprietorSearchResponse } from "../../clients/pbs/proprietors";
+import { auth } from "../../utils/auth";
 
 // Dependencies to be stubbed
 const proprietors = require("../../clients/pbs/proprietors");
@@ -229,6 +230,7 @@ describe("GET /api/proprietors", () => {
 
   context("unauthenticated request", () => {
     it("returns status 401", async () => {
+      sandbox.stub(auth.api, "getSession").resolves(null);
       const res = await server.inject({
         method: "GET",
         url: "/api/proprietors?searchTerm=Cambridge&page=1&pageSize=10",
