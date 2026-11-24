@@ -365,7 +365,7 @@ describe("GET /api/user/details", () => {
 
   afterEach(async () => {
     await server.stop();
-    sandbox.restore();
+    sandbox.restore();    
   });
 
   context("User exists", () => {
@@ -532,7 +532,8 @@ describe("GET /api/user/details", () => {
       });
 
       it("returns an empty hash when ANALYTICS_PEPPER is not set", async () => {
-        delete process.env.ANALYTICS_PEPPER;
+        // sandbox.restore() in afterEach puts the original value back, even if the request throws
+        sandbox.replace(process.env, "ANALYTICS_PEPPER", "");
         sandbox.replace(Model.User, "findOne", fake.resolves(consentingUser));
 
         const res = await getDetails();
