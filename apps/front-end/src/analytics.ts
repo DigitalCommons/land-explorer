@@ -23,8 +23,14 @@ export const initializeMixpanel = (): void => {
 export const optInAndSetAnalyticsUser = async (
   analyticsUserHash: string,
 ) => {
-  // The back end sends no hash without consent or without its pepper set
-  if (!analyticsEnabled || !analyticsUserHash) {
+  if (!analyticsEnabled) {
+    return;
+  }
+
+  // The back end sends no hash without consent or without its pepper set. Opt out explicitly,
+  // since Mixpanel persists an opt-in from an earlier session in localStorage
+  if (!analyticsUserHash) {
+    optOutAndResetAnalyticsUser();
     return;
   }
 
