@@ -488,6 +488,59 @@ describe("GET /api/user/details", () => {
       expect(res.statusCode).to.equal(200);
       expect((res.result as any).analyticsConsent).to.equal(null);
     });
+
+    context("analyticsUserHash", () => {
+      const consentingUser = {
+        id: testUserId,
+        username: "douglas.quaid@yahoomail.com",
+        first_name: "Douglas",
+        last_name: "Quaid",
+        analytics_consent_granted_at: new Date("2024-01-01"),
+        analytics_consent_revoked_at: null,
+      };
+
+      const getDetails = () =>
+        server.inject({
+          method: "GET",
+          url: "/api/user/details",
+          auth: { strategy: "simple", credentials: { user_id: testUserId } },
+        });
+
+      it("returns the 16-char hashed user ID when consent is given", async () => {
+        sandbox.replace(Model.User, "findOne", fake.resolves(consentingUser));
+
+        const res = await getDetails();
+
+        const hash = (res.result as any).analyticsUserHash;
+        expect(hash).to.match(/^[0-9a-f]{16}$/);
+        expect(hash).to.equal(await query.hashUserId(consentingUser));
+      });
+
+      it("returns an empty hash when consent is revoked", async () => {        
+        sandbox.replace(
+          Model.User,
+          "findOne",
+          fake.resolves({
+            ...consentingUser,
+            analytics_consent_revoked_at: new Date("2024-06-01"),
+          }),
+        );
+
+        const res = await getDetails();
+
+        expect((res.result as any).analyticsUserHash).to.equal("");
+      });
+
+      it("returns an empty hash when ANALYTICS_PEPPER is not set", async () => {
+        delete process.env.ANALYTICS_PEPPER;
+        sandbox.replace(Model.User, "findOne", fake.resolves(consentingUser));
+
+        const res = await getDetails();
+
+        expect((res.result as any).analyticsConsent).to.equal(true);
+        expect((res.result as any).analyticsUserHash).to.equal("");
+      });
+    });
   });
 });
 
@@ -497,15 +550,53 @@ describe("POST /api/user/analytics-consent", () => {
 
   beforeEach(async () => {
     server = await init();
-    fakeUserUpdate = sandbox.replace(Model.User, "update", fake.resolves([1]));
+    fakeUserUpdate = sandbox.replace(Model.User, "update", fake.resolves([1]));    
   });
 
   afterEach(async () => {
     await server.stop();
-    sandbox.restore();
+    sandbox.restore();    
+  });
+
+    const storedUser = (consent: boolean) => ({
+    id: testUserId,
+    username: "douglas.quaid@yahoomail.com",
+    analytics_consent_granted_at: consent ? new Date() : null,
+    analytics_consent_revoked_at: consent ? null : new Date(),
+  });
+
+  it("returns the hashed user ID after consent is given", async () => {
+    sandbox.replace(Model.User, "findOne", fake.resolves(storedUser(true)));
+
+    const res = await server.inject({
+      method: "POST",
+      url: "/api/user/analytics-consent",
+      auth: { strategy: "simple", credentials: { user_id: testUserId } },
+      payload: { analyticsConsent: true },
+    });
+
+    expect(res.statusCode).to.equal(200);
+    expect((res.result as any).analyticsUserHash).to.equal(
+      await query.hashUserId(storedUser(true)),
+    );
+  });
+
+  it("returns an empty hash after consent is revoked", async () => {
+    sandbox.replace(Model.User, "findOne", fake.resolves(storedUser(false)));
+
+    const res = await server.inject({
+      method: "POST",
+      url: "/api/user/analytics-consent",
+      auth: { strategy: "simple", credentials: { user_id: testUserId } },
+      payload: { analyticsConsent: false },
+    });
+
+    expect(res.statusCode).to.equal(200);
+    expect((res.result as any).analyticsUserHash).to.equal("");
   });
 
   it("returns status 200 and persists consent when set to true", async () => {
+    sandbox.replace(Model.User, "findOne", fake.resolves(storedUser(true)));
     const res = await server.inject({
       method: "POST",
       url: "/api/user/analytics-consent",
@@ -522,6 +613,7 @@ describe("POST /api/user/analytics-consent", () => {
   });
 
   it("returns status 200 and persists consent when set to false", async () => {
+    sandbox.replace(Model.User, "findOne", fake.resolves(storedUser(false)));
     const res = await server.inject({
       method: "POST",
       url: "/api/user/analytics-consent",

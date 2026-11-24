@@ -1,5 +1,9 @@
 import { AppDispatch, RootState } from "@/store";
-import { getRequest, postRequest } from "./RequestActions";
+import {
+  getRequest,
+  postRequest,
+  postRequestWithResponse,
+} from "./RequestActions";
 import {
   optInAndSetAnalyticsUser,
   optOutAndResetAnalyticsUser,
@@ -13,7 +17,7 @@ export const getUserDetails = () => {
     if (userData) {
       dispatch({ type: "POPULATE_USER", payload: userData });
       if (userData.analyticsConsent === true) {
-        try {          
+        try {
           await optInAndSetAnalyticsUser(userData.analyticsUserHash);
         } catch {
           // analytics failure should not prevent the app from loading
@@ -55,15 +59,32 @@ export const setAskForFeedback = (status: boolean) => {
 
 export const setAnalyticsConsent = (status: boolean) => {
   return async (dispatch: AppDispatch) => {
-    const success = await dispatch(
-      postRequest("/api/user/analytics-consent", { analyticsConsent: status }),
+    const response = await dispatch(
+      postRequestWithResponse("/api/user/analytics-consent", {
+        analyticsConsent: status,
+      }),
     );
-
-    if (success) {
-      await dispatch(getUserDetails()); // refresh the user details so that we get the updated user analytics hash and analytics consent status
+    if (response === null) {
+      return false;
     }
 
-    return success;
+    const analyticsUserHash: string = response.analyticsUserHash ?? "";
+    dispatch({
+      type: "USER_ANALYTICS_CONSENT_STATUS",
+      payload: { analyticsConsent: status, analyticsUserHash },
+    });
+
+    if (status) {
+      try {
+        await optInAndSetAnalyticsUser(analyticsUserHash);
+      } catch {
+        // analytics failure should not prevent consent from being saved
+      }
+    } else {
+      optOutAndResetAnalyticsUser();
+    }
+
+    return true;
   };
 };
 

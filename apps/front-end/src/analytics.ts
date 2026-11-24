@@ -23,7 +23,8 @@ export const initializeMixpanel = (): void => {
 export const optInAndSetAnalyticsUser = async (
   analyticsUserHash: string,
 ) => {
-  if (!analyticsEnabled) {
+  // The back end sends no hash without consent or without its pepper set
+  if (!analyticsEnabled || !analyticsUserHash) {
     return;
   }
 
@@ -41,7 +42,6 @@ export const optOutAndResetAnalyticsUser = () => {
   mixpanel.opt_out_tracking();
   mixpanel.reset();
 };
-
 
 export const trackEvent = <T extends Record<string, unknown>>(
   action: AnalyticsEvent,
