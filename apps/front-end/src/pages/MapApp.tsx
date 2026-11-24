@@ -2,7 +2,6 @@ import { useEffect } from "react";
 import { useAppDispatch, useAppSelector } from "@/hooks/react-redux";
 import MapboxMap from "../components/map/MapboxMap";
 import TopBar from "../components/top-bar/TopBar";
-import PlatformUpdateBanner from "../components/top-bar/PlatformUpdateBanner";
 import Tooltips from "../components/common/Tooltips";
 import ControlButtons from "../components/map-controls/ControlButtons";
 import { getMyMaps, openMap } from "../actions/MapActions";
