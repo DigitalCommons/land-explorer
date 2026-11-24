@@ -23,7 +23,6 @@ type Constants = {
   ROOT_URL: string | undefined;
   PAYMENTS_URL: string | undefined;
   OS_KEY: string | undefined;
-  OS_PLACES_KEY: string | undefined;
   GEOCODER_TOKEN: string | undefined;
   MAPBOX_TOKEN: string | undefined;
   USE_OS_TILES: boolean;
@@ -55,7 +54,6 @@ const constants: Constants = {
   ROOT_URL: import.meta.env.VITE_ROOT_URL ?? "",
   PAYMENTS_URL: import.meta.env.VITE_PAYMENTS_URL,
   OS_KEY: import.meta.env.VITE_OS_KEY,
-  OS_PLACES_KEY: import.meta.env.VITE_OS_PLACES_KEY,
   GEOCODER_TOKEN: import.meta.env.VITE_GEOCODER_TOKEN,
   MAPBOX_TOKEN: import.meta.env.VITE_MAPBOX_TOKEN,
   USE_OS_TILES: true,

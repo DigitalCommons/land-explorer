@@ -165,7 +165,6 @@ services:
         CADDY_HOSTNAME: ${FRONT_END_HOSTNAME:?public hostname of the app}
         API_UPSTREAM: ${SERVICE_NAME_BACK_END:-back-end}:4000
         VITE_OS_KEY: ${VITE_OS_KEY:?set in Coolify}
-        VITE_OS_PLACES_KEY: ${VITE_OS_PLACES_KEY:-}
         VITE_PAYMENTS_URL: ${VITE_PAYMENTS_URL:-}
         VITE_GEOCODER_TOKEN: ${VITE_GEOCODER_TOKEN:?set in Coolify}
         VITE_MAPBOX_TOKEN: ${VITE_MAPBOX_TOKEN:?set in Coolify}
