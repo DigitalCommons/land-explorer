@@ -76,7 +76,7 @@ module.exports = {
               id: randomUUID(),
               userId: authUserId,
               providerId: CREDENTIAL_PROVIDER,
-              password: appUser.password,
+              password: bcrypt.hashSync("testingtesting123", 10),
             },
             transaction,
           },

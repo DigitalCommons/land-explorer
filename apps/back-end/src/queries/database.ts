@@ -42,8 +42,7 @@ const UserModel = sequelize.define(
     account_type: { type: DataTypes.STRING, allowNull: false }, // #157: selected tier ("free"/"paid")
     council_id: { type: DataTypes.INTEGER, allowNull: false },
 
-    username: { type: DataTypes.STRING, allowNull: false },
-    password: { type: DataTypes.STRING, allowNull: false },
+    username: { type: DataTypes.STRING, allowNull: false },    
     access: DataTypes.INTEGER,
     enabled: DataTypes.INTEGER,
     is_super_user: { type: DataTypes.BOOLEAN, allowNull: false },
@@ -344,30 +343,6 @@ const MapMembershipModel = sequelize.define(
   },
 );
 
-const PasswordResetTokenModel = sequelize.define(
-  "PasswordResetToken",
-  {
-    idpassword_reset_token: {
-      type: DataTypes.BIGINT,
-      allowNull: false,
-      autoIncrement: true,
-      primaryKey: true,
-    },
-    user_id: {
-      type: DataTypes.BIGINT,
-      allowNull: false,
-      references: { model: UserModel, key: "id" },
-    },
-    token: { type: DataTypes.STRING, allowNull: false },
-    expires: { type: DataTypes.BIGINT, allowNull: false },
-  },
-  {
-    tableName: "password_reset_token",
-    createdAt: false,
-    updatedAt: false,
-  },
-);
-
 const UserFeedbackModel = sequelize.define(
   "UserFeedback",
   {
@@ -390,7 +365,6 @@ const UserFeedbackModel = sequelize.define(
 );
 
 UserModel.hasMany(UserMapModel, { foreignKey: { name: "user_id" } });
-UserModel.hasMany(PasswordResetTokenModel, { foreignKey: { name: "user_id" } });
 UserModel.hasMany(UserFeedbackModel, { foreignKey: { name: "user_id" } });
 
 MapModel.hasMany(UserMapModel, { foreignKey: { name: "map_id" } });
@@ -400,10 +374,6 @@ UserMapModel.belongsTo(UserModel, { foreignKey: { name: "user_id" } });
 UserMapModel.belongsTo(MapModel, { foreignKey: { name: "map_id" } });
 
 UserFeedbackModel.belongsTo(UserModel, { foreignKey: { name: "user_id" } });
-
-PasswordResetTokenModel.belongsTo(UserModel, {
-  foreignKey: { name: "user_id" },
-});
 
 export const User = UserModel;
 export const Map = MapModel;
@@ -418,7 +388,6 @@ export const UserGroup = UserGroupModel;
 export const UserGroupMembership = UserGroupMembershipModel;
 export const MapMembership = MapMembershipModel;
 export const ItemType = ItemTypeModel;
-export const PasswordResetToken = PasswordResetTokenModel;
 export const UserFeedback = UserFeedbackModel;
 
 /* The hardcoded datagroup ID used to signify no data group in Marker/Polygon/Line tables */
