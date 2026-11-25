@@ -1,6 +1,7 @@
 'use strict';
 
 const { randomUUID } = require('crypto');
+const bcrypt = require('bcrypt');
 
 // The test user from 7_test_user.js
 const TEST_USER_EMAIL = 'test-lx@digitalcommons.coop';
@@ -66,7 +67,7 @@ module.exports = {
         },
       );
 
-      // user.password is a bcrypt hash, which Better Auth verifies (see src/utils/auth.ts)
+      // a bcrypt hash of the test password, which Better Auth verifies (see src/utils/auth.ts)
       if (!account) {
         await sequelize.query(
           `INSERT INTO auth_account (id, accountId, providerId, userId, password, createdAt, updatedAt)
