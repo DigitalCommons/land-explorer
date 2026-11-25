@@ -3,7 +3,6 @@ import {
   User,
   UserMap,
   PendingUserMap,
-  PasswordResetToken,
   Marker,
   Polygon,
   Line,
@@ -15,7 +14,6 @@ import {
   UserGroupAccess,
   sequelize,
 } from "./database";
-import { hashPassword } from "./helper";
 import { createHash } from "node:crypto";
 import axios from "axios";
 import { Op, QueryTypes } from "sequelize";
@@ -65,7 +63,6 @@ export const usernameExist = async (username: string): Promise<Boolean> => {
 export const toUserRow = (data: any) => {
   return {
     username: data.username,
-    password: hashPassword(data.password),
     enabled: 1,
     access: 2,
     is_super_user: 0,

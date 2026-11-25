@@ -1,11 +1,9 @@
 /// <reference types="mocha" />
 import { expect } from "chai";
-import { assert, createSandbox, fake, type SinonSpy } from "sinon";
+import { createSandbox, fake, type SinonSpy } from "sinon";
 import * as query from "./query";
-import * as bcrypt from "bcrypt";
 import {
   User,
-  PasswordResetToken,
   UserGroupMembership,
   Marker,
   Polygon,

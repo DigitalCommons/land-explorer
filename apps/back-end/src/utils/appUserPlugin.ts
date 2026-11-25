@@ -27,8 +27,7 @@ export const appUserPlugin = () =>
         disableMigration: true,
         fields: {
           // unique, so the adapter can find the inserted row on MySQL, which has no INSERT ... RETURNING
-          username: { type: "string", required: true, unique: true },
-          password: { type: "string", required: true },
+          username: { type: "string", required: true, unique: true },         
           enabled: { type: "number" },
           access: { type: "number" },
           is_super_user: { type: "number", required: true },

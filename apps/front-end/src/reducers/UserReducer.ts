@@ -17,8 +17,7 @@ export type User = {
   organisationNumber: string;
   organisationType: string;
   organisationTypeOther: string;
-  organisationActivity: string;
-  password: string;
+  organisationActivity: string;  
   phone: string;
   username: string;
   populated: boolean;
@@ -80,8 +79,7 @@ const getInitialState = (): User => ({
   organisationNumber: "",
   organisationType: "",
   organisationTypeOther: "",
-  organisationActivity: "",
-  password: "",
+  organisationActivity: "",  
   phone: "",
   username: "",
   populated: false,
