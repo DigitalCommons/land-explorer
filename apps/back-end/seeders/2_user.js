@@ -24,9 +24,7 @@ module.exports = {
       council_id: 0,
 
       // username: faker.internet.email(),
-      // password: faker.internet.password(),
       username: faker.internet.email(),
-      password: bcrypt.hashSync("password", 10),
       access: 2,
       enabled: 1,
       is_super_user: 1,

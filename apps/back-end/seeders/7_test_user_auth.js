@@ -1,6 +1,7 @@
 'use strict';
 
 const { randomUUID } = require('crypto');
+const bcrypt = require('bcrypt');
 
 // The test user from 7_test_user.js
 const TEST_USER_EMAIL = 'test-lx@digitalcommons.coop';
@@ -18,7 +19,7 @@ module.exports = {
     const { sequelize } = queryInterface;
 
     const [appUser] = await sequelize.query(
-      'SELECT id, first_name, last_name, username, password, created_date FROM user WHERE username = :email',
+      'SELECT id, first_name, last_name, username, created_date FROM user WHERE username = :email',
       { replacements: { email: TEST_USER_EMAIL }, type: sequelize.QueryTypes.SELECT },
     );
     if (!appUser) return;
@@ -66,7 +67,7 @@ module.exports = {
         },
       );
 
-      // user.password is a bcrypt hash, which Better Auth verifies (see src/utils/auth.ts)
+      // a bcrypt hash of the test password, which Better Auth verifies (see src/utils/auth.ts)
       if (!account) {
         await sequelize.query(
           `INSERT INTO auth_account (id, accountId, providerId, userId, password, createdAt, updatedAt)
@@ -76,7 +77,7 @@ module.exports = {
               id: randomUUID(),
               userId: authUserId,
               providerId: CREDENTIAL_PROVIDER,
-              password: appUser.password,
+              password: bcrypt.hashSync("testingtesting123", 10),
             },
             transaction,
           },
