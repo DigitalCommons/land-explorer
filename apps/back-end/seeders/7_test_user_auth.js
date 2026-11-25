@@ -10,8 +10,7 @@ const CREDENTIAL_PROVIDER = 'credential';
 
 /**
  * Gives the seeded test user a Better Auth login, already verified, so it can sign
- * in with Better Auth straight away without being sent a code. Uses the same rows
- * as src/scripts/migrateUsersToAuth.ts, apart from emailVerified.
+ * in with Better Auth straight away without being sent a code. 
  * Safe to re-run: it fills in whatever is missing and marks the user verified.
  */
 module.exports = {
