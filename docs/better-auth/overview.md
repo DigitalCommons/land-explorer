@@ -15,10 +15,8 @@ The new auth sits behind a feature flag, so the old and new versions live side b
 
 | Variable | App | Notes |
 | --- | --- | --- |
-| `FEATURE_USE_BETTERAUTH` | Back end | `true` to turn Better Auth on |
 | `BETTER_AUTH_SECRET` | Back end | Signs cookies and tokens. At least 32 characters: `openssl rand -base64 32` |
 | `BETTER_AUTH_URL` | Back end | The app's public base URL, which the browser uses for `/api/auth` (the front-end origin, e.g. `http://localhost:28080` locally). Links in emails are built from it |
-| `VITE_FEATURE_USE_BETTERAUTH` | Front end | `true` to turn Better Auth on, at build time |
 | `SENDGRID_API_KEY` | Back end | Already used. Without it, no verification emails are sent, so neither new nor migrated users can sign in |
 
 ## Tables
@@ -78,8 +76,3 @@ This is acceptable for now. It can be cleaned up later by making `auth_user` the
 ## Email verification
 
 Users must verify their email before they can sign in, by entering a 6-digit code we email them. That includes migrated users: the first time they sign in, they're sent a code instead. See [back end](back-end.md#email-verification) and [Registration](registration.md).
-
-
-## Removing the flag
-
-Once Better Auth is live, search for `TODO` comments mentioning `FEATURE_USE_BETTERAUTH` or `VITE_FEATURE_USE_BETTERAUTH`. They help to mark what to delete.

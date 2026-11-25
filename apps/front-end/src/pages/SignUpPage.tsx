@@ -1,5 +1,5 @@
 
-import RegisterFormNew from "@/pages/Register/RegisterForm/RegisterFormNew";
+import RegisterForm from "@/pages/Register/RegisterForm/RegisterForm";
 import { Spinner } from "@/components/ui/spinner";
 import { authClient } from "@/lib/auth/auth-client";
 import { useSession } from "@better-auth-ui/react";
@@ -22,7 +22,7 @@ export default function SignUpPage({ updateBgImage }: SignUpProps) {
 
     return (
     <div className="relative min-h-0 grow overflow-y-auto pb-50">
-        <RegisterFormNew />
+        <RegisterForm />
     </div>
     )
 }

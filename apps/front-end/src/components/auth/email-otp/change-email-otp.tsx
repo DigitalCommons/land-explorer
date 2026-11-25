@@ -6,6 +6,7 @@ import {
 import {
   changeEmailOtpOptions,
   type EmailOtpAuthClient,
+  emailOtpPlugin,
   requestEmailChangeOtpOptions,
 } from "@better-auth-ui/core/plugins/email-otp";
 import { useAuth, useAuthPlugin, useSession } from "@better-auth-ui/react";
@@ -28,7 +29,6 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { getUserDetails } from "@/actions/UserActions";
 import { useAppDispatch } from "@/hooks/react-redux";
-import { emailOtpPlugin } from "@/lib/auth/email-otp-plugin";
 import { useResendCooldown } from "@/lib/auth/use-resend-cooldown";
 import { cn } from "cn";
 import {

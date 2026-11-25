@@ -4,6 +4,7 @@ import { Server } from "@hapi/hapi";
 import { init } from "../../server";
 import { ProprietorOwnershipsResponse } from "../../clients/pbs/proprietor-ownerships";
 import { Event } from "../../instrument";
+import { auth } from "../../utils/auth";
 
 // Dependencies to be stubbed
 const proprietorOwnerships = require("../../clients/pbs/proprietor-ownerships");
@@ -218,6 +219,8 @@ describe("GET /api/proprietors/ownerships", () => {
 
   context("unauthenticated request", () => {
     it("returns status 401", async () => {
+      sandbox.stub(auth.api, "getSession").resolves(null);
+      
       const res = await server.inject({
         method: "GET",
         url: "/api/proprietors/ownerships?proprietorName=Acme+Ltd&year=2020",

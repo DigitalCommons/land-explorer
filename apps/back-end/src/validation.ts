@@ -134,77 +134,6 @@ export class Validation {
     return this;
   }
 
-  async validateUserDetailUpdate(data: any) {
-    //firstName: required, not just spaces | length < 101
-    if (
-      Joi.string().trim().validate(data?.firstName, { presence: "required" }).error
-    ) {
-      this.addErrorMessage("firstName", "The first name field is required.");
-    } else {
-      // Cant do these checks if it is null or empty
-      if (Joi.string().max(100).validate(data?.firstName).error) {
-        this.addErrorMessage(
-          "firstName",
-          "The first name field cannot be longer than 100 characters."
-        );
-      }
-    }
-
-    //lastName: required, not just spaces | length < 101
-    if (Joi.string().trim().validate(data?.lastName, { presence: "required" }).error) {
-      this.addErrorMessage("lastName", "The last name field is required.");
-    } else {
-      // Cant do these checks if it is null or empty
-      if (Joi.string().max(100).validate(data?.lastName).error) {
-        this.addErrorMessage(
-          "lastName",
-          "The last name field cannot be longer than 100 characters."
-        );
-      }
-    }
-
-    let optionalWithMax = function (
-      validator: Validation,
-      data: any,
-      key: string,
-      max: number,
-      label: string
-    ) {
-      if (data[key] !== null) {
-        if (Joi.string().max(max).validate(data[key]).error) {
-          validator.addErrorMessage(
-            key,
-            label + " field cannot be longer than " + max + " characters."
-          );
-        }
-      }
-    };
-
-    optionalWithMax(this, data, "postcode", 10, "Post code");
-    optionalWithMax(this, data, "phone", 20, "Phone");
-    optionalWithMax(this, data, "address1", 100, "Address");
-    optionalWithMax(this, data, "address2", 100, "Address");
-    optionalWithMax(this, data, "city", 100, "City"); // #158
-    optionalWithMax(this, data, "organisation", 100, "Organisation");
-    optionalWithMax(
-      this,
-      data,
-      "organisationSubType",
-      100,
-      "Organisation activity"
-    );
-    optionalWithMax(
-      this,
-      data,
-      "organisationNumber",
-      100,
-      "Organisation number"
-    );
-    optionalWithMax(this, data, "organisationType", 100, "Organisation type");
-
-    return this;
-  }
-
   async validateChangeEmail(data: any) {
     //username: required | email | unique | length < 101
     if (Joi.string().validate(data?.username, { presence: "required" }).error) {
@@ -227,22 +156,6 @@ export class Validation {
         this.addErrorMessage(
           "username",
           "An account already exists with this email."
-        );
-      }
-    }
-
-    return this;
-  }
-
-  async validateChangePassword(data: any) {
-    //password: required | 6 to 72 characters (bcrypt ignores anything after 72 bytes)
-    if (Joi.string().validate(data?.password, { presence: "required" }).error) {
-      this.addErrorMessage("password", "The password field is required.");
-    } else {
-      if (Joi.string().min(6).max(72).validate(data?.password).error) {
-        this.addErrorMessage(
-          "password",
-          "The password must be between 6 and 72 characters."
         );
       }
     }

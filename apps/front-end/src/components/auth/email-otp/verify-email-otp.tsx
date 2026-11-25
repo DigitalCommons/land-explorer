@@ -3,6 +3,7 @@
 import { getAuthLinkURL } from "@better-auth-ui/core"
 import {
   type EmailOtpAuthClient,
+  emailOtpPlugin,
   sendVerificationOtpOptions,
   verifyEmailOtpOptions
 } from "@better-auth-ui/core/plugins/email-otp"
@@ -29,7 +30,6 @@ import {
 } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import { getFriendlyAuthErrorMessage } from "@/lib/auth/auth-error-message"
-import { emailOtpPlugin } from "@/lib/auth/email-otp-plugin"
 import {
   RESEND_COOLDOWN_SECONDS,
   useResendCooldown

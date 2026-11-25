@@ -4,21 +4,13 @@ import {
   ResponseObject,
   ServerRoute,
 } from "@hapi/hapi";
-import jwt from "jsonwebtoken";
-import { Validation } from "../validation";
-import * as mailer from "../queries/mails";
 import {
-  createUser,
-  migrateGuestUserMap,
-  checkAndReturnUser,
   getUserById,
-  getUserByEmail,
   createUserFeedback,
   getAskForFeedback,
   trackUserEvent,
 } from "../queries/query";
-import { User, PasswordResetToken } from "../queries/database";
-import { hashPassword, generateRandomToken } from "../queries/helper";
+import { User } from "../queries/database";
 import { LoggedInRequest } from "./request_types";
 import { Event } from "../instrument";
 import Joi from "joi";
@@ -27,119 +19,6 @@ import {
   UpdateUserGuidePromptSeenRequest,
 } from "./user.types";
 import { computeAnalyticsConsent } from "../userAnalyticsConsent";
-import { isBetterAuthEnabled } from "../featureFlagUtils";
-import { signUpToMarketing } from "../clients/buttondown.client";
-
-//TODO: DELETE FUNCTION WHEN `FEATURE_USE_BETTERAUTH` ENV VAR IS REMOVED
-const RESET_PASSWORD_EXPIRY_HOURS = 24;
-
-//TODO: DELETE FUNCTION WHEN `FEATURE_USE_BETTERAUTH` ENV VAR IS REMOVED
-type RegisterRequest = Request & {
-  payload: {
-    username: string;
-    password: string;
-    firstName: string;
-    lastName: string;
-    marketing: boolean;
-  };
-};
-
-/**
- * TODO: DELETE FUNCTION WHEN `FEATURE_USE_BETTERAUTH` ENV VAR IS REMOVED
- * 
- * Register new user using request data from API
- */
-async function registerUser(
-  request: RegisterRequest,
-  h: ResponseToolkit,
-): Promise<ResponseObject> {  
-  const originDomain = `https://${request.info.host}`;
-
-  let validation = new Validation();
-  await validation.validateUserRegister(request.payload);
-
-  if (validation.fail()) {
-    return h.response(validation.errors).code(400);
-  }
-
-  signUpToMarketing(request.payload.marketing, request.payload.username)
-  // create user on database
-  let user = await createUser(request.payload);
-
-  // migrate user map from guest account
-  const mapsCount = await migrateGuestUserMap(user);
-
-  // send analytic
-  trackUserEvent(crypto.randomUUID(), user.id, Event.USER.REGISTER, {
-    sharedMaps: mapsCount > 0,
-  });
-
-  mailer.sendSuccessfullyRegisteredEmail(
-    request.payload.username,
-    request.payload.firstName,
-    originDomain,
-  );
-
-  return h.response(user);
-}
-
-type LoginRequest = Request & {
-  payload: {
-    username: string;
-    password?: string;
-    reset_token?: string;
-  };
-};
-
-/**
- * TODO: DELETE FUNCTION WHEN `FEATURE_USE_BETTERAUTH` ENV VAR IS REMOVED
- * 
- * Handle user login using request data from API
- */
-async function loginUser(
-  request: LoginRequest,
-  h: ResponseToolkit,
-): Promise<ResponseObject> { 
-  console.log("login user");
-
-  const { username, password, reset_token } = request.payload;
-  const { success, user, errorMessage } = await checkAndReturnUser(
-    username,
-    password,
-    reset_token,
-  );
-
-  if (success) {
-    const expiry_day: number = parseInt(process.env.TOKEN_EXPIRY_DAYS || "10");
-
-    const secretKey: string = process.env.TOKEN_KEY || "";
-
-    // Create token
-    const token = jwt.sign(
-      {
-        user_id: user.id,
-        username: user.username,
-        council_id: user.council_id,
-        is_super_user:
-          user.is_super_user && user.is_super_user[0] == "1" ? 1 : 0,
-        enabled: user.enabled && user.enabled[0] == "1" ? 1 : 0,
-        marketing: user.enabled && user.enabled[0] == "1" ? 1 : 0,
-      },
-      secretKey,
-      {
-        expiresIn: expiry_day + "d",
-      },
-    );
-
-    return h.response({
-      access_token: token,
-      token_type: "bearer",
-      expires_in: expiry_day * 24 * 60 * 60,
-    });
-  }
-
-  return h.response({ message: errorMessage }).code(401);
-}
 
 /**
  * Return the details of authenticated user
@@ -183,176 +62,6 @@ async function getAuthUserDetails(
     analyticsConsent: computeAnalyticsConsent(user),
     userGuidePromptSeen: user.user_guide_prompt_seen ?? false,
   });
-}
-
-/**
- * TODO: DELETE FUNCTION WHEN `FEATURE_USE_BETTERAUTH` ENV VAR IS REMOVED
- * 
- * Update the email of autheticated user
- */
-async function changeEmail(
-  request: LoggedInRequest,
-  h: ResponseToolkit,
-  d: any,
-): Promise<ResponseObject> {
-  let validation = new Validation();
-  await validation.validateChangeEmail(request.payload);
-
-  if (validation.fail()) {
-    return h.response(validation.errors).code(400);
-  }
-
-  let payload: any = request.payload;
-
-  await User.update(
-    { username: payload.username },
-    {
-      where: {
-        id: request.auth.credentials.user_id,
-      },
-    },
-  );
-
-  return h.response().code(200);
-}
-
-/**
- * TODO: DELETE FUNCTION WHEN `FEATURE_USE_BETTERAUTH` ENV VAR IS REMOVED
- * 
- * Change the user detail of the authenticated user
- */
-async function changeUserDetail(
-  request: LoggedInRequest,
-  h: ResponseToolkit,
-  d: any,
-): Promise<ResponseObject> {
-  let validation = new Validation();
-  await validation.validateUserDetailUpdate(request.payload);
-
-  if (validation.fail()) {
-    return h.response(validation.errors).code(400);
-  }
-
-  let payload: any = request.payload;
-
-  await User.update(
-    {
-      first_name: payload.firstName,
-      last_name: payload.lastName,
-      address1: payload.address1,
-      address2: payload.address2,
-      city: payload.city, // #158
-      postcode: payload.postcode,
-      phone: payload.phone,
-      organisation: payload.organisation,
-      organisation_number: payload.organisationNumber,
-      organisation_type: payload.organisationType,
-      organisation_activity: payload.organisationActivity,
-    },
-    {
-      where: {
-        id: request.auth.credentials.user_id,
-      },
-    },
-  );
-
-  return h.response().code(200);
-}
-
-type ChangePasswordRequest = LoggedInRequest & {
-  payload: {
-    password: string;
-  };
-};
-
-/**
- * 
- * TODO: DELETE FUNCTION WHEN `FEATURE_USE_BETTERAUTH` ENV VAR IS REMOVED
- * 
- * Allow logged in user to change their password
- */
-async function changePassword(
-  request: ChangePasswordRequest,
-  h: ResponseToolkit,
-  d: any,
-): Promise<ResponseObject> {
-  const { password } = request.payload;
-
-  let validation = new Validation();
-  await validation.validateChangePassword(request.payload);
-
-  if (validation.fail()) {
-    return h.response(validation.errors).code(400);
-  }
-
-  await User.update(
-    { password: hashPassword(password) },
-    {
-      where: {
-        id: request.auth.credentials.user_id,
-      },
-    },
-  );
-
-  return h.response().code(200);
-}
-
-type ResetPasswordRequest = Request & {
-  payload: {
-    username: string;
-  };
-};
-
-/**
- * 
- * TODO: DELETE FUNCTION WHEN `FEATURE_USE_BETTERAUTH` ENV VAR IS REMOVED
- * 
- * Allow user to request a password reset link when they forget their password
- */
-async function resetPassword(
-  request: ResetPasswordRequest,
-  h: ResponseToolkit,
-  d: any,
-): Promise<ResponseObject> {
-  const { username } = request.payload;
-
-  let user = await getUserByEmail(username);
-
-  if (!user) {
-    // To avoid username guesses by a hacker, just return 200 OK
-    return h.response().code(200);
-  }
-
-  // Generate a one-time token and store this in the database.
-  // Before this, remove any existing tokens for this user.
-  await PasswordResetToken.destroy({
-    where: { user_id: user.id },
-  });
-
-  const passwordResetToken = await generateRandomToken();
-
-  await PasswordResetToken.create({
-    user_id: user.id,
-    token: passwordResetToken,
-    expires: Date.now() + RESET_PASSWORD_EXPIRY_HOURS * 3600 * 1000, // UNIX timestamp in ms
-  });
-
-  // Use the token to build the reset link
-  const passwordResetLink = `https://${
-    request.info.host
-  }/auth?email=${encodeURIComponent(
-    username,
-  )}&reset_token=${passwordResetToken}`;
-
-  // Send email
-  mailer.sendResetPasswordEmail(
-    username,
-    user.first_name,
-    passwordResetLink,
-    RESET_PASSWORD_EXPIRY_HOURS,
-  );
-
-  return h.response().code(200);
 }
 
 type UserFeedbackRequest = LoggedInRequest & {
@@ -502,37 +211,6 @@ async function updateUserGuidePromptSeen(
   return h.response().code(200);
 }
 
-export const legacyUserAuthRoutes: ServerRoute[] = [
-  // Register a new account
-  {
-    method: "POST",
-    path: "/api/user/register",
-    handler: registerUser,
-    options: { auth: false },
-  },
-  // Request a password reset for an email address
-  {
-    method: "POST",
-    path: "/api/user/password-reset",
-    handler: resetPassword,
-    options: { auth: false },
-  },
-  // Login user and retrieve a token
-  {
-    method: "POST",
-    path: "/api/token",
-    handler: loginUser,
-    options: { auth: false },
-  },
-  // Allow user to change their email address
-  { method: "POST", path: "/api/user/email", handler: changeEmail },
-  // Allow logged in user to change their password
-  { method: "POST", path: "/api/user/password", handler: changePassword },
-  
-]
-
-export const userAuthRoutes = (): ServerRoute[] => isBetterAuthEnabled() ? []: legacyUserAuthRoutes;
-
 export const userRoutes: ServerRoute[] = [
   /** Public APIs */ 
   /** Authenticated users only */
@@ -544,8 +222,6 @@ export const userRoutes: ServerRoute[] = [
     path: "/api/user/ask-for-feedback",
     handler: getUserAskForFeedback,
   },
-  // Allow user to change their details
-  { method: "POST", path: "/api/user/details", handler: changeUserDetail },
   // Allow user to update their ask for feedback flag
   {
     method: "POST",
