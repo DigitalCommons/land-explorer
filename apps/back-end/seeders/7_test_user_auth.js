@@ -18,7 +18,7 @@ module.exports = {
     const { sequelize } = queryInterface;
 
     const [appUser] = await sequelize.query(
-      'SELECT id, first_name, last_name, username, password, created_date FROM user WHERE username = :email',
+      'SELECT id, first_name, last_name, username, created_date FROM user WHERE username = :email',
       { replacements: { email: TEST_USER_EMAIL }, type: sequelize.QueryTypes.SELECT },
     );
     if (!appUser) return;
