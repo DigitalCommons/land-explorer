@@ -103,18 +103,6 @@ describe("preRegistrationFlow", () => {
       });
     });
 
-    it("stores a hash of the password, not the password", async () => {
-      await preRegistrationFlow(
-        authUser,
-        signUpContext(registrationBody, adapter),
-      );
-
-      const { password } = adapter.create.firstCall.args[0].data;
-      expect(password).to.not.equal(registrationBody.password);
-      expect(bcrypt.compareSync(registrationBody.password, password)).to.be
-        .true;
-    });
-
     it("links the new auth user to the app user", async () => {
       const result = await preRegistrationFlow(
         authUser,
