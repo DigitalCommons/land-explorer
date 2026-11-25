@@ -5,8 +5,6 @@ import { LngLat } from "./types";
     ROOT_URL
         if production, should be empty string
         if developing locally, wherever the land-map-server is running on]
-    STATIC_SITE_URL
-        the url for the static site
     TIERS_URL
         the access tiers section of the static site, linked from the registration form
     OS_KEY
@@ -19,7 +17,6 @@ import { LngLat } from "./types";
 
 type Constants = {
   DEV_MODE: boolean;
-  STATIC_SITE_URL: string;
   ROOT_URL: string | undefined;
   PAYMENTS_URL: string | undefined;
   OS_KEY: string | undefined;
@@ -51,7 +48,6 @@ type Constants = {
 
 const constants: Constants = {
   DEV_MODE: import.meta.env.DEV,
-  STATIC_SITE_URL: "https://landexplorer.coop",
   ROOT_URL: import.meta.env.VITE_ROOT_URL ?? "",
   PAYMENTS_URL: import.meta.env.VITE_PAYMENTS_URL,
   OS_KEY: import.meta.env.VITE_OS_KEY,
