@@ -79,6 +79,6 @@
     "@vitejs/plugin-react": "^4",
     "sass": "^1.72.0",
     "typescript": "^5.9.3",
-    "vite": "^6"
+    "vite": "^6.4.5"
   }
 }
