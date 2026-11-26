@@ -48,7 +48,7 @@
     "zod": "^4.6.1"
   },
   "devDependencies": {
-    "@react-email/ui": "^6.11.0",
+    "@react-email/ui": "^6.11.16",
     "@types/bcrypt": "^5.0.0",
     "@types/chai": "^4.3.4",
     "@types/hapi__hapi": "^20.0.10",
