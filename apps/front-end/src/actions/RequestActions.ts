@@ -52,16 +52,32 @@ export const getRequest = (endpoint: string, signal?: AbortSignal) => {
  * @returns {Promise<boolean>} whether the request was successful
  */
 export const postRequest = (endpoint: string, body: any) => {
+  return async (dispatch: any) => {
+    const data = await dispatch(postRequestWithResponse(endpoint, body));
+    return data !== null;
+  };
+};
+
+/**
+ * Like postRequest, but resolves to the response body instead of a boolean.
+ *
+ * @returns {Promise<any>} the response data, or null if the request failed
+ */
+export const postRequestWithResponse = (endpoint: string, body: any) => {
   return async (dispatch: any, getState: () => RootState) => {
     try {
       const { sessionId } = getState().user;
-      await axios.post(`${constants.ROOT_URL}${endpoint}`, body, {
-        headers: {
-          ...getAuthHeader().headers,
-          "x-session-id": sessionId,
+      const response = await axios.post(
+        `${constants.ROOT_URL}${endpoint}`,
+        body,
+        {
+          headers: {
+            ...getAuthHeader().headers,
+            "x-session-id": sessionId,
+          },
         },
-      });
-      return true;
+      );
+      return response.data ?? "";
     } catch (err: any) {
       console.error(`There was an error in ${endpoint} POST request`, err);
 
@@ -71,6 +87,6 @@ export const postRequest = (endpoint: string, body: any) => {
         }
       }
     }
-    return false;
+    return null;
   };
 };

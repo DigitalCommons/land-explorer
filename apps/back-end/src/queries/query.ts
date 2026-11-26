@@ -203,6 +203,17 @@ export const checkAndReturnUser = async (
 };
 
 /**
+ * The anonymised ID the front end should identify the user as in Mixpanel, or "" if the user
+ * hasn't consented or analytics isn't configured (so the front end must not track them).
+ */
+export const getAnalyticsUserHash = async (user: typeof User): Promise<string> => {
+  if (!process.env.ANALYTICS_PEPPER || !computeAnalyticsConsent(user)) {
+    return "";
+  }
+  return hashUserId(user);
+};
+
+/**
  * Convert a userId to a hashed value, using their username as a salt and then adding the secret
  * pepper, to anonymize it for analytics.
  */

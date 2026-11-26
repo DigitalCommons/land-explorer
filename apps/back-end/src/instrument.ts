@@ -13,14 +13,17 @@ Sentry.init({
 
 // For Mixpanel user analytics
 let mixpanel: Mixpanel.Mixpanel;
-if (process.env.MIXPANEL_TOKEN) {
+// Without the pepper, hashed user and map IDs could be recomputed by anyone, so don't send events
+if (process.env.MIXPANEL_TOKEN && process.env.ANALYTICS_PEPPER) {
   mixpanel = Mixpanel.init(process.env.MIXPANEL_TOKEN, {
     host: "api-eu.mixpanel.com",
     geolocate: false,
     // debug: true,
   });
 } else {
-  console.warn("Mixpanel token not found. Analytics will not be sent.");
+  console.warn(
+    "MIXPANEL_TOKEN or ANALYTICS_PEPPER not set. Analytics will not be sent.",
+  );
 }
 
 /** The list of events that can be tracked in the form of "<Category>_<Action>" */

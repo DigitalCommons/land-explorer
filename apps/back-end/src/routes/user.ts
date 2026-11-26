@@ -16,6 +16,7 @@ import {
   createUserFeedback,
   getAskForFeedback,
   trackUserEvent,
+  getAnalyticsUserHash,
 } from "../queries/query";
 import { User, PasswordResetToken } from "../queries/database";
 import { hashPassword, generateRandomToken } from "../queries/helper";
@@ -181,6 +182,7 @@ async function getAuthUserDetails(
     council_id: user.council_id ?? 0,
     is_super_user: user.is_super_user ?? 0,
     analyticsConsent: computeAnalyticsConsent(user),
+    analyticsUserHash: await getAnalyticsUserHash(user),
     userGuidePromptSeen: user.user_guide_prompt_seen ?? false,
   });
 }
@@ -473,7 +475,11 @@ async function updateAnalyticsConsent(
     { where: { id: request.auth.credentials.user_id } },
   );
 
-  return h.response().code(200);
+  // Send back the hash so the front end can identify the user without refetching their details
+  const user = await getUserById(request.auth.credentials.user_id);
+  const analyticsUserHash = user ? await getAnalyticsUserHash(user) : "";
+
+  return h.response({ analyticsUserHash }).code(200);
 }
 
 async function updateUserGuidePromptSeen(

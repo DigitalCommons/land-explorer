@@ -1,5 +1,9 @@
 import { AppDispatch, RootState } from "@/store";
-import { getRequest, postRequest } from "./RequestActions";
+import {
+  getRequest,
+  postRequest,
+  postRequestWithResponse,
+} from "./RequestActions";
 import {
   optInAndSetAnalyticsUser,
   optOutAndResetAnalyticsUser,
@@ -14,7 +18,7 @@ export const getUserDetails = () => {
       dispatch({ type: "POPULATE_USER", payload: userData });
       if (userData.analyticsConsent === true) {
         try {
-          await optInAndSetAnalyticsUser(userData.id, userData.username);
+          await optInAndSetAnalyticsUser(userData.analyticsUserHash);
         } catch {
           // analytics failure should not prevent the app from loading
         }
@@ -54,30 +58,33 @@ export const setAskForFeedback = (status: boolean) => {
 };
 
 export const setAnalyticsConsent = (status: boolean) => {
-  return async (dispatch: AppDispatch, getState: () => RootState) => {
-    const success = await dispatch(
-      postRequest("/api/user/analytics-consent", { analyticsConsent: status }),
+  return async (dispatch: AppDispatch) => {
+    const response = await dispatch(
+      postRequestWithResponse("/api/user/analytics-consent", {
+        analyticsConsent: status,
+      }),
     );
-
-    if (success) {
-      dispatch({
-        type: "USER_ANALYTICS_CONSENT_STATUS",
-        payload: status,
-      });
-
-      if (status) {
-        const { id, username } = getState().user;
-        try {
-          await optInAndSetAnalyticsUser(id, username);
-        } catch {
-          // analytics failure should not prevent consent from being saved
-        }
-      } else {
-        optOutAndResetAnalyticsUser();
-      }
+    if (response === null) {
+      return false;
     }
 
-    return success;
+    const analyticsUserHash: string = response.analyticsUserHash ?? "";
+    dispatch({
+      type: "USER_ANALYTICS_CONSENT_STATUS",
+      payload: { analyticsConsent: status, analyticsUserHash },
+    });
+
+    if (status) {
+      try {
+        await optInAndSetAnalyticsUser(analyticsUserHash);
+      } catch {
+        // analytics failure should not prevent consent from being saved
+      }
+    } else {
+      optOutAndResetAnalyticsUser();
+    }
+
+    return true;
   };
 };
 
